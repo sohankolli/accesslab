@@ -6,7 +6,7 @@ export default function NotFound() {
     <div className="page page--narrow">
       <title>Page not found – AccessLab</title>
       <div className="card empty-state">
-        <p className="empty-state__code tabular" aria-hidden="true">
+        <p className="empty-state__code" aria-hidden="true">
           404
         </p>
         <h1 className="empty-state__title">Page not found</h1>

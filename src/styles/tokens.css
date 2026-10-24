@@ -80,27 +80,6 @@
   --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.12);
   --focus-ring: 3px solid var(--lens);
   color-scheme: light;
-
-  /* Old names, kept as aliases while the pages move to the new ones. */
-  --font-sans: var(--font);
-  --font-mono: var(--mono);
-  --bg: var(--chart);
-  --surface: var(--room);
-  --raised: var(--chart);
-  --border: var(--rule);
-  --border-strong: var(--rule-strong);
-  --text: var(--ink);
-  --muted: var(--graphite);
-  --accent: var(--lens);
-  --accent-hover: var(--lens-hover);
-  --accent-contrast: var(--on-lens);
-  --accent-subtle: var(--lens-tint);
-  --critical-subtle: var(--lens-tint);
-  --serious-subtle: var(--lens-tint);
-  --moderate-subtle: var(--lens-tint);
-  --minor-subtle: var(--lens-tint);
-  --shadow-sm: var(--shadow-raised);
-  --shadow-md: var(--shadow-raised);
 }
 
 :root[data-theme='dark'] {

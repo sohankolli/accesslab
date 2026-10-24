@@ -1,135 +1,134 @@
-/* features/home/home.css */
+/* features/home/home.css: the eye-chart headline, the pitch and three steps. */
+
+.home {
+  background: var(--chart);
+}
 
 .hero {
-  max-width: 50rem;
-  padding: var(--space-7) 0 var(--space-6);
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  min-height: 620px;
+  border-bottom: 1px solid var(--rule);
 }
-.eyebrow {
-  display: inline-flex;
-  padding: var(--space-1) var(--space-3);
-  font-size: var(--text-sm);
-  font-weight: 600;
-  color: var(--accent);
-  background: var(--accent-subtle);
-  border-radius: var(--radius-full);
+
+/* Rows shrink like an eye chart. Sizes follow the column width (--cw) and stop
+   at the mockup's sizes; the smallest row never goes below 24px (1.5rem). */
+.chart-head {
+  --cw: 50vw;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  padding: var(--space-7) var(--space-6);
+  text-align: center;
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.02em;
 }
-.hero__title {
-  margin-top: var(--space-4);
-  font-size: var(--text-2xl);
-  font-weight: 750;
-  letter-spacing: -0.03em;
-  line-height: 1.12;
+.chart-head__row {
+  display: block;
 }
-.hero__lead {
-  max-width: 40rem;
-  margin-top: var(--space-4);
-  font-size: var(--text-lg);
-  color: var(--muted);
+.chart-head__row--1 {
+  font-size: clamp(3.5rem, calc(var(--cw) * 0.183), 8.25rem); /* up to 132px */
 }
-.hero__actions {
+.chart-head__row--2 {
+  font-size: clamp(2.5rem, calc(var(--cw) * 0.117), 5.25rem); /* 84px */
+}
+.chart-head__row--3 {
+  font-size: clamp(2rem, calc(var(--cw) * 0.078), 3.5rem); /* 56px */
+}
+.chart-head__row--4 {
+  font-size: clamp(1.75rem, calc(var(--cw) * 0.053), 2.375rem); /* 38px */
+  letter-spacing: 0;
+}
+.chart-head__row--5 {
+  font-size: clamp(1.5rem, calc(var(--cw) * 0.0375), 1.6875rem); /* 27px, never under 24px */
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.pitch {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: var(--space-8);
+  background: var(--room);
+  border-left: 1px solid var(--rule);
+}
+.pitch__lede {
+  max-width: 30ch;
+  margin-bottom: var(--space-5);
+  font-size: var(--text-xl);
+  line-height: 1.45;
+}
+.pitch__actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
-  margin-top: var(--space-6);
+}
+.pitch__actions .btn:not(.btn--primary) {
+  background: var(--chart);
+}
+.pitch__fine {
+  max-width: 46ch;
+  margin-top: var(--space-5);
+  font-size: var(--text-sm);
+  color: var(--graphite);
 }
 
-.home__section {
-  padding: var(--space-6) 0;
-  border-top: 1px solid var(--border);
-}
-.section-title {
-  margin-bottom: var(--space-5);
-  font-size: var(--text-xl);
-}
-
-.steps {
+.steps__list {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--space-4);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 .step {
-  position: relative;
-  padding: var(--space-5);
-  background: var(--raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-6) var(--space-7);
+}
+.step + .step {
+  border-left: 1px solid var(--rule);
 }
 .step__number {
-  position: absolute;
-  top: var(--space-5);
-  right: var(--space-5);
-  font-size: var(--text-sm);
-  font-weight: 700;
-  color: var(--muted);
-}
-.step__icon {
-  color: var(--accent);
+  display: block;
+  font-size: var(--text-2xl);
+  font-weight: 800;
+  line-height: 1;
+  color: var(--lens);
 }
 .step__title {
-  margin: var(--space-3) 0 var(--space-2);
-  font-size: var(--text-md);
+  margin: var(--space-3) 0 6px;
+  font-size: var(--text-lg);
 }
 .step p {
-  font-size: var(--text-sm);
-  color: var(--muted);
+  max-width: 34ch;
+  color: var(--graphite);
 }
 
-.packs {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--space-4);
-}
-.packs .card + .card {
-  margin-top: 0;
-}
-.pack-card__count {
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--muted);
-}
-.rule-list {
-  display: grid;
-  gap: var(--space-3);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.rule-list li {
-  display: grid;
-  grid-template-columns: 7rem minmax(0, 1fr);
-  gap: 0 var(--space-3);
-  font-size: var(--text-sm);
-}
-.rule-list code {
-  font-weight: 600;
-}
-.rule-list__wcag {
-  grid-column: 2;
-  color: var(--muted);
-}
-
-.privacy {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: var(--space-5) 0 0;
-  font-size: var(--text-sm);
-  color: var(--muted);
-  border-top: 1px solid var(--border);
-}
-
-@media (max-width: 800px) {
-  .steps,
-  .packs {
+@media (max-width: 900px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .chart-head {
+    --cw: 100vw;
+    padding: var(--space-7) var(--space-4);
+  }
+  .pitch {
+    padding: var(--space-6) var(--space-4) var(--space-7);
+    border-left: 0;
+    border-top: 1px solid var(--rule);
+  }
+  .steps__list {
     grid-template-columns: minmax(0, 1fr);
   }
-  .hero {
-    padding-top: var(--space-5);
+  .step {
+    padding: var(--space-5) var(--space-4);
   }
-  .hero__title {
-    font-size: var(--text-xl);
+  .step + .step {
+    border-left: 0;
+    border-top: 1px solid var(--rule);
   }
 }

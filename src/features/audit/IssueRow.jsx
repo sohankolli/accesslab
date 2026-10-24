@@ -65,7 +65,7 @@ export default function IssueRow({
 
   return (
     <li className={`row${open ? ' is-open' : ''}`} data-issue-id={issue.id}>
-      <span className={`num num--${tone}`} aria-hidden="true">
+      <span className={`row__num row__num--${tone}`} aria-hidden="true">
         {number}
       </span>
       <div className="row__body">

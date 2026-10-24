@@ -368,6 +368,7 @@ input[type='checkbox'] {
 main {
   flex: 1;
   min-width: 0;
+  background: var(--chart); /* text pages sit on the white chart; the workbench sets its own */
 }
 
 /* ---------- Text pages ---------- */

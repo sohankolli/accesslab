@@ -16,7 +16,7 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background: var(--bg);
+  background: var(--chart);
 }
 .pane__body {
   flex: 1;
@@ -486,7 +486,7 @@
   background: var(--lens-tint);
   box-shadow: inset 3px 0 0 var(--lens);
 }
-.num {
+.row__num {
   display: grid;
   place-items: center;
   width: 24px;
@@ -497,19 +497,19 @@
   color: var(--on-severity);
   border-radius: var(--radius-full);
 }
-.num--critical {
+.row__num--critical {
   background: var(--critical);
 }
-.num--serious {
+.row__num--serious {
   background: var(--serious);
 }
-.num--moderate {
+.row__num--moderate {
   background: var(--moderate);
 }
-.num--minor {
+.row__num--minor {
   background: var(--minor);
 }
-.num--review {
+.row__num--review {
   color: var(--ink);
   background: var(--chart);
   box-shadow: inset 0 0 0 1.5px var(--rule-strong);
@@ -632,7 +632,7 @@
     height: auto;
     min-height: 0;
     gap: 1px;
-    background: var(--border);
+    background: var(--rule);
   }
   .splitter {
     display: none;

@@ -1,6 +1,5 @@
 // features/simulate/Simulator.jsx
 import { Link } from 'react-router';
-import Icon from '../../components/Icon';
 
 export default function Simulator() {
   return (
@@ -13,7 +12,6 @@ export default function Simulator() {
         </div>
       </div>
       <div className="card empty-state">
-        <Icon name="eye" size={40} className="icon empty-state__icon" />
         <h2 className="empty-state__title">Coming in Milestone 3</h2>
         <p>
           Colour-vision and low-vision simulations, 200% text, the keyboard tab-order map and a

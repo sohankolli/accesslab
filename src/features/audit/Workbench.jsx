@@ -1,6 +1,7 @@
 // features/audit/Workbench.jsx
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
+import { useLocation } from 'react-router';
 import { toAuditResult } from '../../engine/runAudit';
 import { runRulesSliced } from '../../engine/scheduler';
 import { rulesFor } from '../../engine/rules';
@@ -164,6 +165,20 @@ export default function Workbench() {
     observer.observe(frame);
     return () => observer.disconnect();
   }, []);
+
+  // "Check a page" on Home: focus the HTML editor with its text selected, so a
+  // paste replaces it. After a tick, because the layout moves focus to <main>
+  // when the route changes.
+  const location = useLocation();
+  useEffect(() => {
+    if (!location.state?.paste) return undefined;
+    const timer = setTimeout(() => {
+      const input = document.getElementById('html-input');
+      input?.focus();
+      input?.select();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, [location]);
 
   // Pane widths (percent of the workbench), adjustable with the splitters and remembered.
   const workbenchRef = useRef(null);

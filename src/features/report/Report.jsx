@@ -5,7 +5,6 @@ import { Link, useParams } from 'react-router';
 import { historyCleared } from './historySlice';
 import { compareRuns, describeCountChange, describeScoreChange } from './compareRuns';
 import TrendChart from './TrendChart';
-import Icon from '../../components/Icon';
 import Severity from '../../components/Severity';
 import { SEVERITIES, SEVERITY_LABEL } from '../../components/severityLabels';
 import './report.css';
@@ -43,10 +42,9 @@ function ReportView({ runId }) {
         <div className="page__header">
           <h1 className="page__title">Report</h1>
         </div>
-        <div className="card empty-state">
-          <Icon name="clipboard" size={40} className="icon empty-state__icon" />
-          <h2 className="empty-state__title">No audits yet</h2>
-          <p>Every audit you run in the workbench is recorded here, with its score and issues.</p>
+        <div className="empty-state">
+          <h2 className="empty-state__title">No checks yet</h2>
+          <p>Every check the workbench runs is recorded here, with its score and findings.</p>
           <Link to="/audit" className="btn btn--primary">
             Open the workbench
           </Link>
@@ -56,7 +54,7 @@ function ReportView({ runId }) {
   }
 
   const diff = compareRuns(before, after);
-  const runLabel = (run) => `${formatTime(run.ranAt)} · score ${run.score}`;
+  const runLabel = (run) => `${formatTime(run.ranAt)}, score ${run.score}`;
   const totalIssues = (run) => SEVERITIES.reduce((n, s) => n + (run.counts[s] ?? 0), 0);
 
   return (
@@ -66,30 +64,29 @@ function ReportView({ runId }) {
         <div>
           <h1 className="page__title">Report</h1>
           <p className="page__lead">
-            Your last {runs.length} {runs.length === 1 ? 'audit' : 'audits'}, saved in this browser.
+            Your last {runs.length} {runs.length === 1 ? 'check' : 'checks'}, saved in this browser.
           </p>
         </div>
         <button
           type="button"
-          className="btn btn--ghost"
+          className="btn"
           onClick={() => {
-            if (window.confirm('Delete all saved audit runs?')) dispatch(historyCleared());
+            if (window.confirm('Delete all saved checks?')) dispatch(historyCleared());
           }}
         >
-          <Icon name="trash" />
           Clear history
         </button>
       </div>
 
-      <section className="card" aria-labelledby="trend-heading">
-        <h2 id="trend-heading" className="card__title">
+      <section className="section" aria-labelledby="trend-heading">
+        <h2 id="trend-heading" className="section__title">
           Score trend
         </h2>
         <TrendChart runs={runs} />
       </section>
 
-      <section className="card" aria-labelledby="compare-heading">
-        <h2 id="compare-heading" className="card__title">
+      <section className="section" aria-labelledby="compare-heading">
+        <h2 id="compare-heading" className="section__title">
           Before and after
         </h2>
         <div className="compare-pickers">
@@ -119,14 +116,16 @@ function ReportView({ runId }) {
           <p className="compare__scores">
             <span className="compare__score">
               <span className="compare__caption">Before</span>{' '}
-              <span className="compare__value tabular">{diff.score.before}</span>
+              <span className="compare__value">{diff.score.before}</span>
             </span>
-            <Icon name="arrowRight" size={20} className="icon compare__arrow" />
+            <span className="compare__arrow" aria-hidden="true">
+              →
+            </span>
             <span className="compare__score">
               <span className="compare__caption">After</span>{' '}
-              <span className="compare__value tabular">{diff.score.after}</span>
+              <span className="compare__value">{diff.score.after}</span>
             </span>
-            <span className="change-chip">Score {describeScoreChange(diff.score.change)}</span>
+            <span className="compare__change">Score {describeScoreChange(diff.score.change)}</span>
           </p>
           <table className="data-table compare-table">
             <caption className="sr-only">Issues by severity, before and after</caption>
@@ -148,8 +147,8 @@ function ReportView({ runId }) {
                   <th scope="row">
                     <Severity level={c.severity} />
                   </th>
-                  <td className="num tabular">{c.before}</td>
-                  <td className="num tabular">{c.after}</td>
+                  <td className="num">{c.before}</td>
+                  <td className="num">{c.after}</td>
                   <td>{describeCountChange(c.change)}</td>
                 </tr>
               ))}
@@ -158,12 +157,12 @@ function ReportView({ runId }) {
         </div>
       </section>
 
-      <section className="card" aria-labelledby="history-heading">
-        <h2 id="history-heading" className="card__title">
+      <section className="section" aria-labelledby="history-heading">
+        <h2 id="history-heading" className="section__title">
           History
         </h2>
         <table className="data-table history-table">
-          <caption>Newest first. Counts leave out items that need a manual review.</caption>
+          <caption>Newest first. Counts leave out items to check by hand.</caption>
           <thead>
             <tr>
               <th scope="col">Run</th>
@@ -186,17 +185,17 @@ function ReportView({ runId }) {
           <tbody>
             {runs.map((run) => (
               <tr key={run.id} className={run.id === after.id ? 'is-current' : undefined}>
-                <th scope="row" className="tabular">
+                <th scope="row">
                   <span className="wide-only">{formatTime(run.ranAt)}</span>
                   <span className="narrow-only">{formatShort(run.ranAt)}</span>
                 </th>
-                <td className="num tabular">{run.score}</td>
+                <td className="num">{run.score}</td>
                 {SEVERITIES.map((s) => (
-                  <td key={s} className="num tabular wide-only">
+                  <td key={s} className="num wide-only">
                     {run.counts[s] ?? 0}
                   </td>
                 ))}
-                <td className="num tabular narrow-only">{totalIssues(run)}</td>
+                <td className="num narrow-only">{totalIssues(run)}</td>
                 <td className="num">
                   <Link to={`/report/${run.id}`}>
                     Compare<span className="sr-only"> the run from {formatTime(run.ranAt)}</span>

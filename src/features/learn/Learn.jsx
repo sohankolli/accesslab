@@ -1,6 +1,5 @@
 // features/learn/Learn.jsx
 import { Link } from 'react-router';
-import Icon from '../../components/Icon';
 
 export default function Learn() {
   return (
@@ -13,7 +12,6 @@ export default function Learn() {
         </div>
       </div>
       <div className="card empty-state">
-        <Icon name="layers" size={40} className="icon empty-state__icon" />
         <h2 className="empty-state__title">Rule guides are coming in Milestone 4</h2>
         <p>
           Until then, every issue in the workbench links its WCAG success criterion and says how to

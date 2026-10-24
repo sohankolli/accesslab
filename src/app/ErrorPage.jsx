@@ -2,7 +2,6 @@
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router';
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
-import Icon from '../components/Icon';
 
 /** Shown instead of AppLayout when rendering a route throws. */
 export default function ErrorPage() {
@@ -18,7 +17,6 @@ export default function ErrorPage() {
       <main id="main">
         <div className="page page--narrow">
           <div className="card empty-state">
-            <Icon name="serious" size={40} className="icon empty-state__icon" />
             <h1 className="empty-state__title">Something went wrong</h1>
             <p>AccessLab hit an unexpected error while showing this page.</p>
             <p>

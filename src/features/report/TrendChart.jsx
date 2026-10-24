@@ -28,7 +28,6 @@ export default function TrendChart({ runs }) {
     (n === 1 ? (W - PAD.left - PAD.right) / 2 : (i * (W - PAD.left - PAD.right)) / (n - 1));
   const y = (score) => PAD.top + ((100 - score) / 100) * (H - PAD.top - PAD.bottom);
   const line = points.map((p, i) => `${x(i).toFixed(1)},${y(p.score).toFixed(1)}`).join(' ');
-  const area = `${x(0)},${y(0)} ${line} ${x(n - 1)},${y(0)}`;
   const scores = points.map((p) => p.score);
 
   return (
@@ -43,7 +42,6 @@ export default function TrendChart({ runs }) {
               </text>
             </g>
           ))}
-          {n > 1 && <polygon className="trend__area" points={area} />}
           {n > 1 && <polyline className="trend__line" points={line} />}
           {points.map((p, i) => (
             <circle
@@ -57,10 +55,8 @@ export default function TrendChart({ runs }) {
         </svg>
       </div>
       <figcaption className="trend__caption">
-        Latest score <strong className="tabular">{scores.at(-1)}</strong> · best{' '}
-        <span className="tabular">{Math.max(...scores)}</span> · lowest{' '}
-        <span className="tabular">{Math.min(...scores)}</span> · over {n} {n === 1 ? 'run' : 'runs'}
-        , oldest on the left.
+        Latest score <strong>{scores.at(-1)}</strong>. Best {Math.max(...scores)}, lowest{' '}
+        {Math.min(...scores)}, over {n} {n === 1 ? 'check' : 'checks'}, oldest on the left.
       </figcaption>
     </figure>
   );

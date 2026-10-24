@@ -12,8 +12,9 @@ export const tabindexPositive = {
         issue(
           tabindexPositive,
           el,
-          `tabindex="${el.getAttribute('tabindex').trim()}" moves this element ahead of the natural focus order.`,
-          'Use tabindex="0" (or remove it) and put the element where it belongs in the source order.',
+          'Focus jumps out of reading order',
+          `Keyboard users reach this element early because of \`tabindex="${el.getAttribute('tabindex').trim()}"\`.`,
+          'Use `tabindex="0"` (or remove it) and move the element to where it belongs in the source.',
         ),
       );
   },

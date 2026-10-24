@@ -20,10 +20,13 @@ describe('color-contrast: normal text', () => {
       ruleId: 'color-contrast',
       severity: 'serious',
       selector: 'body > main > p',
-      message: 'Contrast is 2.85:1; at least 4.5:1 is required.',
+      message: 'Text is too faint to read',
+      impact: '#999 on white is 2.85:1. It needs 4.5:1.',
+      contrast: { fg: '#999999', bg: '#ffffff', ratio: 2.85, needed: 4.5 },
       fix: {
-        text: 'Use #757575 (4.61:1).',
+        text: 'Change the text colour to `#757575` (4.61:1), or change the background.',
         css: 'body > main > p { color: #757575 !important; }',
+        color: '#757575',
       },
     });
   });
@@ -54,7 +57,8 @@ describe('color-contrast: large text needs only 3:1', () => {
   });
   it('fails large text below 3:1', () => {
     const { issues } = audit('<p style="color:#aaa;font-size:30px">Big</p>'); // 2.32:1
-    expect(issues[0].message).toBe('Contrast is 2.32:1; at least 3:1 is required.');
+    expect(issues[0].contrast).toMatchObject({ ratio: 2.32, needed: 3 });
+    expect(issues[0].impact).toBe('#aaa on white is 2.32:1. It needs 3:1.');
   });
 });
 
@@ -64,7 +68,7 @@ describe('color-contrast: translucent backgrounds', () => {
     const { issues } = audit(
       '<div style="background:rgba(0,0,0,0.5)"><p style="color:#555">x</p></div>',
     );
-    expect(issues[0].message).toBe('Contrast is 1.87:1; at least 4.5:1 is required.');
+    expect(issues[0].contrast).toMatchObject({ fg: '#555555', bg: '#808080', ratio: 1.87 });
   });
   it('stacks translucent layers over the nearest opaque ancestor', () => {
     const { issues } = audit(
@@ -72,7 +76,7 @@ describe('color-contrast: translucent backgrounds', () => {
     );
     const bg = blend(parseColor('rgba(255, 255, 255, 0.5)'), { r: 0, g: 0, b: 0, a: 1 });
     const expected = contrastRatio({ r: 255, g: 255, b: 255 }, bg).toFixed(2);
-    expect(issues[0].message).toBe(`Contrast is ${expected}:1; at least 4.5:1 is required.`);
+    expect(issues[0].contrast.ratio.toFixed(2)).toBe(expected);
   });
   it('composites translucent text over its background', () => {
     // black at 30% opacity on white is a light grey
@@ -90,7 +94,7 @@ describe('color-contrast: images and gradients', () => {
     expect(issues[0]).toMatchObject({
       severity: 'minor',
       needsReview: true,
-      message: 'Text sits on an image or gradient.',
+      message: 'Text sits on an image or gradient',
     });
     expect(issues[0].fix.css).toBeUndefined();
   });

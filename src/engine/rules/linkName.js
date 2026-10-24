@@ -13,8 +13,9 @@ export const linkName = {
         issue(
           linkName,
           el,
-          'Link has no accessible name.',
-          'Put text inside the link, give its image an alt, or add aria-label (e.g. aria-label="Cart").',
+          'A link has no name',
+          'Screen reader users hear "link" with no idea where it goes.',
+          'Put text inside the link, give its image an `alt`, or add `aria-label` (e.g. `aria-label="Cart"`).',
         ),
       );
   },

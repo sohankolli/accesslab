@@ -44,11 +44,20 @@ describe('form-label', () => {
   });
   it('flags a field with no label, and one named only by its placeholder', () => {
     const issues = formLabel.check({
-      doc: doc('<input id="a" type="text"><textarea id="b" placeholder="Message"></textarea>'),
+      doc: doc(
+        '<input id="a" type="text"><textarea id="b" placeholder="Message"></textarea>' +
+          '<input id="c" type="email" title="Email"><select id="d"></select>',
+      ),
     });
-    expect(issues.map((i) => [i.selector, i.message])).toEqual([
-      ['#a', 'Form field has no label.'],
-      ['#b', 'Field is named only by placeholder/title.'],
+    expect(issues.map((i) => [i.selector, i.message, i.impact])).toEqual([
+      ['#a', 'The text field has no label', 'Screen reader users are not told what to enter.'],
+      ['#b', 'The text area has no label', 'The placeholder disappears as soon as someone types.'],
+      [
+        '#c',
+        'The email field has no label',
+        'Its only name is a tooltip, which most people never see.',
+      ],
+      ['#d', 'The drop-down list has no label', 'Screen reader users are not told what to enter.'],
     ]);
   });
 });
@@ -62,7 +71,11 @@ describe('heading-order', () => {
   it('flags h1 → h3 once', () => {
     const issues = headingOrder.check({ doc: doc('<h1>A</h1><h3>B</h3><h4>C</h4><h2>D</h2>') });
     expect(issues).toHaveLength(1);
-    expect(issues[0].message).toBe('Heading level jumps from h1 to h3.');
+    expect(issues[0]).toMatchObject({
+      message: 'A heading level is skipped',
+      impact: 'The page jumps from h1 to h3.',
+      fix: { text: 'Use an `h2` here, or restructure the outline.' },
+    });
   });
 });
 
@@ -88,12 +101,15 @@ describe('page-title', () => {
   it('flags a page with no <title>', () => {
     const issues = pageTitle.check({ doc: doc('<html><head></head><body></body></html>') });
     expect(issues).toHaveLength(1);
-    expect(issues[0]).toMatchObject({ selector: 'html', message: 'Page has no <title>.' });
+    expect(issues[0]).toMatchObject({ selector: 'html', message: 'The page has no title' });
   });
   it('flags an empty <title>', () => {
     const issues = pageTitle.check({ doc: doc('<html><head><title>  </title></head></html>') });
     expect(issues).toHaveLength(1);
-    expect(issues[0]).toMatchObject({ selector: 'head > title', message: '<title> is empty.' });
+    expect(issues[0]).toMatchObject({
+      selector: 'head > title',
+      message: 'The page title is empty',
+    });
   });
   it('skips pasted fragments', () => {
     expect(pageTitle.check({ doc: fragment('<p>Hi</p>') })).toHaveLength(0);

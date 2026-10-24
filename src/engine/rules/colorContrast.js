@@ -7,6 +7,14 @@ import { isRendered } from '../dom/visibility.js';
 import { issue } from './basicRules.js';
 
 const BLACK = { r: 0, g: 0, b: 0, a: 1 };
+
+/** "white", "black", or the shortest hex: #999999 → "#999". */
+export function colorName(rgb) {
+  const hex = toHex(rgb);
+  if (hex === '#ffffff') return 'white';
+  if (hex === '#000000') return 'black';
+  return /^#(.)\1(.)\2(.)\3$/.test(hex) ? `#${hex[1]}${hex[3]}${hex[5]}` : hex;
+}
 const SHOW_TEXT = 4; // NodeFilter.SHOW_TEXT
 
 /** Elements that directly contain visible, non-whitespace text. */
@@ -38,8 +46,9 @@ export const colorContrast = {
           ...issue(
             colorContrast,
             el,
-            'Text sits on an image or gradient.',
-            'Check this contrast manually.',
+            'Text sits on an image or gradient',
+            'AccessLab cannot measure this contrast, so check it by eye.',
+            'Make sure the text stays readable over every part of the background.',
           ),
           severity: 'minor',
           needsReview: true,
@@ -55,19 +64,23 @@ export const colorContrast = {
       if (ratio >= needed) continue;
 
       const better = suggestColor(fg, bg, needed);
-      issues.push(
-        issue(
+      issues.push({
+        ...issue(
           colorContrast,
           el,
-          `Contrast is ${ratio.toFixed(2)}:1; at least ${needed}:1 is required.`,
+          'Text is too faint to read',
+          `${colorName(fg)} on ${colorName(bg)} is ${ratio.toFixed(2)}:1. It needs ${needed}:1.`,
           better
             ? {
-                text: `Use ${toHex(better)} (${contrastRatio(better, bg).toFixed(2)}:1).`,
+                text: `Change the text colour to \`${toHex(better)}\` (${contrastRatio(better, bg).toFixed(2)}:1), or change the background.`,
                 css: `${cssPath(el)} { color: ${toHex(better)} !important; }`,
+                color: toHex(better),
               }
             : 'Change the text or the background colour.',
         ),
-      );
+        // The measured colours, so the UI can show swatches.
+        contrast: { fg: toHex(fg), bg: toHex(bg), ratio: Number(ratio.toFixed(2)), needed },
+      });
     }
     return issues;
   },

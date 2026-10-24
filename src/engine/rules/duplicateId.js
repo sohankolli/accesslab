@@ -19,8 +19,9 @@ export const duplicateId = {
         issue(
           duplicateId,
           els[1],
-          `id "${id}" is used ${els.length} times.`,
-          'Give every element a unique id; <label for> and aria-labelledby only find the first one.',
+          `The id "${id}" is used ${els.length} times`,
+          'Labels and ARIA references find only the first one, so screen readers may name the wrong thing.',
+          'Give every element a unique `id`.',
         ),
       );
   },

@@ -13,8 +13,9 @@ export const landmarkMain = {
         issue(
           landmarkMain,
           doc.documentElement,
-          'Page has no <main> landmark.',
-          "Wrap the page's primary content in one <main> element.",
+          'The page has no main landmark',
+          'Keyboard and screen reader users cannot jump straight to the content.',
+          'Wrap the page’s primary content in one `<main>` element.',
         ),
       ];
     }
@@ -24,8 +25,9 @@ export const landmarkMain = {
         issue(
           landmarkMain,
           el,
-          'Page has more than one <main> landmark.',
-          'Keep a single visible <main>; use <section> or <article> for the other regions.',
+          'The page has more than one main landmark',
+          'Screen reader users cannot tell which one holds the content.',
+          'Keep one visible `<main>`; use `<section>` or `<article>` for the other regions.',
         ),
       );
   },

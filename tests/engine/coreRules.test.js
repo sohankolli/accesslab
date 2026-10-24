@@ -31,7 +31,8 @@ describe('button-name', () => {
     expect(issues.map((i) => i.selector)).toEqual(['body > button', 'body > div', 'body > input']);
     expect(issues[0]).toMatchObject({
       severity: 'critical',
-      message: 'Button has no accessible name.',
+      message: 'A button has no name',
+      impact: 'Screen reader users hear "button" and nothing else.',
     });
   });
 });
@@ -58,8 +59,9 @@ describe('tabindex-positive', () => {
   it('flags a positive tabindex', () => {
     const issues = check(tabindexPositive, '<a href="/" tabindex="3">Skip</a>');
     expect(issues).toHaveLength(1);
-    expect(issues[0].message).toBe(
-      'tabindex="3" moves this element ahead of the natural focus order.',
+    expect(issues[0].message).toBe('Focus jumps out of reading order');
+    expect(issues[0].impact).toBe(
+      'Keyboard users reach this element early because of `tabindex="3"`.',
     );
   });
 });
@@ -76,7 +78,7 @@ describe('duplicate-id', () => {
     expect(issues).toHaveLength(1);
     expect(issues[0]).toMatchObject({
       selector: 'body > p:nth-of-type(2)',
-      message: 'id "a" is used 3 times.',
+      message: 'The id "a" is used 3 times',
     });
   });
 });
@@ -90,7 +92,10 @@ describe('landmark-main', () => {
   it('flags a page with no <main>', () => {
     const issues = check(landmarkMain, '<html><body><div>a</div></body></html>');
     expect(issues).toHaveLength(1);
-    expect(issues[0]).toMatchObject({ selector: 'html', message: 'Page has no <main> landmark.' });
+    expect(issues[0]).toMatchObject({
+      selector: 'html',
+      message: 'The page has no main landmark',
+    });
   });
   it('flags a second visible <main>', () => {
     const issues = check(

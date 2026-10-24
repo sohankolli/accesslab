@@ -11,8 +11,15 @@
  * @property {(ctx: {doc: Document, win: Window}) => Issue[]} check
  *
  * @typedef {Object} Fix
- * @property {string}  text         human-readable advice
+ * @property {string}  text         short advice; `backticks` mark code
  * @property {string} [css]         optional CSS rule the user can apply in one click
+ * @property {string} [color]       the suggested colour, when css changes a colour
+ *
+ * @typedef {Object} ContrastData
+ * @property {string} fg            measured text colour (hex)
+ * @property {string} bg            measured background colour (hex)
+ * @property {number} ratio         measured ratio, two decimals
+ * @property {number} needed        4.5 or 3
  *
  * @typedef {Object} Issue
  * @property {string}   id          ruleId + ':' + selector (stable across re-audits)
@@ -20,8 +27,10 @@
  * @property {Severity} severity
  * @property {string}   selector    unique CSS path to the element
  * @property {string}   snippet     first 120 characters of outerHTML
- * @property {string}   message
+ * @property {string}   message     plain title, e.g. 'The image has no text alternative'
+ * @property {string}   impact      who it affects, in one sentence
  * @property {Fix}      fix
+ * @property {ContrastData} [contrast]  colour-contrast issues only
  * @property {boolean} [needsReview] true when a human must check (not scored)
  *
  * @typedef {Object} AuditResult

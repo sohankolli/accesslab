@@ -1,6 +1,7 @@
 // components/IssueCard.jsx
 import Icon from './Icon';
 import Severity from './Severity';
+import CodeText from './CodeText';
 
 /**
  * One issue: severity, message, rule and WCAG reference, the element's selector
@@ -45,7 +46,9 @@ export default function IssueCard({ issue, wcag, selected, onApplyFix, onShow })
         </div>
         <div>
           <dt>Fix</dt>
-          <dd>{issue.fix.text}</dd>
+          <dd>
+            <CodeText text={issue.fix.text} />
+          </dd>
         </div>
       </dl>
       {(issue.fix.css || onShow) && (

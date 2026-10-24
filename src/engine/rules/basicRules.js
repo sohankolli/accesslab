@@ -2,16 +2,41 @@
 import { accessibleName } from '../dom/accessibleName.js';
 import { cssPath } from '../dom/cssPath.js';
 
-/** Build a serialisable issue (no DOM references, so it can live in Redux). */
-export const issue = (rule, el, message, fix) => ({
+/**
+ * Build a serialisable issue (no DOM references, so it can live in Redux).
+ * message is a plain title ("The image has no text alternative"), impact says
+ * who it affects, and fix.text is short advice. Text in `backticks` is code,
+ * shown in the mono font by the UI.
+ */
+export const issue = (rule, el, message, impact, fix) => ({
   id: `${rule.id}:${cssPath(el)}`,
   ruleId: rule.id,
   severity: rule.severity,
   selector: cssPath(el),
   snippet: el.outerHTML.slice(0, 120),
   message,
+  impact,
   fix: typeof fix === 'string' ? { text: fix } : fix, // { text, css? }
 });
+
+/** A form field described in plain words: "email field", "drop-down list". */
+function fieldName(el) {
+  if (el.tagName === 'SELECT') return 'drop-down list';
+  if (el.tagName === 'TEXTAREA') return 'text area';
+  const type = (el.getAttribute('type') || 'text').toLowerCase();
+  const NAMES = {
+    checkbox: 'checkbox',
+    radio: 'radio button',
+    range: 'slider',
+    file: 'file picker',
+    color: 'colour picker',
+    date: 'date field',
+    'datetime-local': 'date and time field',
+    tel: 'phone number field',
+    url: 'web address field',
+  };
+  return NAMES[type] ?? `${type} field`;
+}
 
 /** A pasted snippet is wrapped by buildDocument() and marked; page-level rules skip it. */
 export const isFragment = (doc) => doc.documentElement.hasAttribute('data-al-fragment');
@@ -25,8 +50,9 @@ export const imgAlt = {
       issue(
         imgAlt,
         img,
-        'Image has no alt attribute.',
-        'Add alt="…" describing the image, or alt="" if it is purely decorative.',
+        'The image has no text alternative',
+        'Screen reader users hear "image" and nothing else.',
+        'Describe the image in `alt`, or use `alt=""` if it is decoration.',
       ),
     );
   },
@@ -52,10 +78,13 @@ export const formLabel = {
         issue(
           formLabel,
           el,
-          accessibleName(el)
-            ? 'Field is named only by placeholder/title.'
-            : 'Form field has no label.',
-          'Associate a <label for="id"> or add aria-label.',
+          `The ${fieldName(el)} has no label`,
+          !accessibleName(el)
+            ? 'Screen reader users are not told what to enter.'
+            : el.getAttribute('placeholder')
+              ? 'The placeholder disappears as soon as someone types.'
+              : 'Its only name is a tooltip, which most people never see.',
+          'Add a visible `<label for="…">`, or `aria-label` if a label cannot be shown.',
         ),
       );
   },
@@ -75,8 +104,9 @@ export const headingOrder = {
           issue(
             headingOrder,
             h,
-            `Heading level jumps from h${prev} to h${level}.`,
-            `Use an h${prev + 1} here, or restructure the outline.`,
+            'A heading level is skipped',
+            `The page jumps from h${prev} to h${level}.`,
+            `Use an \`h${prev + 1}\` here, or restructure the outline.`,
           ),
         );
       }
@@ -98,8 +128,9 @@ export const htmlLang = {
           issue(
             htmlLang,
             doc.documentElement,
-            '<html> has no lang attribute.',
-            'Add lang="en" (or the page language).',
+            'The page language is not set',
+            'Screen readers may read the text with the wrong pronunciation.',
+            'Add `lang="en"` (or the page’s language) to `<html>`.',
           ),
         ];
   },
@@ -117,8 +148,9 @@ export const pageTitle = {
       issue(
         pageTitle,
         title ?? doc.documentElement,
-        title ? '<title> is empty.' : 'Page has no <title>.',
-        'Add a <title> inside <head> that says what the page is, e.g. <title>Café Aroma menu</title>.',
+        title ? 'The page title is empty' : 'The page has no title',
+        'Screen reader users and people with many tabs open cannot tell what the page is.',
+        'Add a `<title>` inside `<head>` that says what the page is, e.g. `<title>Café Aroma menu</title>`.',
       ),
     ];
   },

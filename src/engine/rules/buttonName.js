@@ -17,8 +17,9 @@ export const buttonName = {
         issue(
           buttonName,
           el,
-          'Button has no accessible name.',
-          'Put text inside the button, or add aria-label (e.g. aria-label="Close") for an icon button.',
+          'A button has no name',
+          'Screen reader users hear "button" and nothing else.',
+          'Put text inside the button, or add `aria-label` (e.g. `aria-label="Close"`) to an icon button.',
         ),
       );
   },

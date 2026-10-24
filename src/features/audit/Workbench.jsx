@@ -26,6 +26,7 @@ export default function Workbench() {
   const result = useSelector((state) => state.audit.result);
   const previousScore = useSelector((state) => state.audit.previousScore);
   const docRef = useRef(null); // the live iframe Document: kept out of Redux
+  const issuesHeadingRef = useRef(null);
 
   // Typing updates the editor at once; the audit waits for a pause.
   const auditHtml = useDebouncedValue(html, 400);
@@ -94,7 +95,9 @@ export default function Workbench() {
       </section>
 
       <section className="workbench__issues" aria-labelledby="issues-heading">
-        <h2 id="issues-heading">
+        {/* tabIndex -1: "Apply fix" removes its own card after the re-audit, so
+            focus moves here instead of being lost. */}
+        <h2 id="issues-heading" ref={issuesHeadingRef} tabIndex={-1}>
           Issues <ScoreBadge score={result?.score} previousScore={previousScore} />
         </h2>
         <p className="sr-only" aria-live="polite">
@@ -104,7 +107,7 @@ export default function Workbench() {
         {rules.length === 0 ? (
           <p>All rule packs are switched off, so nothing is checked. Switch a pack on above.</p>
         ) : (
-          <IssueList />
+          <IssueList onFixApplied={() => issuesHeadingRef.current?.focus()} />
         )}
       </section>
     </div>

@@ -1,7 +1,8 @@
 // features/audit/IssueList.jsx
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { RULE_BY_ID } from '../../engine/rules';
 import { selectSortedIssues } from './auditSlice';
+import { fixApplied } from '../editor/editorSlice';
 
 const SEVERITY_LABEL = {
   critical: 'Critical',
@@ -10,8 +11,12 @@ const SEVERITY_LABEL = {
   minor: 'Minor',
 };
 
-/** Every issue from the latest audit, most severe first. */
-export default function IssueList() {
+/**
+ * Every issue from the latest audit, most severe first.
+ * @param {{onFixApplied?: () => void}} props  called after "Apply fix", to move focus
+ */
+export default function IssueList({ onFixApplied }) {
+  const dispatch = useDispatch();
   const issues = useSelector(selectSortedIssues);
   const result = useSelector((state) => state.audit.result);
 
@@ -50,6 +55,17 @@ export default function IssueList() {
                 <dt>Fix</dt>
                 <dd>{issue.fix.text}</dd>
               </dl>
+              {issue.fix.css && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    dispatch(fixApplied({ ruleId: issue.ruleId, css: issue.fix.css }));
+                    onFixApplied?.();
+                  }}
+                >
+                  Apply fix
+                </button>
+              )}
             </li>
           ))}
         </ol>

@@ -19,8 +19,20 @@ const editorSlice = createSlice({
     cssChanged(state, action) {
       state.css = action.payload;
     },
+    /**
+     * Append an issue's one-click CSS fix to the stylesheet as one commented
+     * line, so undoing it is just deleting that line. Applying the same fix
+     * twice changes nothing.
+     */
+    fixApplied(state, action) {
+      const { ruleId, css } = action.payload;
+      if (state.css.includes(css)) return;
+      const line = `${css} /* AccessLab fix: ${ruleId} */`;
+      const existing = state.css.trimEnd();
+      state.css = existing ? `${existing}\n${line}\n` : `${line}\n`;
+    },
   },
 });
 
-export const { htmlChanged, cssChanged } = editorSlice.actions;
+export const { htmlChanged, cssChanged, fixApplied } = editorSlice.actions;
 export default editorSlice.reducer;

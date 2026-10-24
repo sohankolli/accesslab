@@ -3,11 +3,12 @@
 // one entry in a pack below; the registry validates it on registration.
 import { registerPack, rulesFor, listPacks } from './registry.js';
 import { imgAlt, formLabel, htmlLang, pageTitle, headingOrder } from './basicRules.js';
+import { colorContrast } from './colorContrast.js';
 
 registerPack({
   id: 'wcag-aa',
   title: 'WCAG 2.2 A/AA',
-  rules: [imgAlt, formLabel, htmlLang, pageTitle],
+  rules: [imgAlt, formLabel, colorContrast, htmlLang, pageTitle],
 });
 
 registerPack({

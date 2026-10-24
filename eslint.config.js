@@ -29,9 +29,10 @@ export default defineConfig([
     },
   },
   {
-    // The route table is configuration, not a component module, so the
-    // fast-refresh export rule does not apply to it.
-    files: ['src/app/router.jsx'],
+    // The route table is configuration, and a context file exports its
+    // provider together with its hook (Section 3.5). Fast refresh just does a
+    // full reload for these files, so the export rule is off for them.
+    files: ['src/app/router.jsx', 'src/context/*.jsx'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
   {

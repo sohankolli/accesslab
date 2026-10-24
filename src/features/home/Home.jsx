@@ -29,7 +29,7 @@ export default function Home() {
   const dispatch = useDispatch();
   return (
     <div className="page home">
-      <title>AccessLab · Accessibility testing workbench</title>
+      <title>AccessLab – accessibility testing workbench</title>
 
       <section className="hero">
         <p className="eyebrow">Accessibility testing workbench</p>

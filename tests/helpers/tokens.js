@@ -34,24 +34,27 @@ export const THEMES = {
 };
 export const darkBlocks = [block(":root[data-theme='dark']"), block(":root[data-theme='system']")];
 
-const SURFACES = ['bg', 'surface', 'raised'];
+const SURFACES = ['room', 'chart', 'lens-tint']; // pane backgrounds and the open row
 const SEVERITIES = ['critical', 'serious', 'moderate', 'minor'];
 
 /** [foreground, background, minimum ratio, what it is] for every pair the UI uses. */
 export const PAIRS = [
-  ...['text', 'muted', 'accent', ...SEVERITIES].flatMap((fg) =>
+  // Text on every surface it appears on.
+  ...['ink', 'graphite', 'lens', ...SEVERITIES].flatMap((fg) =>
     SURFACES.map((bg) => [fg, bg, 4.5, 'text']),
   ),
-  ['accent-contrast', 'accent', 4.5, 'primary button text'],
-  ['accent-contrast', 'accent-hover', 4.5, 'primary button text (hover)'],
-  ['text', 'accent-subtle', 4.5, 'text on selected card'],
-  ['muted', 'accent-subtle', 4.5, 'secondary text on selected card'],
-  ['accent', 'accent-subtle', 4.5, 'accent text on selected card'],
-  ...SEVERITIES.map((s) => [s, `${s}-subtle`, 4.5, 'severity chip text']),
-  ...SEVERITIES.map((s) => ['bg', s, 4.5, 'overlay label text']),
-  ...SURFACES.map((bg) => ['border-strong', bg, 3, 'control outline (1.4.11)']),
-  ...SURFACES.map((bg) => ['accent', bg, 3, 'focus ring (1.4.11)']),
-  ['accent', 'accent-subtle', 3, 'selected card outline (1.4.11)'],
+  ['on-lens', 'lens', 4.5, 'primary button text'],
+  ['on-lens', 'lens-hover', 4.5, 'primary button text (hover)'],
+  ['chart', 'ink', 4.5, 'chosen theme option (inverted)'],
+  ['ink', 'track', 4.5, 'chosen segmented option label'],
+  ['graphite', 'track', 4.5, 'other segmented option labels'],
+  ['on-mark', 'mark', 4.5, 'highlighted source line'],
+  ...SEVERITIES.map((s) => ['on-severity', s, 4.5, 'number on a severity disc']),
+  ...SEVERITIES.map((s) => ['pin-text', `pin-${s}`, 4.5, 'number on an overlay pin']),
+  // Non-text contrast (WCAG 1.4.11): 3:1.
+  ...['room', 'chart'].map((bg) => ['rule-strong', bg, 3, 'form control outline']),
+  ...SURFACES.map((bg) => ['lens', bg, 3, 'focus ring']),
+  ...SEVERITIES.map((s) => [`pin-${s}`, 'pin-halo', 3, 'overlay outline on a white page']),
 ];
 
 export const ratio = (theme, fg, bg) =>

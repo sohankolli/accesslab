@@ -32,7 +32,7 @@
   font-size: var(--text-sm);
   font-weight: 700;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+  
 }
 .pane__meta {
   font-size: var(--text-xs);
@@ -370,7 +370,7 @@
 }
 .count-chip--review {
   gap: var(--space-1);
-  text-transform: uppercase;
+  
   letter-spacing: 0.02em;
 }
 
@@ -388,7 +388,7 @@
   font-size: var(--text-xs);
   font-weight: 700;
   letter-spacing: 0.04em;
-  text-transform: uppercase;
+  
   color: var(--muted);
 }
 .pack-settings__option {

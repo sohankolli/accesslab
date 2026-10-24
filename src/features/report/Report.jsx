@@ -39,7 +39,7 @@ function ReportView({ runId }) {
   if (runs.length === 0) {
     return (
       <div className="page page--narrow">
-        <title>Report · AccessLab</title>
+        <title>Report – AccessLab</title>
         <div className="page__header">
           <h1 className="page__title">Report</h1>
         </div>
@@ -61,7 +61,7 @@ function ReportView({ runId }) {
 
   return (
     <div className="page report">
-      <title>Report · AccessLab</title>
+      <title>Report – AccessLab</title>
       <div className="page__header">
         <div>
           <h1 className="page__title">Report</h1>

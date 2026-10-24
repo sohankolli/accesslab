@@ -4,7 +4,7 @@ import { Link } from 'react-router';
 export default function NotFound() {
   return (
     <div className="page page--narrow">
-      <title>Page not found · AccessLab</title>
+      <title>Page not found – AccessLab</title>
       <div className="card empty-state">
         <p className="empty-state__code tabular" aria-hidden="true">
           404

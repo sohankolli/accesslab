@@ -5,7 +5,7 @@ import Icon from '../../components/Icon';
 export default function Learn() {
   return (
     <div className="page page--narrow">
-      <title>Learn · AccessLab</title>
+      <title>Learn – AccessLab</title>
       <div className="page__header">
         <div>
           <h1 className="page__title">Learn</h1>

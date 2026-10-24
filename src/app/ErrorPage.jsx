@@ -13,7 +13,7 @@ export default function ErrorPage() {
 
   return (
     <>
-      <title>Something went wrong · AccessLab</title>
+      <title>Something went wrong – AccessLab</title>
       <SiteHeader />
       <main id="main">
         <div className="page page--narrow">

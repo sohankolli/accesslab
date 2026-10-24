@@ -6,6 +6,8 @@ import { RouterProvider } from 'react-router';
 import { store } from './app/store';
 import { router } from './app/router';
 import { SettingsProvider } from './context/SettingsContext';
+import '@fontsource-variable/atkinson-hyperlegible-next';
+import '@fontsource-variable/atkinson-hyperlegible-mono';
 import './styles/tokens.css';
 import './styles/global.css';
 

@@ -118,7 +118,7 @@ export const pageTitle = {
         pageTitle,
         title ?? doc.documentElement,
         title ? '<title> is empty.' : 'Page has no <title>.',
-        'Add a <title> inside <head> that says what the page is, e.g. <title>Menu · Café</title>.',
+        'Add a <title> inside <head> that says what the page is, e.g. <title>Café Aroma menu</title>.',
       ),
     ];
   },

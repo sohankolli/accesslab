@@ -2,21 +2,20 @@
 import { Link, NavLink } from 'react-router';
 import { useSettings } from '../context/SettingsContext';
 import BrandMark from './BrandMark';
-import Icon from './Icon';
 import Segmented from './Segmented';
 
 const LINKS = [
   { to: '/', label: 'Home', end: true },
-  { to: '/audit', label: 'Audit' },
+  { to: '/audit', label: 'Workbench' },
   { to: '/simulate', label: 'Simulate' },
   { to: '/report', label: 'Report' },
   { to: '/learn', label: 'Learn' },
 ];
 
 const THEMES = [
-  { value: 'light', label: 'Light theme', icon: <Icon name="sun" /> },
-  { value: 'dark', label: 'Dark theme', icon: <Icon name="moon" /> },
-  { value: 'system', label: 'Use system theme', icon: <Icon name="monitor" /> },
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: 'System' },
 ];
 
 export default function SiteHeader() {
@@ -46,7 +45,7 @@ export default function SiteHeader() {
         value={theme}
         onChange={setTheme}
         options={THEMES}
-        iconOnly
+        variant="ink"
       />
     </header>
   );

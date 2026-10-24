@@ -1,13 +1,13 @@
 // components/Severity.jsx
-import Icon from './Icon';
+import SeverityShape from './SeverityShape';
 import { SEVERITY_LABEL } from './severityLabels';
 
-/** Severity as icon + word + colour, never colour alone. */
+/** Severity as shape + word + colour, never colour alone. */
 export default function Severity({ level, children }) {
   return (
     <span className={`severity severity--${level}`}>
-      <Icon name={level} />
-      {children ?? SEVERITY_LABEL[level]}
+      <SeverityShape level={level} />
+      <span className="severity__word">{children ?? SEVERITY_LABEL[level]}</span>
     </span>
   );
 }

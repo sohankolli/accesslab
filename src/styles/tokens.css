@@ -1,25 +1,29 @@
-/* styles/tokens.css: design tokens.
+/* styles/tokens.css: design tokens, after docs/design/direction.html.
+   The names come from an eye-test room: the grey room, the white chart, ink,
+   graphite, ruled lines, the lens (the one accent) and the yellow marker.
    Every text colour passes WCAG AA (4.5:1) on every surface it is used on, and
-   control borders and the focus ring pass 3:1, in both themes.
+   control outlines and the focus ring pass 3:1, in both themes.
    tests/styles/tokens.test.js checks this with the engine's own contrastRatio(). */
 
 :root {
-  /* Typography: the system UI font (no web-font download) and a monospace stack. */
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --font-mono:
-    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  /* Type: Atkinson Hyperlegible Next for the UI, Atkinson Hyperlegible Mono for
+     code, selectors and snippets. Self-hosted (see main.jsx). */
+  --font:
+    'Atkinson Hyperlegible Next Variable', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --mono: 'Atkinson Hyperlegible Mono Variable', ui-monospace, Menlo, Consolas, monospace;
 
-  /* Type scale: six steps, in rem so it follows the user's browser text size. */
-  --text-xs: 0.75rem;
-  --text-sm: 0.875rem;
-  --text-md: 1rem;
-  --text-lg: 1.25rem;
-  --text-xl: 1.5rem;
-  --text-2xl: 2.25rem;
-  --leading-tight: 1.25;
+  /* Type scale, in rem so it follows the user's browser text size. */
+  --text-xs: 0.8125rem; /* 13px: status lines, captions */
+  --text-sm: 0.875rem; /* 14px: secondary text */
+  --text-md: 1rem; /* 16px: body */
+  --text-lg: 1.25rem; /* 20px: sub-headings */
+  --text-xl: 1.5rem; /* 24px: lede, page sub-titles */
+  --text-2xl: 3rem; /* 48px: page titles, step numbers */
+  --text-display: 4.5rem; /* 72px: the score */
+  --leading-tight: 1.2;
   --leading: 1.5;
 
-  /* Spacing: a 4px base (0.25rem). */
+  /* Spacing: 4, 8, 12, 16, 24, 32, 48, 64px. */
   --space-1: 0.25rem;
   --space-2: 0.5rem;
   --space-3: 0.75rem;
@@ -30,92 +34,119 @@
   --space-8: 4rem;
 
   --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
   --radius-full: 999px;
 
-  --target: 44px; /* minimum touch target */
-  --header-h: 60px; /* fits the 44px theme toggle plus its frame */
+  --target: 44px; /* minimum touch target (kept from Milestone 2; the mockup uses 32-40px) */
+  --header-h: 56px;
   --duration: 160ms;
   --ease: cubic-bezier(0.2, 0, 0, 1);
 
-  /* Light theme. Neutral layers: bg (page) < surface (panes) < raised (cards). */
-  --bg: #ffffff;
-  --surface: #f6f8fa;
-  --raised: #ffffff;
-  --border: #d8dee4; /* decorative dividers */
-  --border-strong: #818b98; /* control outlines: 3:1 or more */
-  --text: #1f2328;
-  --muted: #59636e;
-  --accent: #0b5cad;
-  --accent-hover: #094a8c;
-  --accent-contrast: #ffffff; /* text on the accent colour */
-  --accent-subtle: #e7f1fc; /* selected backgrounds */
+  /* Light theme */
+  --room: #eef0ec; /* the grey room: page background, the preview lightbox */
+  --chart: #ffffff; /* the white chart: bars, panes, rows */
+  --ink: #15171a; /* text */
+  --graphite: #5b6068; /* secondary text */
+  --rule: #d3d7d0; /* dividers (decorative) */
+  --rule-soft: #eceeea; /* dividers between rows */
+  --rule-strong: #7a7f78; /* outlines of form controls: 3:1 or more */
+  --track: #e2e5df; /* the track behind a segmented control */
+  --faint: #c4c8c1; /* decorative only (the dim Snellen rows): never for text */
+  --lens: #3b2fc9; /* the one accent: links, primary buttons, focus */
+  --lens-hover: #2c22a8;
+  --lens-tint: #f3f2fd; /* the open issue row */
+  --on-lens: #ffffff; /* text on the lens colour */
+  --mark: #ffe14d; /* yellow marker: the selection only */
+  --on-mark: #15171a; /* text on the marker, in both themes */
   --critical: #b3261e;
-  --critical-subtle: #fdeceb;
-  --serious: #a14f00;
-  --serious-subtle: #fdf0e3;
-  --moderate: #6b5900;
-  --moderate-subtle: #f8f3dc;
-  --minor: #3d5a80;
-  --minor-subtle: #e9eff6;
-  --shadow-sm: 0 1px 2px rgb(31 35 40 / 0.06);
-  --shadow-md: 0 1px 3px rgb(31 35 40 / 0.08), 0 6px 16px rgb(31 35 40 / 0.06);
-  --shadow-lg: 0 12px 32px rgb(31 35 40 / 0.14);
-  --focus-ring: 3px solid var(--accent);
+  --serious: #9a4a00;
+  --moderate: #6f5a00;
+  --minor: #45607c;
+  --on-severity: #ffffff; /* numbers on a severity disc */
+
+  /* Overlay pins and outlines sit on the audited page, which is usually white,
+     so they keep these light-theme colours in both themes. */
+  --pin-critical: #b3261e;
+  --pin-serious: #9a4a00;
+  --pin-moderate: #6f5a00;
+  --pin-minor: #45607c;
+  --pin-text: #ffffff;
+  --pin-halo: #ffffff;
+
+  --shadow-sheet: 0 0 0 1px #cfd3cc, 0 30px 60px -30px rgb(25 30 22 / 0.35);
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.12);
+  --focus-ring: 3px solid var(--lens);
   color-scheme: light;
+
+  /* Old names, kept as aliases while the pages move to the new ones. */
+  --font-sans: var(--font);
+  --font-mono: var(--mono);
+  --bg: var(--chart);
+  --surface: var(--room);
+  --raised: var(--chart);
+  --border: var(--rule);
+  --border-strong: var(--rule-strong);
+  --text: var(--ink);
+  --muted: var(--graphite);
+  --accent: var(--lens);
+  --accent-hover: var(--lens-hover);
+  --accent-contrast: var(--on-lens);
+  --accent-subtle: var(--lens-tint);
+  --critical-subtle: var(--lens-tint);
+  --serious-subtle: var(--lens-tint);
+  --moderate-subtle: var(--lens-tint);
+  --minor-subtle: var(--lens-tint);
+  --shadow-sm: var(--shadow-raised);
+  --shadow-md: var(--shadow-raised);
 }
 
 :root[data-theme='dark'] {
-  --bg: #0d1117;
-  --surface: #151b23;
-  --raised: #1c232d;
-  --border: #2b333e;
-  --border-strong: #6c7785;
-  --text: #e6edf3;
-  --muted: #9ea9b5;
-  --accent: #7ab4f5;
-  --accent-hover: #a2cbf8;
-  --accent-contrast: #0d1117;
-  --accent-subtle: #152a45;
+  --room: #191b1a;
+  --chart: #222524;
+  --ink: #eceeea;
+  --graphite: #a3a9a1;
+  --rule: #3a3e3b;
+  --rule-soft: #2d302e;
+  --rule-strong: #80877f;
+  --track: #2e3230;
+  --faint: #4a4f4b;
+  --lens: #a9a2ff;
+  --lens-hover: #c4bfff;
+  --lens-tint: #2b2a3d;
+  --on-lens: #15171a;
   --critical: #ff8a80;
-  --critical-subtle: #3a1a19;
   --serious: #ffb066;
-  --serious-subtle: #36240f;
   --moderate: #e3c65c;
-  --moderate-subtle: #302a10;
   --minor: #9db8e0;
-  --minor-subtle: #1b2638;
-  --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
-  --shadow-md: 0 1px 3px rgb(0 0 0 / 0.5), 0 6px 16px rgb(0 0 0 / 0.3);
-  --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.55);
+  --on-severity: #15171a;
+  --shadow-sheet: 0 0 0 1px #3a3e3b, 0 30px 60px -30px rgb(0 0 0 / 0.6);
+  --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.5);
   color-scheme: dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root[data-theme='system'] {
-    --bg: #0d1117;
-    --surface: #151b23;
-    --raised: #1c232d;
-    --border: #2b333e;
-    --border-strong: #6c7785;
-    --text: #e6edf3;
-    --muted: #9ea9b5;
-    --accent: #7ab4f5;
-    --accent-hover: #a2cbf8;
-    --accent-contrast: #0d1117;
-    --accent-subtle: #152a45;
+    --room: #191b1a;
+    --chart: #222524;
+    --ink: #eceeea;
+    --graphite: #a3a9a1;
+    --rule: #3a3e3b;
+    --rule-soft: #2d302e;
+    --rule-strong: #80877f;
+    --track: #2e3230;
+    --faint: #4a4f4b;
+    --lens: #a9a2ff;
+    --lens-hover: #c4bfff;
+    --lens-tint: #2b2a3d;
+    --on-lens: #15171a;
     --critical: #ff8a80;
-    --critical-subtle: #3a1a19;
     --serious: #ffb066;
-    --serious-subtle: #36240f;
     --moderate: #e3c65c;
-    --moderate-subtle: #302a10;
     --minor: #9db8e0;
-    --minor-subtle: #1b2638;
-    --shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
-    --shadow-md: 0 1px 3px rgb(0 0 0 / 0.5), 0 6px 16px rgb(0 0 0 / 0.3);
-    --shadow-lg: 0 12px 32px rgb(0 0 0 / 0.55);
+    --on-severity: #15171a;
+    --shadow-sheet: 0 0 0 1px #3a3e3b, 0 30px 60px -30px rgb(0 0 0 / 0.6);
+    --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.5);
     color-scheme: dark;
   }
 }

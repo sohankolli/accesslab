@@ -150,7 +150,7 @@ export default function Workbench() {
       ref={workbenchRef}
       style={{ '--source-w': `${sizes.source}%`, '--issues-w': `${sizes.issues}%` }}
     >
-      <title>Audit · AccessLab</title>
+      <title>Workbench – AccessLab</title>
       <h1 className="sr-only">Audit workbench</h1>
 
       <section id="pane-source" className="pane pane--source" aria-labelledby="source-heading">

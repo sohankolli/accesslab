@@ -6,12 +6,21 @@
  * @param {{
  *   legend: string, name: string, value: string, onChange: (value: string) => void,
  *   options: {value: string, label: string, icon?: import('react').ReactNode}[],
- *   iconOnly?: boolean,
- * }} props  iconOnly keeps the labels for screen readers and as tooltips.
+ *   iconOnly?: boolean, variant?: 'track'|'ink',
+ * }} props  iconOnly keeps the labels for screen readers and as tooltips;
+ *   variant 'ink' marks the chosen option in solid ink (the theme switch).
  */
-export default function Segmented({ legend, name, value, onChange, options, iconOnly = false }) {
+export default function Segmented({
+  legend,
+  name,
+  value,
+  onChange,
+  options,
+  iconOnly = false,
+  variant = 'track',
+}) {
   return (
-    <fieldset className="segmented">
+    <fieldset className={`segmented segmented--${variant}`}>
       <legend className="sr-only">{legend}</legend>
       {options.map((option) => (
         <label

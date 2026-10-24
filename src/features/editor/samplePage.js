@@ -13,7 +13,7 @@ export const SAMPLE_HTML = `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Café Aroma · Menu</title>
+  <title>Café Aroma menu</title>
 </head>
 <body>
   <header>
@@ -24,8 +24,8 @@ export const SAMPLE_HTML = `<!doctype html>
 
     <h3>Today's specials</h3>
     <ul>
-      <li>Filter coffee · ₹60</li>
-      <li>Masala chai · ₹40</li>
+      <li>Filter coffee, ₹60</li>
+      <li>Masala chai, ₹40</li>
     </ul>
     <p class="note">Prices include GST.</p>
 

@@ -5,7 +5,7 @@ import Icon from '../../components/Icon';
 export default function Simulator() {
   return (
     <div className="page page--narrow">
-      <title>Simulate · AccessLab</title>
+      <title>Simulate – AccessLab</title>
       <div className="page__header">
         <div>
           <h1 className="page__title">Simulate</h1>

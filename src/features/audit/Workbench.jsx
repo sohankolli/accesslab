@@ -1,14 +1,16 @@
 // features/audit/Workbench.jsx
-import { useCallback, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { runAudit } from '../../engine/runAudit';
-import { RULES } from '../../engine/rules';
+import { rulesFor } from '../../engine/rules';
+import { useSettings } from '../../context/SettingsContext';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { htmlChanged, cssChanged } from '../editor/editorSlice';
 import { auditStarted, auditCompleted } from './auditSlice';
 import { runAdded } from '../report/historySlice';
 import SandboxFrame from './SandboxFrame';
 import IssueList from './IssueList';
+import PackSettings from './PackSettings';
 import ScoreBadge from '../../components/ScoreBadge';
 import './workbench.css';
 
@@ -29,16 +31,32 @@ export default function Workbench() {
   const auditHtml = useDebouncedValue(html, 400);
   const auditCss = useDebouncedValue(css, 400);
 
-  const handleDocument = useCallback(
+  // Only the rule packs switched on in settings take part in the audit.
+  const { enabledPacks } = useSettings();
+  const rules = useMemo(() => rulesFor(enabledPacks), [enabledPacks]);
+
+  const auditDocument = useCallback(
     (doc) => {
-      docRef.current = doc;
       dispatch(auditStarted());
-      const audit = runAudit(doc, RULES);
+      const audit = runAudit(doc, rules);
       dispatch(auditCompleted(audit));
       dispatch(runAdded(audit));
     },
-    [dispatch],
+    [dispatch, rules],
   );
+
+  const handleDocument = useCallback(
+    (doc) => {
+      docRef.current = doc;
+      auditDocument(doc);
+    },
+    [auditDocument],
+  );
+
+  // Switching a pack on or off re-audits the page already in the preview.
+  useEffect(() => {
+    if (docRef.current) auditDocument(docRef.current);
+  }, [auditDocument]);
 
   return (
     <div className="workbench">
@@ -82,7 +100,12 @@ export default function Workbench() {
         <p className="sr-only" aria-live="polite">
           {result && announcement(result)}
         </p>
-        <IssueList />
+        <PackSettings />
+        {rules.length === 0 ? (
+          <p>All rule packs are switched off, so nothing is checked. Switch a pack on above.</p>
+        ) : (
+          <IssueList />
+        )}
       </section>
     </div>
   );

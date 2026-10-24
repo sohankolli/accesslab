@@ -20,8 +20,10 @@ export function buildDocument(html, css) {
   );
 }
 
-export default function SandboxFrame({ html, css, onDocument }) {
-  const frameRef = useRef(null);
+/** @param {{html: string, css: string, onDocument: (doc: Document) => void, frameRef?: {current: HTMLIFrameElement|null}}} props */
+export default function SandboxFrame({ html, css, onDocument, frameRef: outerRef }) {
+  const ownRef = useRef(null);
+  const frameRef = outerRef ?? ownRef; // the workbench passes its own ref so the overlay can measure the frame
   const srcDoc = useMemo(() => buildDocument(html, css), [html, css]);
 
   return (

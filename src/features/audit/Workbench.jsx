@@ -1,16 +1,18 @@
 // features/audit/Workbench.jsx
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch, useSelector, useStore } from 'react-redux';
 import { runAudit } from '../../engine/runAudit';
 import { rulesFor } from '../../engine/rules';
 import { useSettings } from '../../context/SettingsContext';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { htmlChanged, cssChanged } from '../editor/editorSlice';
-import { auditStarted, auditCompleted } from './auditSlice';
+import { auditStarted, auditCompleted, issueSelected, selectSortedIssues } from './auditSlice';
 import { runAdded } from '../report/historySlice';
 import SandboxFrame from './SandboxFrame';
 import IssueList from './IssueList';
 import PackSettings from './PackSettings';
+import IssueOverlay from './IssueOverlay';
+import { findElement, issueAt } from './overlayBoxes';
 import ScoreBadge from '../../components/ScoreBadge';
 import './workbench.css';
 
@@ -25,7 +27,9 @@ export default function Workbench() {
   const { html, css } = useSelector((state) => state.editor);
   const result = useSelector((state) => state.audit.result);
   const previousScore = useSelector((state) => state.audit.previousScore);
+  const store = useStore();
   const docRef = useRef(null); // the live iframe Document: kept out of Redux
+  const frameRef = useRef(null);
   const issuesHeadingRef = useRef(null);
 
   // Typing updates the editor at once; the audit waits for a pause.
@@ -33,7 +37,7 @@ export default function Workbench() {
   const auditCss = useDebouncedValue(css, 400);
 
   // Only the rule packs switched on in settings take part in the audit.
-  const { enabledPacks } = useSettings();
+  const { enabledPacks, reducedMotion } = useSettings();
   const rules = useMemo(() => rulesFor(enabledPacks), [enabledPacks]);
 
   const auditDocument = useCallback(
@@ -49,9 +53,41 @@ export default function Workbench() {
   const handleDocument = useCallback(
     (doc) => {
       docRef.current = doc;
+      // AccessLab's own listeners (the page's scripts still never run). A click
+      // selects the issue under the pointer, and neither links nor forms may
+      // navigate the frame away from the page being audited.
+      doc.addEventListener(
+        'click',
+        (event) => {
+          event.preventDefault();
+          const hit = issueAt(event.target, selectSortedIssues(store.getState()));
+          dispatch(issueSelected(hit?.id ?? null));
+        },
+        true,
+      );
+      doc.addEventListener('submit', (event) => event.preventDefault(), true);
       auditDocument(doc);
     },
-    [auditDocument],
+    [auditDocument, dispatch, store],
+  );
+
+  /** Select an issue from the list and scroll the preview so its element is centred. */
+  const showIssue = useCallback(
+    (issue) => {
+      dispatch(issueSelected(issue?.id ?? null));
+      const doc = docRef.current;
+      const el = issue && doc && findElement(doc, issue.selector);
+      if (!el) return;
+      // win.scrollTo, not el.scrollIntoView(): that would scroll AccessLab's page too.
+      const win = doc.defaultView;
+      const r = el.getBoundingClientRect();
+      win.scrollTo({
+        top: win.scrollY + r.top - win.innerHeight / 2 + r.height / 2,
+        left: win.scrollX + r.left - win.innerWidth / 2 + r.width / 2,
+        behavior: reducedMotion ? 'auto' : 'smooth',
+      });
+    },
+    [dispatch, reducedMotion],
   );
 
   // Switching a pack on or off re-audits the page already in the preview.
@@ -90,7 +126,13 @@ export default function Workbench() {
       <section className="workbench__preview" aria-labelledby="preview-heading">
         <h2 id="preview-heading">Preview</h2>
         <div className="preview-stage">
-          <SandboxFrame html={auditHtml} css={auditCss} onDocument={handleDocument} />
+          <SandboxFrame
+            html={auditHtml}
+            css={auditCss}
+            onDocument={handleDocument}
+            frameRef={frameRef}
+          />
+          <IssueOverlay frameRef={frameRef} />
         </div>
       </section>
 
@@ -107,7 +149,10 @@ export default function Workbench() {
         {rules.length === 0 ? (
           <p>All rule packs are switched off, so nothing is checked. Switch a pack on above.</p>
         ) : (
-          <IssueList onFixApplied={() => issuesHeadingRef.current?.focus()} />
+          <IssueList
+            onFixApplied={() => issuesHeadingRef.current?.focus()}
+            onShowIssue={showIssue}
+          />
         )}
       </section>
     </div>

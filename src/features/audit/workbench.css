@@ -118,3 +118,61 @@
 .issue-list__errors {
   color: var(--critical);
 }
+
+/* Issue overlay: positioned over the iframe's content box, clipped to it. */
+.sandbox-frame {
+  display: block; /* no inline baseline gap under the frame */
+}
+.issue-overlay {
+  position: absolute;
+  overflow: hidden;
+  pointer-events: none; /* clicks reach the preview, where Workbench selects issues */
+}
+.issue-box {
+  position: absolute;
+  min-width: 8px;
+  min-height: 8px;
+  border: 2px solid var(--sev);
+  border-radius: 2px;
+  transition: opacity 150ms ease;
+}
+.issue-box--critical {
+  --sev: var(--critical);
+}
+.issue-box--serious {
+  --sev: var(--serious);
+}
+.issue-box--moderate {
+  --sev: var(--moderate);
+}
+.issue-box--minor {
+  --sev: var(--minor);
+}
+.issue-box__label {
+  position: absolute;
+  bottom: 100%; /* above the box, so it never covers the element's own text */
+  left: -2px;
+  padding: 0 4px;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1.4;
+  white-space: nowrap;
+  color: var(--bg);
+  background: var(--sev);
+  border-radius: 2px 2px 0 0;
+}
+.issue-box--label-inside .issue-box__label {
+  top: -2px;
+  bottom: auto;
+  border-radius: 2px 0 2px 0;
+}
+.issue-overlay--has-selection .issue-box:not(.issue-box--selected) {
+  opacity: 0.35;
+}
+.issue-box--selected {
+  border-width: 3px;
+  box-shadow: 0 0 0 3px var(--bg);
+}
+.issue--selected {
+  outline: 3px solid var(--accent);
+}

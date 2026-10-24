@@ -61,10 +61,18 @@ function setup({ selected = null, props = {} } = {}) {
 const card = (name) => screen.getByRole('heading', { name }).closest('li');
 
 describe('IssueList', () => {
-  it('lists issues most severe first, with rule, WCAG reference, selector and fix', () => {
+  it('groups issues by severity, most severe first, in collapsible groups', () => {
     setup();
-    const titles = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+    const groups = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
+    expect(groups).toEqual(['Critical 1 issue', 'Serious 2 issues']);
+    expect(screen.getAllByRole('group').every((g) => g.tagName === 'DETAILS' && g.open)).toBe(true);
+  });
+
+  it('shows message, rule, WCAG reference, selector, snippet and fix on each card', () => {
+    setup();
+    const titles = screen.getAllByRole('heading', { level: 4 }).map((h) => h.textContent);
     expect(titles[0]).toBe('Image has no alt attribute.');
+    expect(within(card('Image has no alt attribute.')).getByText('<img src="x.png">')).toBeTruthy();
     const img = within(card('Image has no alt attribute.'));
     expect(img.getByText('img-alt')).toBeTruthy();
     expect(img.getByText('1.1.1 Non-text Content')).toBeTruthy();

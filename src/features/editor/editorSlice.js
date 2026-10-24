@@ -19,6 +19,13 @@ const editorSlice = createSlice({
     cssChanged(state, action) {
       state.css = action.payload;
     },
+    /** Replace the editors' contents with the built-in sample page. */
+    sampleLoaded(state) {
+      state.html = SAMPLE_HTML;
+      state.css = SAMPLE_CSS;
+      state.source = 'paste';
+      state.sourceUrl = null;
+    },
     /**
      * Append an issue's one-click CSS fix to the stylesheet as one commented
      * line, so undoing it is just deleting that line. Applying the same fix
@@ -34,5 +41,5 @@ const editorSlice = createSlice({
   },
 });
 
-export const { htmlChanged, cssChanged, fixApplied } = editorSlice.actions;
+export const { htmlChanged, cssChanged, sampleLoaded, fixApplied } = editorSlice.actions;
 export default editorSlice.reducer;

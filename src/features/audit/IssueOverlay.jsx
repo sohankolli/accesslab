@@ -2,11 +2,10 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { overlayBoxes } from './overlayBoxes';
+import { SEVERITY_LABEL } from '../../components/severityLabels';
 
 /** Height of a severity label; boxes nearer the top than this show it inside. */
 const LABEL_ROOM = 18;
-
-const LABEL = { critical: 'Critical', serious: 'Serious', moderate: 'Moderate', minor: 'Minor' };
 
 /**
  * Boxes drawn over the preview iframe, one per issue. Purely visual
@@ -74,7 +73,7 @@ export default function IssueOverlay({ frameRef }) {
             .join(' ')}
           style={{ top: box.top, left: box.left, width: box.width, height: box.height }}
         >
-          <span className="issue-box__label">{LABEL[box.severity]}</span>
+          <span className="issue-box__label">{SEVERITY_LABEL[box.severity]}</span>
         </div>
       ))}
     </div>

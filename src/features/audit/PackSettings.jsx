@@ -15,7 +15,10 @@ export default function PackSettings() {
             checked={enabledPacks.includes(pack.id)}
             onChange={(e) => setPackEnabled(pack.id, e.target.checked)}
           />
-          {pack.title} ({pack.count} {pack.count === 1 ? 'rule' : 'rules'})
+          <span>{pack.title}</span>{' '}
+          <span className="pack-settings__count">
+            ({pack.count} {pack.count === 1 ? 'rule' : 'rules'})
+          </span>
         </label>
       ))}
     </fieldset>

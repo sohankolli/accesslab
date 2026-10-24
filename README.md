@@ -21,8 +21,22 @@ app with Redux Toolkit and React Router.
   issue to scroll to it, or click an element in the preview to find its issue.
 - **Score and history.** A weighted 0–100 score, the change since the last run, and a report
   page comparing any two of the last 20 runs.
+- **Built to its own standard.** Light, dark and system themes; every text colour passes WCAG
+  AA in both (checked by a test with the engine's own contrast maths); 44 px touch targets;
+  keyboard-resizable panes; and AccessLab scores 100 when its own engine audits its pages.
 - **Safe by design.** The audited page runs in an `<iframe sandbox="allow-same-origin">`: its
   own JavaScript never runs, and links or forms inside it cannot navigate the frame.
+
+## Screenshots
+
+|                                  | Light                                                                       | Dark                                                                      |
+| -------------------------------- | --------------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| Workbench with issues            | ![Workbench, light theme](docs/screenshots/workbench-issues-light.png)      | ![Workbench, dark theme](docs/screenshots/workbench-issues-dark.png)      |
+| An issue selected in the preview | ![Selected issue, light](docs/screenshots/workbench-selected-light.png)     | ![Selected issue, dark](docs/screenshots/workbench-selected-dark.png)     |
+| No issues                        | ![Score 100, light](docs/screenshots/workbench-clean-light.png)             | ![Score 100, dark](docs/screenshots/workbench-clean-dark.png)             |
+| Report                           | ![Report, light](docs/screenshots/report-light.png)                         | ![Report, dark](docs/screenshots/report-dark.png)                         |
+| Home                             | ![Home, light](docs/screenshots/home-light.png)                             | ![Home, dark](docs/screenshots/home-dark.png)                             |
+| Phone                            | ![Workbench on a phone, light](docs/screenshots/workbench-mobile-light.png) | ![Workbench on a phone, dark](docs/screenshots/workbench-mobile-dark.png) |
 
 ## Getting started
 

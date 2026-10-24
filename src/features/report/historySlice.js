@@ -10,7 +10,10 @@ const historySlice = createSlice({
     runAdded(state, action) {
       const { ranAt, score, issues } = action.payload;
       const counts = {};
-      for (const { severity } of issues) counts[severity] = (counts[severity] ?? 0) + 1;
+      // Items that need a human review are not scored, so they are not counted either.
+      for (const { severity, needsReview } of issues) {
+        if (!needsReview) counts[severity] = (counts[severity] ?? 0) + 1;
+      }
       state.runs.unshift({ id: String(ranAt), ranAt, score, counts });
       state.runs.splice(MAX_RUNS); // keep the newest 20
     },

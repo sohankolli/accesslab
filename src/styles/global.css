@@ -102,3 +102,7 @@ a {
   color: var(--muted);
   border-top: 1px solid var(--muted);
 }
+
+.page--wide {
+  max-width: 60rem;
+}

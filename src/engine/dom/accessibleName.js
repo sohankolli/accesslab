@@ -44,7 +44,8 @@ export function accessibleName(el) {
   }
   if (el.tagName === 'IMG') return clean(el.getAttribute('alt')); // alt="" => decorative
   if (el.tagName === 'INPUT' && ['submit', 'button', 'reset'].includes(el.type)) {
-    return clean(el.value) || (el.type === 'submit' ? 'Submit' : '');
+    // Browsers label value-less submit and reset buttons "Submit" and "Reset".
+    return clean(el.value) || { submit: 'Submit', reset: 'Reset' }[el.type] || '';
   }
 
   // 4. Name from content (buttons, links, headings)

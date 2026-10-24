@@ -14,7 +14,7 @@ export const issue = (rule, el, message, fix) => ({
 });
 
 /** A pasted snippet is wrapped by buildDocument() and marked; page-level rules skip it. */
-const isFragment = (doc) => doc.documentElement.hasAttribute('data-al-fragment');
+export const isFragment = (doc) => doc.documentElement.hasAttribute('data-al-fragment');
 
 export const imgAlt = {
   id: 'img-alt',

@@ -60,3 +60,45 @@ a {
 #main:focus {
   outline: none;
 }
+
+/* App shell: header, footer and simple text pages. */
+.site-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space) calc(var(--space) * 3);
+  padding: var(--space) calc(var(--space) * 2);
+  background: var(--surface);
+  border-bottom: 1px solid var(--muted);
+}
+.site-header__brand {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+}
+.site-header__links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: calc(var(--space) * 2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+/* The current page is marked by weight and underline, not colour alone. */
+.site-header__links a[aria-current='page'] {
+  font-weight: 700;
+  text-decoration-thickness: 3px;
+}
+
+.page {
+  max-width: 70ch;
+  padding: calc(var(--space) * 2);
+}
+
+.site-footer {
+  padding: calc(var(--space) * 2);
+  color: var(--muted);
+  border-top: 1px solid var(--muted);
+}

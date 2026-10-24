@@ -23,8 +23,16 @@ export default defineConfig([
       parserOptions: { ecmaFeatures: { jsx: true } },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      // ESLint 9 does not see JSX usage like <Page />, so capitalised names
+      // (components) are exempt, both as variables and as parameters.
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^[A-Z]' }],
     },
+  },
+  {
+    // The route table is configuration, not a component module, so the
+    // fast-refresh export rule does not apply to it.
+    files: ['src/app/router.jsx'],
+    rules: { 'react-refresh/only-export-components': 'off' },
   },
   {
     // Build and test configuration runs in Node.

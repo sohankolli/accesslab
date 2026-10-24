@@ -20,7 +20,7 @@ registerPack({
 // not a failure by itself, only a strong hint that focus order will be wrong.
 registerPack({
   id: 'best-practice',
-  title: 'Best practices',
+  title: 'Best practice',
   rules: [headingOrder, tabindexPositive, duplicateId, landmarkMain],
 });
 

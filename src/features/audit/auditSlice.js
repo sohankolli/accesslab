@@ -40,9 +40,14 @@ export default auditSlice.reducer;
 
 const ORDER = ['critical', 'serious', 'moderate', 'minor'];
 
-/** Memoised: re-sorts only when the issues array itself changes. */
+/** Where an issue goes in the list: by severity, with "check by hand" items last. */
+const rank = (issue) => (issue.needsReview ? ORDER.length : ORDER.indexOf(issue.severity));
+
+/**
+ * Memoised: re-sorts only when the issues array itself changes. An issue's
+ * number in the list (and on its preview pin) is its index here plus one.
+ */
 export const selectSortedIssues = createSelector(
   (state) => state.audit.result?.issues,
-  (issues = []) =>
-    [...issues].sort((a, b) => ORDER.indexOf(a.severity) - ORDER.indexOf(b.severity)),
+  (issues = []) => [...issues].sort((a, b) => rank(a) - rank(b)),
 );

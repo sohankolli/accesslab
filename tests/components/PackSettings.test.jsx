@@ -21,14 +21,14 @@ const renderSettings = () =>
 describe('PackSettings', () => {
   it('starts with every pack on', () => {
     renderSettings();
-    expect(screen.getByRole('checkbox', { name: 'WCAG 2.2 A/AA (7 rules)' }).checked).toBe(true);
-    expect(screen.getByRole('checkbox', { name: 'Best practices (4 rules)' }).checked).toBe(true);
+    expect(screen.getByRole('checkbox', { name: 'WCAG 2.2 A/AA' }).checked).toBe(true);
+    expect(screen.getByRole('checkbox', { name: 'Best practice' }).checked).toBe(true);
     expect(screen.getByRole('status').textContent).toBe('wcag-aa,best-practice');
   });
 
   it('switches a pack off and remembers it across reloads', () => {
     renderSettings();
-    fireEvent.click(screen.getByRole('checkbox', { name: 'Best practices (4 rules)' }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Best practice' }));
     expect(screen.getByRole('status').textContent).toBe('wcag-aa');
     expect(JSON.parse(localStorage.getItem('accesslab:v1')).prefs.disabledPacks).toEqual([
       'best-practice',
@@ -36,7 +36,7 @@ describe('PackSettings', () => {
 
     cleanup(); // "reload": a fresh provider reads the saved preference
     renderSettings();
-    expect(screen.getByRole('checkbox', { name: 'Best practices (4 rules)' }).checked).toBe(false);
+    expect(screen.getByRole('checkbox', { name: 'Best practice' }).checked).toBe(false);
   });
 
   it('ignores saved ids of packs that no longer exist', () => {

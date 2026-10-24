@@ -32,7 +32,6 @@
   font-size: var(--text-sm);
   font-weight: 700;
   letter-spacing: 0.04em;
-  
 }
 .pane__meta {
   font-size: var(--text-xs);
@@ -274,264 +273,321 @@
     0 0 0 5px var(--sev);
 }
 
-/* ---------- Issues pane ---------- */
+/* ---------- Findings pane ---------- */
 
-.issues-body {
+.pane--findings {
+  background: var(--chart);
+}
+.findings {
   display: flex;
   flex-direction: column;
+}
+
+/* The reading: score, acuity and the eye chart. */
+.reading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 172px;
   gap: var(--space-4);
-  padding: var(--space-4);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  border-bottom: 1px solid var(--rule);
 }
-
 .score {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr);
-  align-items: center;
-  gap: var(--space-3) var(--space-4);
-  padding: var(--space-4);
-  background: var(--raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  min-height: 65px; /* the same height with or without a score */
+  font-size: var(--text-display);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
 }
-.score__ring {
-  position: relative;
-  width: 64px;
-  height: 64px;
-}
-.score__ring circle {
-  fill: none;
-  stroke-width: 6;
-}
-.score__track {
-  stroke: var(--border);
-}
-.score__arc {
-  stroke: var(--accent);
-  stroke-linecap: round;
-  transition: stroke-dasharray 200ms var(--ease);
-}
-.score__number {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  font-size: var(--text-lg);
-  font-weight: 700;
-}
-.score__label {
-  font-size: var(--text-lg);
-  font-weight: 650;
-}
-.score__max {
-  font-size: var(--text-sm);
+.score small {
+  margin-left: var(--space-1);
+  font-size: 1.125rem;
   font-weight: 500;
-  color: var(--muted);
+  letter-spacing: 0;
+  color: var(--graphite);
 }
-.score__change {
-  min-height: 1.5em;
+.acuity {
+  margin-top: 10px;
+  font-size: 0.9375rem;
+}
+.delta {
+  margin-top: 2px;
   font-size: var(--text-sm);
-  color: var(--muted);
-}
-.severity-counts {
-  grid-column: 1 / -1;
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.count-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 2px var(--space-2);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  border-radius: var(--radius-full);
-}
-.count-chip--critical {
-  color: var(--critical);
-  background: var(--critical-subtle);
-}
-.count-chip--serious {
-  color: var(--serious);
-  background: var(--serious-subtle);
-}
-.count-chip--moderate {
-  color: var(--moderate);
-  background: var(--moderate-subtle);
-}
-.count-chip--minor,
-.count-chip--review {
-  color: var(--minor);
-  background: var(--minor-subtle);
-}
-.count-chip--review {
-  gap: var(--space-1);
-  
-  letter-spacing: 0.02em;
+  color: var(--graphite);
 }
 
-.pack-settings {
+/* The decorative Snellen chart (aria-hidden). Sizes are px on purpose: it is a
+   picture of a chart, not text to read. */
+.snellen {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 3px;
+  padding: 2px 34px 0 var(--space-3);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  border-left: 1px solid var(--rule);
+  user-select: none;
+}
+.snellen span {
+  position: relative;
+  display: block;
+}
+.snellen .is-dim {
+  color: var(--faint);
+}
+.snellen .is-here::before {
+  content: '';
+  position: absolute;
+  left: -10px;
+  right: -10px;
+  bottom: -3px;
+  border-bottom: 2px solid var(--lens);
+}
+.snellen .is-here::after {
+  content: attr(data-acuity);
+  position: absolute;
+  top: 50%;
+  left: calc(100% + 8px);
+  transform: translateY(-50%);
+  font-size: 11px;
+  letter-spacing: 0;
+  color: var(--lens);
+}
+
+/* Tally by severity, each with its shape. */
+.tally {
   display: flex;
   flex-wrap: wrap;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+  padding: var(--space-3) var(--space-5);
+  list-style: none;
+  font-size: var(--text-sm);
+  border-bottom: 1px solid var(--rule);
+}
+.tally__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tally__item b {
+  font-size: var(--text-md);
+}
+.tally__item--critical b {
+  color: var(--critical);
+}
+.tally__item--serious b {
+  color: var(--serious);
+}
+.tally__item--moderate b {
+  color: var(--moderate);
+}
+.tally__item--minor b {
+  color: var(--minor);
+}
+
+/* "Check against" rule packs. */
+.packs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 0 var(--space-4);
   margin: 0;
-  padding: 0 var(--space-3) var(--space-1);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-}
-.pack-settings legend {
-  padding: 0 var(--space-1);
-  font-size: var(--text-xs);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  
-  color: var(--muted);
-}
-.pack-settings__option {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  min-height: var(--target);
+  padding: 0 var(--space-5);
+  min-width: 0;
   font-size: var(--text-sm);
-  cursor: pointer;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
 }
-.pack-settings__count {
-  font-size: var(--text-xs);
-  color: var(--muted);
+.packs__legend {
+  float: left; /* lets the legend sit in the row like the labels */
+  margin-right: var(--space-4);
+  padding: 0;
+  line-height: var(--target);
+  color: var(--graphite);
 }
-
-.issue-skeleton {
-  display: grid;
-  gap: var(--space-3);
-}
-.issue-skeleton div {
-  height: 132px;
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-}
-
-.issue-group {
-  overflow: clip;
-  background: var(--raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-}
-.issue-group + .issue-group {
-  margin-top: var(--space-3);
-}
-.issue-group__summary {
+.packs__option {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 6px;
   min-height: var(--target);
-  padding: 0 var(--space-4);
   cursor: pointer;
-  list-style: none;
-  transition: background-color var(--duration) var(--ease);
 }
-.issue-group__summary::-webkit-details-marker {
-  display: none;
+
+/* The numbered findings, grouped by severity. */
+.findings-list > .notice {
+  margin: var(--space-4) var(--space-5) 0;
 }
-.issue-group__summary:hover {
-  background: var(--surface);
-}
-.issue-group__summary:focus-visible {
-  outline-offset: -3px;
-}
-.issue-group__title {
+.group__title {
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  padding: var(--space-4) var(--space-5) var(--space-2);
   font-size: var(--text-sm);
 }
-.issue-group__count {
-  font-size: var(--text-sm);
-  color: var(--muted);
+.group__count {
+  font-weight: 400;
+  color: var(--graphite);
 }
-.issue-group__chevron {
-  color: var(--muted);
-  transition: transform var(--duration) var(--ease);
-}
-.issue-group[open] .issue-group__chevron {
-  transform: rotate(90deg);
-}
-
-.issue-list {
+.rows {
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.issue-card {
-  padding: var(--space-4);
-  border-top: 1px solid var(--border);
-  transition:
-    background-color var(--duration) var(--ease),
-    box-shadow var(--duration) var(--ease);
-}
-/* Selected: background, a bar on the left AND the pressed "Show in preview" button. */
-.issue-card.is-selected {
-  background: var(--accent-subtle);
-  box-shadow: inset 4px 0 0 var(--accent);
-}
-.issue-card__top {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-1) var(--space-3);
-}
-.issue-card__meta {
-  font-size: var(--text-xs);
-  color: var(--muted);
-}
-.issue-card__meta code {
-  font-size: var(--text-xs);
-}
-.issue-card__title {
-  margin: var(--space-2) 0 var(--space-3);
-  font-size: var(--text-md);
-  font-weight: 600;
-}
-.issue-card__details {
+.row {
+  position: relative;
   display: grid;
-  gap: var(--space-2);
-  margin: 0;
+  grid-template-columns: 28px minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-5);
+  border-top: 1px solid var(--rule-soft);
+}
+.row:hover {
+  background: var(--room);
+}
+.row.is-open {
+  background: var(--lens-tint);
+  box-shadow: inset 3px 0 0 var(--lens);
+}
+.num {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  margin-top: 1px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--on-severity);
+  border-radius: var(--radius-full);
+}
+.num--critical {
+  background: var(--critical);
+}
+.num--serious {
+  background: var(--serious);
+}
+.num--moderate {
+  background: var(--moderate);
+}
+.num--minor {
+  background: var(--minor);
+}
+.num--review {
+  color: var(--ink);
+  background: var(--chart);
+  box-shadow: inset 0 0 0 1.5px var(--rule-strong);
+}
+.row__title {
+  font-size: var(--text-md);
+  line-height: 1.35;
+}
+.row__toggle {
+  padding: 0;
+  font-weight: 700;
+  text-align: left;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+/* The whole row is the button's hit area. */
+.row__toggle::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.row__toggle:focus-visible {
+  outline: none;
+}
+.row:has(.row__toggle:focus-visible) {
+  outline: var(--focus-ring);
+  outline-offset: -3px;
+}
+.row__why {
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  color: var(--graphite);
+}
+.row__why .swatch {
+  margin: 0 6px 0 2px;
+}
+.row__scope {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 1px 8px;
+  font-size: var(--text-xs);
+  color: var(--graphite);
+  border: 1.5px dashed var(--rule-strong);
+  border-radius: var(--radius-sm);
+}
+/* Detail and actions sit above the row-wide hit area so they stay clickable. */
+.row__detail,
+.row__actions {
+  position: relative;
+  z-index: 1;
+}
+.row__detail {
+  animation: row-open var(--duration) var(--ease);
+}
+@keyframes row-open {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+.detail {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 6px var(--space-3);
+  margin: var(--space-3) 0 0;
   font-size: var(--text-sm);
 }
-.issue-card__details > div {
-  display: grid;
-  grid-template-columns: 4.25rem minmax(0, 1fr);
-  gap: var(--space-2);
+.detail dt {
+  color: var(--graphite);
 }
-.issue-card__details dt {
-  color: var(--muted);
-}
-.issue-card__details dd {
-  min-width: 0;
+.detail dd {
   margin: 0;
   overflow-wrap: anywhere;
 }
-.issue-card__details code {
-  font-size: var(--text-xs);
-}
-.snippet {
-  margin: 0;
-  padding: var(--space-1) var(--space-2);
-  white-space: pre-wrap;
-  word-break: break-all;
-  background: var(--surface);
-  border: 1px solid var(--border);
+.row code {
+  padding: 1px 6px;
+  font-size: 0.8125rem;
+  background: var(--chart);
+  border: 1px solid var(--rule);
   border-radius: var(--radius-sm);
 }
-.issue-card__actions {
+.wcag {
+  font-weight: 500;
+}
+.row__actions {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-2);
-  margin-top: var(--space-4);
+  margin-top: var(--space-3);
+}
+.row__actions .btn {
+  background: var(--chart);
+}
+.row__actions .btn--primary {
+  background: var(--lens);
+}
+.row__actions .btn--primary:hover {
+  background: var(--lens-hover);
+}
+
+.row-skeleton {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-5);
+}
+.row-skeleton div {
+  height: 56px;
+  border-radius: var(--radius-sm);
+  background: var(--room);
 }
 
 /* ---------- Tablet: two columns, issues below ---------- */
@@ -547,7 +603,7 @@
   .splitter {
     display: none;
   }
-  .pane--issues {
+  .pane--findings {
     grid-column: 1 / -1;
   }
   .pane__body {
@@ -577,7 +633,7 @@
     height: 60vh;
     padding: var(--space-2);
   }
-  .issues-body {
-    padding: var(--space-3);
+  .reading {
+    padding: var(--space-4);
   }
 }

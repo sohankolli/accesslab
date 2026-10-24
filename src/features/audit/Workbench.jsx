@@ -13,8 +13,8 @@ import SandboxFrame from './SandboxFrame';
 import IssueList from './IssueList';
 import PackSettings from './PackSettings';
 import IssueOverlay from './IssueOverlay';
-import { findElement, issueAt } from './overlayBoxes';
-import ScoreBadge from '../../components/ScoreBadge';
+import { findElement, issueAt, isPageLevel } from './overlayBoxes';
+import ScoreReading from './ScoreReading';
 import Icon from '../../components/Icon';
 import Segmented from '../../components/Segmented';
 import Splitter from '../../components/Splitter';
@@ -118,7 +118,7 @@ export default function Workbench() {
     (issue) => {
       dispatch(issueSelected(issue?.id ?? null));
       const doc = docRef.current;
-      const el = issue && doc && findElement(doc, issue.selector);
+      const el = issue && doc && !isPageLevel(issue) && findElement(doc, issue.selector);
       if (!el) return;
       // win.scrollTo, not el.scrollIntoView(): that would scroll AccessLab's page too.
       const win = doc.defaultView;
@@ -255,28 +255,14 @@ export default function Workbench() {
         containerRef={workbenchRef}
       />
 
-      <section id="pane-issues" className="pane pane--issues" aria-labelledby="issues-heading">
-        <div className="pane__header">
-          {/* tabIndex -1: "Apply fix" removes its own card after the re-audit, so
-              focus moves here instead of being lost. */}
-          <h2 id="issues-heading" className="pane__title" ref={issuesHeadingRef} tabIndex={-1}>
-            Issues
-          </h2>
-          {/* Always rendered, only shown while auditing, so the header never shifts. */}
-          <span
-            className={`pane__status${status === 'running' ? ' is-active' : ''}`}
-            aria-hidden="true"
-          >
-            <span className="pane__status-dot" />
-            Auditing…
-          </span>
-        </div>
-        <div className="pane__body issues-body">
-          <ScoreBadge
+      <section id="pane-issues" className="pane pane--findings" aria-labelledby="issues-heading">
+        <div className="pane__body findings">
+          <ScoreReading
             score={rules.length ? result?.score : undefined}
             previousScore={previousScore}
-            issues={result?.issues}
+            issues={rules.length ? result?.issues : []}
             auditing={status === 'running'}
+            headingRef={issuesHeadingRef}
           />
           <p className="sr-only" aria-live="polite">
             {result && announcement(result)}
@@ -284,7 +270,6 @@ export default function Workbench() {
           <PackSettings />
           {rules.length === 0 ? (
             <div className="empty-state">
-              <Icon name="layers" size={40} className="icon empty-state__icon" />
               <p className="empty-state__title">All rule packs are off</p>
               <p>Nothing is being checked. Switch on a rule pack above to audit the page.</p>
             </div>

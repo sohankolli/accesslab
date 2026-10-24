@@ -68,7 +68,7 @@ describe('built-in packs', () => {
   it('registers WCAG 2.2 A/AA and best-practice packs covering all eleven rules', () => {
     expect(listPacks()).toEqual([
       { id: 'wcag-aa', title: 'WCAG 2.2 A/AA', count: 7 },
-      { id: 'best-practice', title: 'Best practices', count: 4 },
+      { id: 'best-practice', title: 'Best practice', count: 4 },
     ]);
     expect(rulesFor(['best-practice']).map((r) => r.id)).toEqual([
       'heading-order',

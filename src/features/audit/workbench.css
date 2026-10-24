@@ -1,0 +1,33 @@
+/* features/audit/workbench.css: three panes on desktop, stacked on phones */
+.workbench {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.3fr) minmax(280px, 0.8fr);
+  gap: calc(var(--space) * 2);
+  padding: calc(var(--space) * 2);
+}
+.preview-stage {
+  position: relative;
+} /* overlay is positioned against this */
+.sandbox-frame {
+  width: 100%;
+  height: 70vh;
+  border: 1px solid var(--muted);
+  border-radius: var(--radius);
+}
+
+@media (max-width: 1100px) {
+  .workbench {
+    grid-template-columns: 1fr 1fr;
+  }
+  .workbench__issues {
+    grid-column: 1 / -1;
+  }
+}
+@media (max-width: 700px) {
+  .workbench {
+    grid-template-columns: 1fr;
+  }
+  .sandbox-frame {
+    height: 55vh;
+  }
+}

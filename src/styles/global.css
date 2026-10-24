@@ -1,0 +1,62 @@
+/* styles/global.css: base element styles. Colours come only from tokens.css. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* Native form controls and scrollbars follow the active theme. */
+:root {
+  color-scheme: light;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='system'] {
+    color-scheme: dark;
+  }
+}
+
+body {
+  margin: 0;
+  font-family:
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    Roboto,
+    sans-serif;
+  font-size: 1rem; /* rem, not px, so the user's browser text size is respected */
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--bg);
+}
+
+a {
+  color: var(--accent);
+}
+
+/* Skip link: off-screen until it receives keyboard focus, then shown at the top. */
+.skip-link {
+  position: absolute;
+  top: var(--space);
+  left: var(--space);
+  z-index: 100;
+  padding: var(--space) calc(var(--space) * 2);
+  color: var(--accent);
+  background: var(--bg);
+  border: 2px solid var(--accent);
+  border-radius: var(--radius);
+  font-weight: 600;
+  transform: translateY(-200%);
+}
+.skip-link:focus {
+  transform: none;
+}
+
+/* <main tabIndex={-1}> is focused by script on navigation (AppLayout). It is a
+   landmark, not a control, so a ring around the whole page would only confuse. */
+#main:focus {
+  outline: none;
+}

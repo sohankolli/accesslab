@@ -1,0 +1,36 @@
+/* styles/tokens.css: every text colour below passes WCAG AA on its background */
+:root {
+  --bg: #ffffff;     --surface: #f6f7f9;
+  --text: #1b1f24;   /* 16.6:1 */
+  --muted: #57606a;  /*  6.4:1 */
+  --accent: #0b5cad; /*  6.7:1 */
+  --critical: #b3261e; --serious: #a14f00; --moderate: #6b5900; --minor: #3d5a80;
+  --radius: 8px; --space: 8px;
+  --focus-ring: 3px solid var(--accent);
+}
+:root[data-theme='dark'] {
+  --bg: #111418;     --surface: #1b2027;
+  --text: #e6e8eb;   --muted: #a3acb7;   --accent: #7ab4f5;
+  --critical: #ff8a80; --serious: #ffb066; --moderate: #e3c65c; --minor: #9db8e0;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-theme='system'] {
+    --bg: #111418;     --surface: #1b2027;
+    --text: #e6e8eb;   --muted: #a3acb7;   --accent: #7ab4f5;
+    --critical: #ff8a80; --serious: #ffb066; --moderate: #e3c65c; --minor: #9db8e0;
+  }
+}
+
+:focus-visible { outline: var(--focus-ring); outline-offset: 2px; }
+
+:root[data-motion='reduce'] *,
+:root[data-motion='reduce'] *::before,
+:root[data-motion='reduce'] *::after {
+  animation-duration: 0.01ms !important;
+  transition-duration: 0.01ms !important;
+}
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip-path: inset(50%); white-space: nowrap;
+}

@@ -14,6 +14,8 @@ import IssueList from './IssueList';
 import PackSettings from './PackSettings';
 import IssueOverlay from './IssueOverlay';
 import { findElement, issueAt, isPageLevel } from './overlayBoxes';
+import SourceEditor from '../editor/SourceEditor';
+import { sourceLineOf } from '../editor/sourceLine';
 import ScoreReading from './ScoreReading';
 import Icon from '../../components/Icon';
 import Segmented from '../../components/Segmented';
@@ -31,11 +33,6 @@ const DEVICES = [
 ];
 const DEVICE_LABEL = { mobile: '390 px', tablet: '768 px', desktop: 'Full width' };
 
-const lineCount = (text) => {
-  const n = text.split('\n').length;
-  return `${n} ${n === 1 ? 'line' : 'lines'}`;
-};
-
 /** Text for the live region, read out by screen readers after every audit. */
 function announcement(result) {
   const n = result.issues.length;
@@ -52,10 +49,29 @@ export default function Workbench() {
   const docRef = useRef(null); // the live iframe Document: kept out of Redux
   const frameRef = useRef(null);
   const issuesHeadingRef = useRef(null);
+  const editorRef = useRef(null);
+  const selectedId = useSelector((state) => state.audit.selectedIssueId);
 
   // Typing updates the editor at once; the audit waits for a pause.
   const auditHtml = useDebouncedValue(html, 400);
   const auditCss = useDebouncedValue(css, 400);
+
+  // The selected issue's line in the HTML source, highlighted in the editor. Only
+  // while the editor holds exactly the code that was checked: mid-edit the line
+  // could be stale, so no highlight is better than a wrong one.
+  const highlight = useMemo(() => {
+    const issue = selectedId && result?.issues.find((i) => i.id === selectedId);
+    return issue && html === auditHtml ? sourceLineOf(html, issue.source) : null;
+  }, [selectedId, result, html, auditHtml]);
+
+  /** "Show in code": select the issue's start tag in the HTML editor. */
+  const showInCode = useCallback(
+    (issue) => {
+      const at = sourceLineOf(html, issue.source);
+      editorRef.current?.reveal(at?.start ?? 0, at?.end ?? 0);
+    },
+    [html],
+  );
 
   // Only the rule packs switched on in settings take part in the audit.
   const { enabledPacks, reducedMotion } = useSettings();
@@ -154,49 +170,17 @@ export default function Workbench() {
       <h1 className="sr-only">Audit workbench</h1>
 
       <section id="pane-source" className="pane pane--source" aria-labelledby="source-heading">
-        <div className="pane__header">
-          <h2 id="source-heading" className="pane__title">
-            Source
-          </h2>
-          <span className="pane__meta">Re-audits 400 ms after you stop typing</span>
-        </div>
-        {/* Plain textareas for now; CodeMirror replaces them in Milestone 3. */}
-        <div className="pane__body editors">
-          <div className="editor editor--html">
-            <div className="editor__bar">
-              <label htmlFor="html-input" className="editor__label">
-                HTML
-              </label>
-              <span className="editor__meta tabular">{lineCount(html)}</span>
-            </div>
-            <textarea
-              id="html-input"
-              className="editor__input"
-              spellCheck={false}
-              autoCapitalize="off"
-              autoComplete="off"
-              value={html}
-              onChange={(e) => dispatch(htmlChanged(e.target.value))}
-            />
-          </div>
-          <div className="editor editor--css">
-            <div className="editor__bar">
-              <label htmlFor="css-input" className="editor__label">
-                CSS
-              </label>
-              <span className="editor__meta tabular">{lineCount(css)}</span>
-            </div>
-            <textarea
-              id="css-input"
-              className="editor__input"
-              spellCheck={false}
-              autoCapitalize="off"
-              autoComplete="off"
-              value={css}
-              onChange={(e) => dispatch(cssChanged(e.target.value))}
-            />
-          </div>
-        </div>
+        <h2 id="source-heading" className="sr-only">
+          Source
+        </h2>
+        <SourceEditor
+          html={html}
+          css={css}
+          onHtmlChange={(v) => dispatch(htmlChanged(v))}
+          onCssChange={(v) => dispatch(cssChanged(v))}
+          highlight={highlight}
+          controlRef={editorRef}
+        />
       </section>
 
       <Splitter
@@ -277,6 +261,7 @@ export default function Workbench() {
             <IssueList
               onFixApplied={() => issuesHeadingRef.current?.focus()}
               onShowIssue={showIssue}
+              onShowInCode={showInCode}
             />
           )}
         </div>

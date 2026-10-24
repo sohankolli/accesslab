@@ -30,6 +30,7 @@
  * @property {string}   message     plain title, e.g. 'The image has no text alternative'
  * @property {string}   impact      who it affects, in one sentence
  * @property {Fix}      fix
+ * @property {{tag: string, nth: number}} source  the element is the nth <tag> in the document
  * @property {ContrastData} [contrast]  colour-contrast issues only
  * @property {boolean} [needsReview] true when a human must check (not scored)
  *

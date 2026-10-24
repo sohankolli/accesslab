@@ -17,7 +17,18 @@ export const issue = (rule, el, message, impact, fix) => ({
   message,
   impact,
   fix: typeof fix === 'string' ? { text: fix } : fix, // { text, css? }
+  source: sourceRef(el),
 });
+
+/**
+ * Where the element is among the elements with its tag name, in document order:
+ * { tag: 'img', nth: 0 } is the first <img>. The editor uses it to find the
+ * element's line in the HTML source (features/editor/sourceLine.js).
+ */
+function sourceRef(el) {
+  const tag = el.localName;
+  return { tag, nth: Array.prototype.indexOf.call(el.ownerDocument.getElementsByTagName(tag), el) };
+}
 
 /** A form field described in plain words: "email field", "drop-down list". */
 function fieldName(el) {

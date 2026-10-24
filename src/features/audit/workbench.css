@@ -369,22 +369,23 @@
   position: relative;
   display: block;
 }
+.snellen span::before {
+  content: attr(data-letters);
+}
 .snellen .is-dim {
   color: var(--faint);
 }
-.snellen .is-here::before {
-  content: '';
-  position: absolute;
-  left: -10px;
-  right: -10px;
-  bottom: -3px;
+/* The reached line: underlined 10px past its letters (::before holds the letters). */
+.snellen .is-here {
+  margin: 0 -10px -3px;
+  padding: 0 10px 1px;
   border-bottom: 2px solid var(--lens);
 }
 .snellen .is-here::after {
   content: attr(data-acuity);
   position: absolute;
   top: 50%;
-  left: calc(100% + 8px);
+  left: calc(100% - 2px);
   transform: translateY(-50%);
   font-size: 11px;
   letter-spacing: 0;

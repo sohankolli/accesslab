@@ -11,19 +11,27 @@ app with Redux Toolkit and React Router.
 
 ## Features
 
-- **Live audit.** HTML and CSS editors feed a sandboxed preview; 400 ms after you stop typing
-  the page is re-rendered and re-audited.
+- **Live audit.** An HTML/CSS editor (tabs, line numbers, caret position) feeds a sandboxed
+  preview; 400 ms after you stop typing the page is re-rendered and checked again.
+- **Findings people can read.** Each finding has a plain title and says who it affects
+  ("Screen reader users hear "image" and nothing else."), with the element, the rule, a link to
+  the WCAG criterion and the fix. The score is also read as eye-chart acuity: 77 "reads at
+  20/30".
 - **Eleven core rules** in two switchable packs (see the catalogue below), each linked to its
   WCAG 2.2 success criterion.
 - **Colour contrast with fixes.** Real WCAG relative-luminance maths, background resolution
   through translucent layers, and the nearest passing colour (same hue) as a one-click CSS fix.
-- **Issue overlays.** Every issue is outlined on the preview, labelled by severity. Select an
-  issue to scroll to it, or click an element in the preview to find its issue.
+- **Numbered marks.** Every finding is outlined on the preview with a numbered pin that matches
+  its number in the list. Opening a finding scrolls the preview to it and highlights its source
+  line in yellow; clicking an element in the preview opens its finding.
 - **Score and history.** A weighted 0–100 score, the change since the last run, and a report
   page comparing any two of the last 20 runs.
-- **Built to its own standard.** Light, dark and system themes; every text colour passes WCAG
-  AA in both (checked by a test with the engine's own contrast maths); 44 px touch targets;
-  keyboard-resizable panes; and AccessLab scores 100 when its own engine audits its pages.
+- **Built to its own standard.** Set in Atkinson Hyperlegible (self-hosted); light, dark and
+  system themes; every text colour passes WCAG AA in both (checked by a test with the engine's
+  own contrast maths); 44 px touch targets; keyboard-resizable panes; and AccessLab scores 100
+  when its own engine audits its pages. The visual spec is
+  [`docs/design/direction.html`](docs/design/direction.html), with side-by-side fidelity
+  checks in [`docs/design/fidelity/`](docs/design/fidelity/).
 - **Safe by design.** The audited page runs in an `<iframe sandbox="allow-same-origin">`: its
   own JavaScript never runs, and links or forms inside it cannot navigate the frame.
 
@@ -44,7 +52,7 @@ Requires Node.js 22.
 
 ```bash
 npm install
-npm run dev        # http://localhost:5173, then open "Audit"
+npm run dev        # http://localhost:5173, then open "Workbench"
 ```
 
 | Script             | What it does                                    |
@@ -63,7 +71,7 @@ src/
   engine/      plain JavaScript, no React: rules, registry, scheduler, contrast, DOM helpers
   features/    one folder per feature: editor, audit (workbench), report, ...
   app/         store, router, layout
-  components/  shared UI (header, footer, score badge)
+  components/  shared UI (header, footer, segmented control, severity shapes)
   context/     SettingsContext: theme, motion, enabled rule packs
   services/    guarded localStorage access
 tests/         Vitest + jsdom: engine fixtures, reducers, components
@@ -79,19 +87,19 @@ tests/         Vitest + jsdom: engine fixtures, reducers, components
 
 ## Rule catalogue
 
-| Rule                | Checks                                                  | WCAG 2.2                 | Severity | Pack           |
-| ------------------- | ------------------------------------------------------- | ------------------------ | -------- | -------------- |
-| `img-alt`           | `<img>` without an `alt` attribute                      | 1.1.1 Non-text Content   | Critical | WCAG 2.2 A/AA  |
-| `form-label`        | Field with no label, or named only by placeholder/title | 1.3.1, 4.1.2             | Critical | WCAG 2.2 A/AA  |
-| `button-name`       | Button with no accessible name                          | 4.1.2 Name, Role, Value  | Critical | WCAG 2.2 A/AA  |
-| `link-name`         | Link with no accessible name (e.g. an icon-only link)   | 2.4.4 Link Purpose       | Serious  | WCAG 2.2 A/AA  |
-| `color-contrast`    | Text below 4.5:1, or below 3:1 for large text           | 1.4.3 Contrast (Minimum) | Serious  | WCAG 2.2 A/AA  |
-| `html-lang`         | `<html>` without `lang` (full pages only)               | 3.1.1 Language of Page   | Serious  | WCAG 2.2 A/AA  |
-| `page-title`        | Missing or empty `<title>` (full pages only)            | 2.4.2 Page Titled        | Serious  | WCAG 2.2 A/AA  |
-| `heading-order`     | Heading level skipped, e.g. h1 → h3                     | 1.3.1 (best practice)    | Moderate | Best practices |
-| `tabindex-positive` | `tabindex` greater than 0                               | 2.4.3 (best practice)    | Moderate | Best practices |
-| `duplicate-id`      | Repeated `id` values                                    | Best practice            | Moderate | Best practices |
-| `landmark-main`     | No single `<main>` landmark (full pages only)           | Best practice (2.4.1)    | Minor    | Best practices |
+| Rule                | Checks                                                  | WCAG 2.2                 | Severity | Pack          |
+| ------------------- | ------------------------------------------------------- | ------------------------ | -------- | ------------- |
+| `img-alt`           | `<img>` without an `alt` attribute                      | 1.1.1 Non-text Content   | Critical | WCAG 2.2 A/AA |
+| `form-label`        | Field with no label, or named only by placeholder/title | 1.3.1, 4.1.2             | Critical | WCAG 2.2 A/AA |
+| `button-name`       | Button with no accessible name                          | 4.1.2 Name, Role, Value  | Critical | WCAG 2.2 A/AA |
+| `link-name`         | Link with no accessible name (e.g. an icon-only link)   | 2.4.4 Link Purpose       | Serious  | WCAG 2.2 A/AA |
+| `color-contrast`    | Text below 4.5:1, or below 3:1 for large text           | 1.4.3 Contrast (Minimum) | Serious  | WCAG 2.2 A/AA |
+| `html-lang`         | `<html>` without `lang` (full pages only)               | 3.1.1 Language of Page   | Serious  | WCAG 2.2 A/AA |
+| `page-title`        | Missing or empty `<title>` (full pages only)            | 2.4.2 Page Titled        | Serious  | WCAG 2.2 A/AA |
+| `heading-order`     | Heading level skipped, e.g. h1 → h3                     | 1.3.1 (best practice)    | Moderate | Best practice |
+| `tabindex-positive` | `tabindex` greater than 0                               | 2.4.3 (best practice)    | Moderate | Best practice |
+| `duplicate-id`      | Repeated `id` values                                    | Best practice            | Moderate | Best practice |
+| `landmark-main`     | No single `<main>` landmark (full pages only)           | Best practice (2.4.1)    | Minor    | Best practice |
 
 **Scoring.** Each rule owns a share of the score in proportion to its severity weight
 (critical 10, serious 6, moderate 3, minor 1). A rule with _n_ issues loses 1 − 0.5ⁿ of its

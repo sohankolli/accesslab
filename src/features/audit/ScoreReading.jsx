@@ -6,6 +6,9 @@ import { acuityFor, snellenLineFor, SNELLEN_LINES, inTheWay, describeDelta } fro
 /**
  * A decorative Snellen chart with the line the score reaches underlined and
  * labelled. Hidden from screen readers: the "Reads at 20/30" sentence says it.
+ * The letters are drawn by CSS (content: attr(data-letters)), not as text:
+ * the rows below the reached line are deliberately faint, which is fine for
+ * decoration, but as real text they would fail a contrast check.
  */
 function Snellen({ line }) {
   return (
@@ -18,9 +21,8 @@ function Snellen({ line }) {
           }
           style={{ fontSize: l.size }}
           data-acuity={i === line ? l.acuity : undefined}
-        >
-          {l.letters}
-        </span>
+          data-letters={l.letters}
+        />
       ))}
     </div>
   );

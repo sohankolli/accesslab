@@ -31,7 +31,8 @@ describe('ScoreReading', () => {
     const chart = container.querySelector('.snellen');
     expect(chart.getAttribute('aria-hidden')).toBe('true');
     const here = chart.querySelector('.is-here');
-    expect(here.textContent).toBe('E D F C Z P');
+    expect(here.dataset.letters).toBe('E D F C Z P');
+    expect(chart.textContent).toBe(''); // letters are drawn by CSS, so they are not text
     expect(here.dataset.acuity).toBe('20/30');
     expect(chart.querySelectorAll('.is-dim')).toHaveLength(2); // 20/25 and 20/20
   });

@@ -231,9 +231,7 @@ export default function SourceEditor({
       />
       <div className="src-foot">
         <span>Checks again when you pause typing</span>
-        <span>
-          {pos ? `Line ${pos.line}, col ${pos.column}` : `${active.toUpperCase()} source`}
-        </span>
+        <span>{`Line ${pos?.line ?? 1}, col ${pos?.column ?? 1}`}</span>
       </div>
     </>
   );

@@ -195,7 +195,7 @@ input[type='checkbox'] {
   align-items: center;
   justify-content: center;
   gap: var(--space-2);
-  min-height: calc(var(--target) - 6px); /* plus the 3px track = 44px */
+  min-height: var(--target);
   padding: 0 14px;
   font-size: var(--text-sm);
   color: var(--graphite);
@@ -225,7 +225,7 @@ input[type='checkbox'] {
   border: 1px solid var(--rule);
 }
 .segmented--ink .segmented__face {
-  min-height: calc(var(--target) - 2px);
+  min-height: var(--target);
   padding: 0 var(--space-3);
   border-radius: 0;
 }

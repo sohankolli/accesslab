@@ -29,10 +29,11 @@ export default defineConfig([
     },
   },
   {
-    // The route table is configuration, and a context file exports its
-    // provider together with its hook (Section 3.5). Fast refresh just does a
+    // The route table is configuration, a context file exports its provider
+    // together with its hook (Section 3.5), and SandboxFrame exports
+    // buildDocument() beside the component (Listing 4). Fast refresh just does a
     // full reload for these files, so the export rule is off for them.
-    files: ['src/app/router.jsx', 'src/context/*.jsx'],
+    files: ['src/app/router.jsx', 'src/context/*.jsx', 'src/features/audit/SandboxFrame.jsx'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
   {

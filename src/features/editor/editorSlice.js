@@ -1,9 +1,10 @@
 // features/editor/editorSlice.js
 import { createSlice } from '@reduxjs/toolkit';
+import { SAMPLE_HTML, SAMPLE_CSS } from './samplePage';
 
 const initialState = {
-  html: '',
-  css: '',
+  html: SAMPLE_HTML,
+  css: SAMPLE_CSS,
   source: 'paste', // 'paste' | 'file' | 'github' | 'link'
   sourceUrl: null,
 };

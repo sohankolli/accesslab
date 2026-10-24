@@ -30,12 +30,31 @@ describe('overlayBoxes', () => {
     expect(overlayBoxes(doc, issues)).toEqual([
       {
         id: 'img-alt:body > main > img',
+        number: 1,
         severity: 'critical',
+        review: false,
         top: 10,
         left: 20,
         width: 30,
         height: 40,
       },
+    ]);
+  });
+});
+
+describe('overlayBoxes numbering', () => {
+  it("numbers each box by its issue's place in the list, counting whole-page issues", () => {
+    const doc = new JSDOM('<img src="a.png"><p>x</p>').window.document;
+    place(doc.querySelector('img'), { top: 0, left: 0, width: 1, height: 1 });
+    place(doc.querySelector('p'), { top: 5, left: 0, width: 1, height: 1 });
+    const issues = [
+      issue('img-alt', 'body > img'),
+      issue('html-lang', 'html', 'serious'), // number 2, but no box
+      { ...issue('color-contrast', 'body > p', 'minor'), needsReview: true },
+    ];
+    expect(overlayBoxes(doc, issues).map((b) => [b.number, b.review])).toEqual([
+      [1, false],
+      [3, true],
     ]);
   });
 });

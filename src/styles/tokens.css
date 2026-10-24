@@ -73,6 +73,8 @@
   --pin-minor: #45607c;
   --pin-text: #ffffff;
   --pin-halo: #ffffff;
+  --page-canvas: #ffffff; /* behind the audited page: browsers default to white */
+  --mark-edge: rgb(0 0 0 / 0.25); /* thin edge around the yellow selection ring */
 
   --shadow-sheet: 0 0 0 1px #cfd3cc, 0 30px 60px -30px rgb(25 30 22 / 0.35);
   --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.12);

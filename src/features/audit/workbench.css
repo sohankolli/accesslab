@@ -3,10 +3,10 @@
 
 .workbench {
   display: grid;
-  grid-template-columns: var(--source-w, 28%) 12px minmax(0, 1fr) 12px var(--issues-w, 30%);
+  grid-template-columns: var(--source-w, 28%) 1px minmax(0, 1fr) 1px var(--issues-w, 29%);
   height: calc(100dvh - var(--header-h));
   min-height: 560px;
-  background: var(--bg);
+  background: var(--room);
 }
 
 /* ---------- Panes ---------- */
@@ -18,83 +18,38 @@
   min-height: 0;
   background: var(--bg);
 }
-.pane__header {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-2) var(--space-3);
-  min-height: 60px;
-  padding: var(--space-1) var(--space-4);
-  border-bottom: 1px solid var(--border);
-}
-.pane__title {
-  font-size: var(--text-sm);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
-.pane__meta {
-  font-size: var(--text-xs);
-  color: var(--muted);
-}
 .pane__body {
   flex: 1;
   min-height: 0;
   overflow: auto;
 }
-.pane__status {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--muted);
-  visibility: hidden;
-}
-.pane__status.is-active {
-  visibility: visible;
-}
-.pane__status-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-full);
-  background: var(--accent);
-}
 
 /* ---------- Splitters ---------- */
 
+/* Each splitter is the 1px rule between two panes. Its hit area is 23px wide
+   (WCAG 2.5.8) and overlaps the panes' edges; nothing there needs the pointer
+   (the editor keeps its scrollbar clear with right padding). */
 .splitter {
   position: relative;
+  z-index: 2;
   cursor: col-resize;
   touch-action: none;
-  background: var(--bg);
-}
-.splitter::before {
-  /* the visible divider */
-  content: '';
-  position: absolute;
-  inset: 0 5px;
-  background: var(--border);
-  transition:
-    background-color var(--duration) var(--ease),
-    inset var(--duration) var(--ease);
+  background: var(--rule);
+  transition: background-color var(--duration) var(--ease);
 }
 .splitter::after {
-  /* a 24px hit area (WCAG 2.5.8) without covering the panes' scrollbars much */
   content: '';
   position: absolute;
-  inset: 0 -6px;
+  inset: 0 -11px;
 }
-.splitter:hover::before,
-.splitter:focus-visible::before {
-  inset: 0 4px;
-  background: var(--accent);
+.splitter:hover,
+.splitter:focus-visible {
+  background: var(--lens);
+  box-shadow: 0 0 0 1px var(--lens);
 }
 .splitter:focus-visible {
-  outline: none; /* the divider itself turns into the accent bar */
-}
-.splitter:focus-visible::before {
-  inset: 0 3px;
+  outline: none; /* the rule itself turns into the lens-coloured bar */
+  box-shadow: 0 0 0 2px var(--lens);
 }
 
 /* ---------- Source editor ---------- */
@@ -151,6 +106,7 @@
   position: relative;
   flex: 1;
   min-height: 0;
+  margin-right: 12px; /* keeps the editor's scrollbar clear of the splitter */
   display: grid;
   grid-template-columns: var(--gutter-w) minmax(0, 1fr);
   overflow: hidden;
@@ -218,120 +174,137 @@
   border-top: 1px solid var(--rule);
 }
 
-/* ---------- Preview ---------- */
+/* ---------- Preview: the lightbox ---------- */
 
-.preview-stage {
-  position: relative; /* the overlay is positioned against this */
-  padding: var(--space-4);
-  background: var(--surface);
+.pane--preview {
+  padding: var(--space-5) var(--space-6) var(--space-4);
+  background: var(--room);
 }
-.device {
+.lb-head {
   display: flex;
-  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-4);
+  margin-bottom: var(--space-4);
+}
+.lb-head__title {
+  min-width: 0;
+  font-size: var(--text-md);
+}
+.lb-head__title span {
+  font-weight: 400;
+  color: var(--graphite);
+}
+.preview-stage {
+  position: relative; /* the marks are positioned against this */
+  flex: 1;
+  min-height: 0;
+}
+/* The audited page on its sheet: no fake browser around it. */
+.sheet {
   width: 100%;
   height: 100%;
   margin: 0 auto;
   overflow: hidden;
-  background: var(--raised);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+  background: var(--page-canvas); /* the audited page's own canvas */
+  border-radius: 2px;
+  box-shadow: var(--shadow-sheet);
 }
-/* Focus inside the preview (Tab moves into the audited page) is shown on its
-   frame. :focus-within does not see focus inside an iframe, so Workbench sets
-   .device--focused from the frame window's focus and blur events. */
-.device--focused {
-  outline: var(--focus-ring);
-  outline-offset: 2px;
-}
-.device--mobile {
+.sheet--mobile {
   width: min(390px, 100%);
 }
-.device--tablet {
+.sheet--tablet {
   width: min(768px, 100%);
 }
-.device__bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  min-height: 28px;
-  padding: 0 var(--space-3);
-  font-size: var(--text-xs);
-  color: var(--muted);
-  border-bottom: 1px solid var(--border);
-}
-.device__dots {
-  display: inline-flex;
-  gap: 6px;
-}
-.device__dots i {
-  width: 8px;
-  height: 8px;
-  border-radius: var(--radius-full);
-  background: var(--border);
+/* Focus inside the preview (Tab moves into the audited page) is shown on its
+   sheet. :focus-within does not see focus inside an iframe, so Workbench sets
+   .sheet--focused from the frame window's focus and blur events. */
+.sheet--focused {
+  outline: var(--focus-ring);
+  outline-offset: 3px;
 }
 .sandbox-frame {
   display: block; /* no inline baseline gap under the frame */
-  flex: 1;
   width: 100%;
-  min-height: 0;
+  height: 100%;
   border: 0;
 }
+.lb-foot {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-1) var(--space-4);
+  margin-top: var(--space-3);
+  font-size: var(--text-xs);
+  color: var(--graphite);
+}
 
-/* ---------- Issue overlay ---------- */
+/* ---------- Inspection marks ---------- */
 
-.issue-overlay {
+.marks {
   position: absolute;
-  overflow: hidden;
   pointer-events: none; /* clicks reach the preview, where Workbench selects issues */
 }
-.issue-box {
+.marks__outlines {
   position: absolute;
-  min-width: 8px;
-  min-height: 8px;
-  border: 2px solid var(--sev);
-  border-radius: 2px;
-  transition: opacity var(--duration) var(--ease);
+  inset: 0;
+  overflow: hidden;
 }
-.issue-box--critical {
-  --sev: var(--critical);
+/* The marks sit on the audited page, usually white, so they keep the light
+   severity colours (--pin-*) in both themes. */
+.mark--critical,
+.pin--critical {
+  --c: var(--pin-critical);
 }
-.issue-box--serious {
-  --sev: var(--serious);
+.mark--serious,
+.pin--serious {
+  --c: var(--pin-serious);
 }
-.issue-box--moderate {
-  --sev: var(--moderate);
+.mark--moderate,
+.pin--moderate {
+  --c: var(--pin-moderate);
 }
-.issue-box--minor {
-  --sev: var(--minor);
+.mark--minor,
+.pin--minor,
+.mark--review,
+.pin--review {
+  --c: var(--pin-minor);
 }
-.issue-box__label {
+.mark {
   position: absolute;
-  bottom: 100%; /* above the box, so it never covers the element's own text */
-  left: -2px;
-  padding: 0 4px;
-  font-family: var(--font-sans);
-  font-size: 0.6875rem;
-  font-weight: 700;
-  line-height: 1.4;
-  white-space: nowrap;
-  color: var(--bg);
-  background: var(--sev);
-  border-radius: 2px 2px 0 0;
+  border: 1.5px dashed var(--c);
+  border-radius: 3px;
 }
-.issue-box--label-inside .issue-box__label {
-  top: -2px;
-  bottom: auto;
-  border-radius: 2px 0 2px 0;
-}
-.issue-overlay--has-selection .issue-box:not(.issue-box--selected) {
-  opacity: 0.35;
-}
-.issue-box--selected {
-  border-width: 3px;
+.mark.is-selected {
+  border: 2px solid var(--c);
   box-shadow:
-    0 0 0 2px var(--bg),
-    0 0 0 5px var(--sev);
+    0 0 0 5px var(--mark),
+    0 0 0 6px var(--mark-edge);
+  transition: box-shadow var(--duration) var(--ease);
+}
+.pin {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  font: 700 0.75rem/22px var(--font);
+  text-align: center;
+  color: var(--pin-text);
+  background: var(--c);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 0 2px var(--pin-halo);
+}
+.pin--review {
+  color: var(--c);
+  background: var(--pin-halo);
+  box-shadow:
+    inset 0 0 0 1.5px var(--c),
+    0 0 0 2px var(--pin-halo);
+}
+.pin.is-selected {
+  box-shadow:
+    0 0 0 2px var(--pin-halo),
+    0 0 0 4px var(--mark);
 }
 
 /* ---------- Findings pane ---------- */
@@ -422,7 +395,7 @@
 .tally {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2) var(--space-4);
+  gap: var(--space-2) 14px;
   margin: 0;
   padding: var(--space-3) var(--space-5);
   list-style: none;
@@ -674,6 +647,7 @@
     height: 520px;
   }
   .preview-stage {
+    flex: none;
     height: 70vh;
   }
 }
@@ -684,12 +658,11 @@
   .workbench {
     grid-template-columns: minmax(0, 1fr);
   }
-  .pane__meta {
-    display: none;
+  .pane--preview {
+    padding: var(--space-4);
   }
   .preview-stage {
     height: 60vh;
-    padding: var(--space-2);
   }
   .reading {
     padding: var(--space-4);

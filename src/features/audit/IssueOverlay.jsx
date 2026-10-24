@@ -2,18 +2,23 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { overlayBoxes } from './overlayBoxes';
-import { SEVERITY_LABEL } from '../../components/severityLabels';
+import { selectSortedIssues } from './auditSlice';
 
-/** Height of a severity label; boxes nearer the top than this show it inside. */
-const LABEL_ROOM = 18;
+/** Space between an element and its dashed mark, as in the mockup. */
+const PAD = 5;
+/** How far a pin may hang outside the preview frame (half a pin plus its halo). */
+const PIN_OUT = 14;
 
 /**
- * Boxes drawn over the preview iframe, one per issue. Purely visual
- * (aria-hidden): the issue list carries the same information for everyone.
- * Clicks go through to the preview, where Workbench's listener selects issues.
+ * Inspection marks drawn over the preview iframe: a dashed outline in the
+ * severity colour around each element with an issue, and a numbered pin at its
+ * top-left, the same number as in the findings list. The selected mark gets a
+ * solid border and a yellow ring. Purely visual (aria-hidden): the list carries
+ * the same information for everyone. Clicks go through to the preview, where
+ * Workbench's listener selects issues.
  */
 export default function IssueOverlay({ frameRef }) {
-  const issues = useSelector((state) => state.audit.result?.issues);
+  const issues = useSelector(selectSortedIssues);
   const selectedId = useSelector((state) => state.audit.selectedIssueId);
   const [layout, setLayout] = useState(null);
 
@@ -21,7 +26,7 @@ export default function IssueOverlay({ frameRef }) {
     const frame = frameRef.current;
     const doc = frame?.contentDocument;
     const win = doc?.defaultView;
-    if (!frame || !win || !issues) return undefined;
+    if (!frame || !win || !issues.length) return undefined;
 
     // At most one layout read per frame, however many scroll events arrive.
     let raf = 0;
@@ -53,29 +58,48 @@ export default function IssueOverlay({ frameRef }) {
     };
   }, [frameRef, issues]);
 
-  if (!layout) return null;
+  if (!layout || !issues.length) return null;
+  const { width, height } = layout.frame;
+  // Draw the selected mark last, so its ring sits on top of its neighbours.
+  const boxes = [...layout.boxes].sort((a, b) => (a.id === selectedId) - (b.id === selectedId));
+  const tone = (box) => (box.review ? 'review' : box.severity);
+
   return (
-    <div
-      className={`issue-overlay${selectedId ? ' issue-overlay--has-selection' : ''}`}
-      style={layout.frame}
-      aria-hidden="true"
-    >
-      {layout.boxes.map((box) => (
-        <div
-          key={box.id}
-          className={[
-            'issue-box',
-            `issue-box--${box.severity}`,
-            box.id === selectedId && 'issue-box--selected',
-            box.top < LABEL_ROOM && 'issue-box--label-inside', // no room above: label goes inside
-          ]
-            .filter(Boolean)
-            .join(' ')}
-          style={{ top: box.top, left: box.left, width: box.width, height: box.height }}
-        >
-          <span className="issue-box__label">{SEVERITY_LABEL[box.severity]}</span>
-        </div>
-      ))}
+    <div className="marks" style={layout.frame} aria-hidden="true">
+      {/* Outlines are clipped to the frame; pins may hang just outside it. */}
+      <div className="marks__outlines">
+        {boxes.map((box) => (
+          <div
+            key={box.id}
+            className={`mark mark--${tone(box)}${box.id === selectedId ? ' is-selected' : ''}`}
+            style={{
+              top: box.top - PAD,
+              left: box.left - PAD,
+              width: box.width + 2 * PAD,
+              height: box.height + 2 * PAD,
+            }}
+          />
+        ))}
+      </div>
+      {boxes
+        .filter((box) => {
+          // A pin is shown while its corner is inside the visible frame.
+          const x = box.left - PAD;
+          const y = box.top - PAD;
+          return x > -PIN_OUT && y > -PIN_OUT && x < width && y < height;
+        })
+        .map((box) => (
+          <span
+            key={box.id}
+            className={`pin pin--${tone(box)}${box.id === selectedId ? ' is-selected' : ''}`}
+            style={{
+              top: Math.max(-PIN_OUT + 2, box.top - PAD - 13),
+              left: Math.max(-PIN_OUT + 2, box.left - PAD - 13),
+            }}
+          >
+            {box.number}
+          </span>
+        ))}
     </div>
   );
 }

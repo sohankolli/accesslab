@@ -17,21 +17,19 @@ import { findElement, issueAt, isPageLevel } from './overlayBoxes';
 import SourceEditor from '../editor/SourceEditor';
 import { sourceLineOf } from '../editor/sourceLine';
 import ScoreReading from './ScoreReading';
-import Icon from '../../components/Icon';
 import Segmented from '../../components/Segmented';
 import Splitter from '../../components/Splitter';
 import { readPref, writePref } from '../../services/storage';
 import './workbench.css';
 
-const DEFAULT_SIZES = { source: 28, issues: 30 };
+const DEFAULT_SIZES = { source: 28, issues: 29 }; // the mockup's 400 and 420px at 1440
 const MIN_PREVIEW = 25; // percent: the splitters never squeeze the preview below this
 
 const DEVICES = [
-  { value: 'mobile', label: 'Mobile', icon: <Icon name="phone" /> },
-  { value: 'tablet', label: 'Tablet', icon: <Icon name="tablet" /> },
-  { value: 'desktop', label: 'Desktop', icon: <Icon name="monitor" /> },
+  { value: 'mobile', label: 'Phone' },
+  { value: 'tablet', label: 'Tablet' },
+  { value: 'desktop', label: 'Desktop' },
 ];
-const DEVICE_LABEL = { mobile: '390 px', tablet: '768 px', desktop: 'Full width' };
 
 /** Text for the live region, read out by screen readers after every audit. */
 function announcement(result) {
@@ -46,6 +44,8 @@ export default function Workbench() {
   const previousScore = useSelector((state) => state.audit.previousScore);
   const store = useStore();
   const [previewFocused, setPreviewFocused] = useState(false);
+  const [pageTitle, setPageTitle] = useState('Preview');
+  const [frameSize, setFrameSize] = useState(null);
   const docRef = useRef(null); // the live iframe Document: kept out of Redux
   const frameRef = useRef(null);
   const issuesHeadingRef = useRef(null);
@@ -108,6 +108,7 @@ export default function Workbench() {
   const handleDocument = useCallback(
     (doc) => {
       docRef.current = doc;
+      setPageTitle(doc.title.trim() || 'Untitled page');
       // AccessLab's own listeners (the page's scripts still never run). A click
       // selects the issue under the pointer, and neither links nor forms may
       // navigate the frame away from the page being audited.
@@ -153,6 +154,17 @@ export default function Workbench() {
     if (docRef.current) auditDocument(docRef.current);
   }, [auditDocument]);
 
+  // The preview's size in CSS pixels, shown under it.
+  useEffect(() => {
+    const frame = frameRef.current;
+    if (!frame) return undefined;
+    const observer = new ResizeObserver(() =>
+      setFrameSize({ width: frame.clientWidth, height: frame.clientHeight }),
+    );
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, []);
+
   // Pane widths (percent of the workbench), adjustable with the splitters and remembered.
   const workbenchRef = useRef(null);
   const [sizes, setSizes] = useState(() => ({ ...DEFAULT_SIZES, ...readPref('paneSizes') }));
@@ -195,9 +207,9 @@ export default function Workbench() {
       />
 
       <section id="pane-preview" className="pane pane--preview" aria-labelledby="preview-heading">
-        <div className="pane__header">
-          <h2 id="preview-heading" className="pane__title">
-            Preview
+        <div className="lb-head">
+          <h2 id="preview-heading" className="lb-head__title">
+            {pageTitle} <span>as rendered, scripts off</span>
           </h2>
           <Segmented
             legend="Preview width"
@@ -207,16 +219,8 @@ export default function Workbench() {
             options={DEVICES}
           />
         </div>
-        <div className="pane__body preview-stage">
-          <div className={`device device--${device}${previewFocused ? ' device--focused' : ''}`}>
-            <div className="device__bar" aria-hidden="true">
-              <span className="device__dots">
-                <i />
-                <i />
-                <i />
-              </span>
-              <span className="tabular">{DEVICE_LABEL[device]}</span>
-            </div>
+        <div className="preview-stage">
+          <div className={`sheet sheet--${device}${previewFocused ? ' sheet--focused' : ''}`}>
             <SandboxFrame
               html={auditHtml}
               css={auditCss}
@@ -225,6 +229,14 @@ export default function Workbench() {
             />
           </div>
           <IssueOverlay frameRef={frameRef} />
+        </div>
+        <div className="lb-foot">
+          <span>Click a marked element to open its finding</span>
+          {frameSize && (
+            <span>
+              {frameSize.width} × {frameSize.height} <span className="sr-only">pixels</span>
+            </span>
+          )}
         </div>
       </section>
 

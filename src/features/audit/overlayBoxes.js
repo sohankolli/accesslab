@@ -2,7 +2,7 @@
 
 /**
  * Issues about the whole page (<html>, or <head> content such as <title>) have
- * no box of their own to highlight; they are shown in the issue list only.
+ * no box of their own to highlight; the list marks them "Whole page" instead.
  */
 export const isPageLevel = (issue) =>
   issue.selector === 'html' || issue.selector.startsWith('head');
@@ -16,9 +16,12 @@ export function findElement(doc, selector) {
   }
 }
 
-/** Rectangles for highlighting issues on top of the iframe. */
+/**
+ * Rectangles for marking issues on top of the iframe. Pass the issues in list
+ * order: each box carries its issue's list number, for the pin on the preview.
+ */
 export function overlayBoxes(doc, issues) {
-  return issues.flatMap((issue) => {
+  return issues.flatMap((issue, index) => {
     if (isPageLevel(issue)) return [];
     const el = findElement(doc, issue.selector);
     if (!el || el.getClientRects().length === 0) return []; // gone, or not rendered
@@ -26,7 +29,9 @@ export function overlayBoxes(doc, issues) {
     return [
       {
         id: issue.id,
+        number: index + 1,
         severity: issue.severity,
+        review: Boolean(issue.needsReview),
         top: r.top,
         left: r.left,
         width: r.width,

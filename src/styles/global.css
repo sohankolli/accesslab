@@ -341,11 +341,13 @@ input[type='checkbox'] {
   .site-nav {
     order: 3;
     flex-basis: 100%;
-    overflow-x: auto;
   }
   .site-nav__links {
-    flex-wrap: nowrap;
-    margin: 0 calc(var(--space-3) * -1);
+    gap: 0;
+    margin: 0 calc(var(--space-2) * -1);
+  }
+  .site-nav__links a {
+    padding: 0 var(--space-2);
   }
 }
 

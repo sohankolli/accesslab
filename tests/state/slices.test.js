@@ -5,7 +5,11 @@ import auditReducer, {
   auditCompleted,
   selectSortedIssues,
 } from '../../src/features/audit/auditSlice';
-import editorReducer, { htmlChanged, cssChanged } from '../../src/features/editor/editorSlice';
+import editorReducer, {
+  htmlChanged,
+  cssChanged,
+  fixApplied,
+} from '../../src/features/editor/editorSlice';
 
 const audit = (ranAt, score, severities = []) => ({
   ranAt,
@@ -32,6 +36,12 @@ describe('historySlice', () => {
     expect(state.runs).toHaveLength(20);
     expect(state.runs[0].ranAt).toBe(25);
     expect(state.runs.at(-1).ranAt).toBe(6);
+  });
+
+  it('does not count items that need manual review (they are not scored)', () => {
+    const run = audit(1, 90, ['serious', 'minor']);
+    run.issues[1].needsReview = true;
+    expect(historyReducer(undefined, runAdded(run)).runs[0].counts).toEqual({ serious: 1 });
   });
 
   it('can be cleared', () => {
@@ -80,5 +90,26 @@ describe('editorSlice', () => {
     state = editorReducer(state, htmlChanged('<p>Hi</p>'));
     state = editorReducer(state, cssChanged('p { color: red }'));
     expect(state).toMatchObject({ html: '<p>Hi</p>', css: 'p { color: red }', source: 'paste' });
+  });
+});
+
+describe('fixApplied', () => {
+  const fix = { ruleId: 'color-contrast', css: 'p { color: #757575 !important; }' };
+  const line = 'p { color: #757575 !important; } /* AccessLab fix: color-contrast */';
+
+  it('appends the fix as one commented line', () => {
+    let state = editorReducer(undefined, cssChanged('body { margin: 0 }\n\n'));
+    state = editorReducer(state, fixApplied(fix));
+    expect(state.css).toBe(`body { margin: 0 }\n${line}\n`);
+  });
+  it('works on an empty stylesheet', () => {
+    const state = editorReducer(editorReducer(undefined, cssChanged('')), fixApplied(fix));
+    expect(state.css).toBe(`${line}\n`);
+  });
+  it('does nothing when the same fix is applied twice', () => {
+    let state = editorReducer(editorReducer(undefined, cssChanged('')), fixApplied(fix));
+    const once = state.css;
+    state = editorReducer(state, fixApplied(fix));
+    expect(state.css).toBe(once);
   });
 });

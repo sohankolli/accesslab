@@ -1,0 +1,84 @@
+import { describe, it, expect } from 'vitest';
+import historyReducer, { runAdded, historyCleared } from '../../src/features/report/historySlice';
+import auditReducer, {
+  auditStarted,
+  auditCompleted,
+  selectSortedIssues,
+} from '../../src/features/audit/auditSlice';
+import editorReducer, { htmlChanged, cssChanged } from '../../src/features/editor/editorSlice';
+
+const audit = (ranAt, score, severities = []) => ({
+  ranAt,
+  score,
+  issues: severities.map((severity, i) => ({ id: `r:${i}`, severity })),
+  timings: {},
+  errors: [],
+});
+
+describe('historySlice', () => {
+  it('stores newest first with issue counts per severity', () => {
+    const state = historyReducer(
+      undefined,
+      runAdded(audit(1000, 67, ['critical', 'critical', 'moderate'])),
+    );
+    expect(state.runs).toEqual([
+      { id: '1000', ranAt: 1000, score: 67, counts: { critical: 2, moderate: 1 } },
+    ]);
+  });
+
+  it('keeps only the newest 20 runs', () => {
+    let state = historyReducer(undefined, { type: 'init' });
+    for (let i = 1; i <= 25; i++) state = historyReducer(state, runAdded(audit(i, i)));
+    expect(state.runs).toHaveLength(20);
+    expect(state.runs[0].ranAt).toBe(25);
+    expect(state.runs.at(-1).ranAt).toBe(6);
+  });
+
+  it('can be cleared', () => {
+    const state = historyReducer(undefined, runAdded(audit(1, 50)));
+    expect(historyReducer(state, historyCleared())).toEqual({ runs: [] });
+  });
+});
+
+describe('auditSlice', () => {
+  it('has no previousScore after the first audit', () => {
+    let state = auditReducer(undefined, auditStarted());
+    expect(state.status).toBe('running');
+    state = auditReducer(state, auditCompleted(audit(1, 67)));
+    expect(state).toMatchObject({ status: 'done', previousScore: null });
+    expect(state.result.score).toBe(67);
+  });
+
+  it('remembers the previous score for the before/after delta', () => {
+    let state = auditReducer(undefined, auditCompleted(audit(1, 67)));
+    state = auditReducer(state, auditCompleted(audit(2, 86)));
+    expect(state.previousScore).toBe(67);
+    state = auditReducer(state, auditCompleted(audit(3, 100)));
+    expect(state.previousScore).toBe(86);
+  });
+
+  it('selectSortedIssues orders by severity and is memoised', () => {
+    const result = audit(1, 50, ['minor', 'critical', 'moderate', 'serious', 'critical']);
+    const root = { audit: auditReducer(undefined, auditCompleted(result)) };
+    const sorted = selectSortedIssues(root);
+    expect(sorted.map((i) => i.severity)).toEqual([
+      'critical',
+      'critical',
+      'serious',
+      'moderate',
+      'minor',
+    ]);
+    expect(selectSortedIssues(root)).toBe(sorted); // same input, same array
+    expect(result.issues[0].severity).toBe('minor'); // the stored array is not mutated
+  });
+});
+
+describe('editorSlice', () => {
+  it('starts with the sample page and updates html and css', () => {
+    let state = editorReducer(undefined, { type: 'init' });
+    expect(state.html).toContain('<html lang="en">');
+    state = editorReducer(state, htmlChanged('<p>Hi</p>'));
+    state = editorReducer(state, cssChanged('p { color: red }'));
+    expect(state).toMatchObject({ html: '<p>Hi</p>', css: 'p { color: red }', source: 'paste' });
+  });
+});

@@ -1,7 +1,8 @@
 // features/audit/Workbench.jsx
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
-import { runAudit } from '../../engine/runAudit';
+import { toAuditResult } from '../../engine/runAudit';
+import { runRulesSliced } from '../../engine/scheduler';
 import { rulesFor } from '../../engine/rules';
 import { useSettings } from '../../context/SettingsContext';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
@@ -40,15 +41,33 @@ export default function Workbench() {
   const { enabledPacks, reducedMotion } = useSettings();
   const rules = useMemo(() => rulesFor(enabledPacks), [enabledPacks]);
 
+  // The running audit's controller. Starting a new audit aborts the old one, so
+  // a stale result never reaches Redux or the history.
+  const auditControllerRef = useRef(null);
+
   const auditDocument = useCallback(
-    (doc) => {
+    async (doc) => {
+      auditControllerRef.current?.abort();
+      const controller = new AbortController();
+      auditControllerRef.current = controller;
       dispatch(auditStarted());
-      const audit = runAudit(doc, rules);
-      dispatch(auditCompleted(audit));
-      dispatch(runAdded(audit));
+      try {
+        // Runs in ~12 ms slices, yielding to the browser in between so typing stays smooth.
+        const results = await runRulesSliced(doc, rules, { signal: controller.signal });
+        if (controller.signal.aborted) return; // superseded while the last rule ran
+        const audit = toAuditResult(results);
+        dispatch(auditCompleted(audit));
+        dispatch(runAdded(audit));
+      } catch (err) {
+        if (err.name !== 'AbortError') throw err;
+      }
     },
     [dispatch, rules],
   );
+
+  // New code is about to replace the preview's document: stop auditing the old
+  // one now rather than when the new one has loaded. Also stops on unmount.
+  useEffect(() => () => auditControllerRef.current?.abort(), [auditHtml, auditCss]);
 
   const handleDocument = useCallback(
     (doc) => {

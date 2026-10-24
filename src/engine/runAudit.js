@@ -34,6 +34,16 @@ export function runAudit(doc, rules) {
       return { rule, issues: [], error: err.message, ms: performance.now() - t0 };
     }
   });
+  return toAuditResult(results);
+}
+
+/**
+ * Turn per-rule results into the AuditResult that goes into Redux. Shared by
+ * runAudit() and the sliced scheduler, so both produce exactly the same shape.
+ * @param {{rule: import('./types.js').Rule, issues: import('./types.js').Issue[], ms: number, error?: string}[]} results
+ * @returns {import('./types.js').AuditResult}
+ */
+export function toAuditResult(results) {
   return {
     ranAt: Date.now(),
     score: computeScore(results),

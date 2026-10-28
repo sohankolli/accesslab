@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router';
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';
+import KeyboardShortcuts from '../features/shortcuts/KeyboardShortcuts';
 
 export default function AppLayout() {
   const { pathname } = useLocation();
@@ -26,6 +27,7 @@ export default function AppLayout() {
         Skip to main content
       </a>
       <SiteHeader />
+      <KeyboardShortcuts />
       <main id="main" ref={mainRef} tabIndex={-1}>
         <Outlet />
       </main>

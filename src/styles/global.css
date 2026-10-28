@@ -501,3 +501,69 @@ main {
 .btn--ghost {
   border-color: transparent;
 }
+/* Keyboard shortcut help dialog */
+.shortcut-dialog {
+  width: min(90vw, 34rem);
+  max-height: 80vh;
+  margin: auto;
+  padding: var(--space-6);
+  color: var(--ink);
+  background: var(--chart);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+}
+
+.shortcut-dialog::backdrop {
+  background: rgb(0 0 0 / 55%);
+}
+
+.shortcut-dialog__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.shortcut-dialog__header h2 {
+  margin: 0;
+  font-size: var(--text-xl);
+}
+
+.shortcut-dialog__header button {
+  padding: var(--space-2) var(--space-3);
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.shortcut-dialog__list {
+  display: grid;
+  gap: var(--space-3);
+  padding: 0;
+  margin: var(--space-4) 0 0;
+  list-style: none;
+}
+
+.shortcut-dialog__list li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.shortcut-dialog kbd {
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-sm);
+  font: inherit;
+  font-size: 0.875rem;
+  white-space: nowrap;
+}
+
+.shortcut-dialog :focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}

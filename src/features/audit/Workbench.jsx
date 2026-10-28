@@ -8,7 +8,13 @@ import { rulesFor } from '../../engine/rules';
 import { useSettings } from '../../context/SettingsContext';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { htmlChanged, cssChanged } from '../editor/editorSlice';
-import { auditStarted, auditCompleted, issueSelected, selectSortedIssues } from './auditSlice';
+import {
+  auditStarted,
+  auditCompleted,
+  issueSelected,
+  selectSortedIssues,
+  simulationChanged,
+} from './auditSlice';
 import { runAdded } from '../report/historySlice';
 import SandboxFrame from './SandboxFrame';
 import IssueList from './IssueList';
@@ -31,7 +37,14 @@ const DEVICES = [
   { value: 'tablet', label: 'Tablet' },
   { value: 'desktop', label: 'Desktop' },
 ];
-
+const SIMULATIONS = [
+  { value: 'none', label: 'Normal vision' },
+  { value: 'protanopia', label: 'Protanopia (red-vision simulation)' },
+  { value: 'deuteranopia', label: 'Deuteranopia (green-vision simulation)' },
+  { value: 'tritanopia', label: 'Tritanopia (blue-vision simulation)' },
+  { value: 'low-vision', label: 'Low-vision simulation' },
+  { value: 'zoom-200', label: '200% zoom' },
+];
 /** Text for the live region, read out by screen readers after every audit. */
 function announcement(result) {
   const n = result.issues.length;
@@ -52,7 +65,7 @@ export default function Workbench() {
   const issuesHeadingRef = useRef(null);
   const editorRef = useRef(null);
   const selectedId = useSelector((state) => state.audit.selectedIssueId);
-
+  const simulation = useSelector((state) => state.audit.simulation);
   // Typing updates the editor at once; the audit waits for a pause.
   const auditHtml = useDebouncedValue(html, 400);
   const auditCss = useDebouncedValue(css, 400);
@@ -233,9 +246,24 @@ export default function Workbench() {
             onChange={setDevice}
             options={DEVICES}
           />
+          <label className="simulation-control">
+            <span>Vision simulation</span>
+             <select
+                value={simulation}
+                onChange={(event) => dispatch(simulationChanged(event.target.value))}
+  >
+                {SIMULATIONS.map((option) => (
+                 <option key={option.value} value={option.value}>
+                  {option.label}
+                 </option>
+            ))}
+          </select>
+        </label>
         </div>
         <div className="preview-stage">
-          <div className={`sheet sheet--${device}${previewFocused ? ' sheet--focused' : ''}`}>
+        <div
+          className={`sheet sheet--${device}${previewFocused ? ' sheet--focused' : ''} simulation--${simulation}`}
+        >
             <SandboxFrame
               html={auditHtml}
               css={auditCss}

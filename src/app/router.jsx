@@ -10,6 +10,7 @@ const Workbench = lazy(() => import('../features/audit/Workbench'));
 const Simulator = lazy(() => import('../features/simulate/Simulator'));
 const Report = lazy(() => import('../features/report/Report'));
 const Learn = lazy(() => import('../features/learn/Learn'));
+const RuleDetail = lazy(() => import('../features/learn/RuleDetail'));
 const NotFound = lazy(() => import('./NotFound'));
 
 const page = (Page) => (
@@ -18,7 +19,7 @@ const page = (Page) => (
   </Suspense>
 );
 
-// learn/:ruleId (RuleDetail) is added with the Learn pages in a later milestone;
+// Learn pages include a list and individual rule guides.
 // until then such paths fall through to NotFound.
 export const router = createBrowserRouter([
   {
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
       { path: 'report', element: page(Report) },
       { path: 'report/:runId', element: page(Report) },
       { path: 'learn', element: page(Learn) },
+      { path: 'learn/:ruleId', element: page(RuleDetail) },
       { path: '*', element: page(NotFound) },
     ],
   },

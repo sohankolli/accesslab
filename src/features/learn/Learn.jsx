@@ -1,26 +1,84 @@
-// features/learn/Learn.jsx
+
 import { Link } from 'react-router';
+import { RULE_GUIDES } from './ruleguides';
+
+const GROUPS = [
+  {
+    title: 'WCAG 2.2 A/AA',
+    description: 'Accessibility requirements for text, controls and page structure.',
+    ids: [
+      'img-alt',
+      'form-label',
+      'button-name',
+      'link-name',
+      'color-contrast',
+      'html-lang',
+      'page-title',
+    ],
+  },
+  {
+    title: 'Best practices',
+    description: 'Additional checks that help make pages easier to navigate.',
+    ids: [
+      'heading-order',
+      'tabindex-positive',
+      'duplicate-id',
+      'landmark-main',
+    ],
+  },
+];
 
 export default function Learn() {
   return (
-    <div className="page page--narrow">
-      <title>Learn – AccessLab</title>
-      <div className="page__header">
+    <main className="page page--narrow">
+      <title>Learn - AccessLab</title>
+
+      <header className="page__header">
         <div>
-          <h1 className="page__title">Learn</h1>
-          <p className="page__lead">Why each rule matters, who it affects and how to fix it.</p>
+          <h1 className="page__title">Learn accessibility</h1>
+          <p className="page__lead">
+            Understand common accessibility issues, why they matter,
+            and how to fix them.
+          </p>
         </div>
-      </div>
-      <div className="card empty-state">
-        <h2 className="empty-state__title">Rule guides are coming in Milestone 4</h2>
+      </header>
+
+      {GROUPS.map((group) => (
+        <section key={group.title} className="learn-group">
+          <h2>{group.title}</h2>
+          <p>{group.description}</p>
+
+          <div className="learn-grid">
+            {group.ids.map((id) => {
+              const guide = RULE_GUIDES[id];
+
+              return (
+                <article className="card learn-card" key={id}>
+                  <h3>{guide.title}</h3>
+                  <p>{guide.summary}</p>
+                  <Link
+                    to={`/learn/${id}`}
+                    className="btn btn--primary"
+                  >
+                    Read guide
+                  </Link>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+      ))}
+
+      <section className="card">
+        <h2>Try it yourself</h2>
         <p>
-          Until then, every issue in the workbench links its WCAG success criterion and says how to
-          fix it.
+          Audit your own HTML and CSS to find accessibility issues
+          and experiment with fixes.
         </p>
         <Link to="/audit" className="btn btn--primary">
           Open the workbench
         </Link>
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }

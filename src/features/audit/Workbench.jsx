@@ -197,7 +197,9 @@ export default function Workbench() {
   // Pane widths (percent of the workbench), adjustable with the splitters and remembered.
   const workbenchRef = useRef(null);
   const [sizes, setSizes] = useState(() => ({ ...DEFAULT_SIZES, ...readPref('paneSizes') }));
-  useEffect(() => writePref('paneSizes', sizes), [sizes]);
+  useEffect(() => {
+    writePref('paneSizes', sizes); // a convenience: if it is not saved, nothing breaks
+  }, [sizes]);
   const [device, setDevice] = useState('desktop');
   const status = useSelector((state) => state.audit.status);
   const auditError = useSelector((state) => state.audit.error);

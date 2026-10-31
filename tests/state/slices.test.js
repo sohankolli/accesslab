@@ -47,7 +47,7 @@ describe('historySlice', () => {
 
   it('can be cleared', () => {
     const state = historyReducer(undefined, runAdded(audit(1, 50)));
-    expect(historyReducer(state, historyCleared())).toEqual({ runs: [] });
+    expect(historyReducer(state, historyCleared())).toEqual({ runs: [], saveFailed: false });
   });
 });
 

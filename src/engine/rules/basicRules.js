@@ -1,4 +1,3 @@
-// engine/rules/basicRules.js
 import { accessibleName } from '../dom/accessibleName.js';
 import { cssPath } from '../dom/cssPath.js';
 

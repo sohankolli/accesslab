@@ -1,4 +1,4 @@
-/* features/report/report.css: plain sections on the chart, no boxes inside boxes. */
+/* Plain sections on the chart, no boxes inside boxes. */
 
 .report .section {
   padding-top: var(--space-6);

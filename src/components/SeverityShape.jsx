@@ -1,4 +1,3 @@
-// components/SeverityShape.jsx
 // A different filled shape for each severity (octagon, triangle, diamond, circle),
 // so severity never relies on colour alone. Always decorative: a word goes next to it.
 

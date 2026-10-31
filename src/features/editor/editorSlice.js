@@ -1,4 +1,3 @@
-// features/editor/editorSlice.js
 import { createSlice } from '@reduxjs/toolkit';
 import { SAMPLE_HTML, SAMPLE_CSS } from './samplePage';
 
@@ -12,7 +11,7 @@ const encoder = new TextEncoder();
  * skipped when the text is clearly small enough (a UTF-16 unit is at most 3
  * UTF-8 bytes), so typing in a normal page costs nothing.
  */
-export function oversize(html, css) {
+function oversize(html, css) {
   if ((html.length + css.length) * 3 <= MAX_PAGE_BYTES) return 0;
   const bytes = encoder.encode(html).length + encoder.encode(css).length;
   return bytes > MAX_PAGE_BYTES ? bytes : 0;

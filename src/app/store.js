@@ -1,4 +1,3 @@
-// app/store.js
 import { configureStore } from '@reduxjs/toolkit';
 import editorReducer from '../features/editor/editorSlice';
 import auditReducer from '../features/audit/auditSlice';

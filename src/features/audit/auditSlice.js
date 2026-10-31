@@ -1,4 +1,3 @@
-// features/audit/auditSlice.js
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 
 const initialState = {
@@ -8,7 +7,6 @@ const initialState = {
   previousScore: null, // for the before/after delta
   selectedIssueId: null,
   simulation: 'none', // 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'low-vision' | 'zoom-200'
-  overlay: 'issues', // 'issues' | 'tab-order' | 'none'
 };
 
 const auditSlice = createSlice({
@@ -36,17 +34,10 @@ const auditSlice = createSlice({
     simulationChanged(state, action) {
       state.simulation = action.payload;
     },
-    overlayChanged(state, action) {
-      state.overlay = action.payload;
-    },
   },
 });
 
-export const {
-  auditStarted,
-  auditCompleted,
-  auditFailed,
-  issueSelected, simulationChanged, overlayChanged } =
+export const { auditStarted, auditCompleted, auditFailed, issueSelected, simulationChanged } =
   auditSlice.actions;
 export default auditSlice.reducer;
 

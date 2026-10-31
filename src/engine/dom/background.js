@@ -1,4 +1,3 @@
-// engine/dom/background.js
 // Work out the colour actually painted behind an element's text.
 import { parseColor, blend } from '../color/contrast.js';
 

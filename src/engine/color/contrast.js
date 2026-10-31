@@ -1,4 +1,3 @@
-// engine/color/contrast.js
 // WCAG 2.x relative luminance and contrast ratio.
 
 /** Parse "rgb(r, g, b)" / "rgba(r, g, b, a)" as returned by getComputedStyle. */

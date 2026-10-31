@@ -1,4 +1,3 @@
-// features/report/Report.jsx
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router';

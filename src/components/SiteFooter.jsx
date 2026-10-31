@@ -1,4 +1,3 @@
-// components/SiteFooter.jsx
 export default function SiteFooter() {
   return (
     <footer className="site-footer">

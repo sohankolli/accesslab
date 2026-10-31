@@ -1,4 +1,3 @@
-// features/audit/acuity.js
 // The score read as eye-chart acuity: a high score "reads at 20/20", a poor one
 // at 20/200. Plain functions, no React, so they are easy to test.
 

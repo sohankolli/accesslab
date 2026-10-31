@@ -1,4 +1,3 @@
-// engine/dom/cssPath.js
 // A stable, unique selector for an element, e.g. "body > main:nth-of-type(1) > img:nth-of-type(2)".
 export function cssPath(el) {
   const doc = el.ownerDocument;

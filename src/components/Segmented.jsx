@@ -1,5 +1,3 @@
-// components/Segmented.jsx
-
 /**
  * A segmented control built from native radio buttons, so it is keyboard
  * operable for free (Tab in, arrow keys to choose) and announced as a group.

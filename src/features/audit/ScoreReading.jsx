@@ -1,4 +1,3 @@
-// features/audit/ScoreReading.jsx
 import SeverityShape from '../../components/SeverityShape';
 import { SEVERITIES } from '../../components/severityLabels';
 import { acuityFor, snellenLineFor, SNELLEN_LINES, inTheWay, describeDelta } from './acuity';

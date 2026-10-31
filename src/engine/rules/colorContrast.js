@@ -1,4 +1,3 @@
-// engine/rules/colorContrast.js
 import { parseColor, contrastRatio, blend, requiredRatio } from '../color/contrast.js';
 import { suggestColor, toHex } from '../color/suggest.js';
 import { effectiveBackground } from '../dom/background.js';
@@ -9,7 +8,7 @@ import { issue } from './basicRules.js';
 const BLACK = { r: 0, g: 0, b: 0, a: 1 };
 
 /** "white", "black", or the shortest hex: #999999 → "#999". */
-export function colorName(rgb) {
+function colorName(rgb) {
   const hex = toHex(rgb);
   if (hex === '#ffffff') return 'white';
   if (hex === '#000000') return 'black';

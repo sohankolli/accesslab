@@ -1,4 +1,3 @@
-// features/home/Home.jsx
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router';
 import { sampleLoaded } from '../editor/editorSlice';

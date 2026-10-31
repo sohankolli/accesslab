@@ -1,4 +1,3 @@
-// features/learn/Learn.jsx
 import { Link } from 'react-router';
 
 export default function Learn() {

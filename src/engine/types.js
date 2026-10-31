@@ -1,4 +1,3 @@
-// engine/types.js
 // Shared JSDoc types. Editors such as VS Code check them without a TypeScript build step.
 
 /**

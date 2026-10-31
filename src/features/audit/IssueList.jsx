@@ -1,4 +1,3 @@
-// features/audit/IssueList.jsx
 import { memo, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RULE_BY_ID } from '../../engine/rules';
@@ -8,6 +7,7 @@ import { isPageLevel } from './overlayBoxes';
 import IssueRow from './IssueRow';
 import Severity from '../../components/Severity';
 import { SEVERITIES } from '../../components/severityLabels';
+import './issueList.css';
 
 /**
  * Every finding from the latest check, numbered in one sequence (the same

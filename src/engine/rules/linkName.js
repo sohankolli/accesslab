@@ -1,4 +1,3 @@
-// engine/rules/linkName.js
 import { accessibleName } from '../dom/accessibleName.js';
 import { issue } from './basicRules.js';
 

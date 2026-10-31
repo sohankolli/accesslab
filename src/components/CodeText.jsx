@@ -1,5 +1,3 @@
-// components/CodeText.jsx
-
 /**
  * Plain text in which `backticks` mark code: "Use `alt=""`" renders the code
  * part in a <code> element. Issue copy from the engine uses this convention,

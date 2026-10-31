@@ -1,67 +1,44 @@
-// features/audit/Workbench.jsx
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { useLocation } from 'react-router';
-import { toAuditResult } from '../../engine/runAudit';
-import { runRulesSliced } from '../../engine/scheduler';
-import { rulesFor } from '../../engine/rules';
 import { useSettings } from '../../context/SettingsContext';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { htmlChanged, cssChanged, MAX_PAGE_BYTES } from '../editor/editorSlice';
-import {
-  auditStarted,
-  auditCompleted,
-  auditFailed,
-  issueSelected,
-  selectSortedIssues,
-} from './auditSlice';
-import { runAdded } from '../report/historySlice';
-import SandboxFrame from './SandboxFrame';
-import IssueList from './IssueList';
-import PackSettings from './PackSettings';
-import IssueOverlay from './IssueOverlay';
-import { findElement, issueAt, isPageLevel } from './overlayBoxes';
+import { issueSelected } from './auditSlice';
+import { findElement, isPageLevel } from './overlayBoxes';
+import { useAudit } from './useAudit';
 import SourceEditor from '../editor/SourceEditor';
 import { sourceLineOf } from '../editor/sourceLine';
-import ScoreReading from './ScoreReading';
-import Segmented from '../../components/Segmented';
 import Splitter from '../../components/Splitter';
 import { readPref, writePref } from '../../services/storage';
 import './workbench.css';
+import './sourcePane.css';
+import PreviewPane from './PreviewPane';
+import FindingsPane from './FindingsPane';
 
 const DEFAULT_SIZES = { source: 28, issues: 29 }; // the mockup's 400 and 420px at 1440
 const MIN_PREVIEW = 25; // percent: the splitters never squeeze the preview below this
 
-const DEVICES = [
-  { value: 'mobile', label: 'Phone' },
-  { value: 'tablet', label: 'Tablet' },
-  { value: 'desktop', label: 'Desktop' },
-];
-
-/** Text for the live region, read out by screen readers after every audit. */
-function announcement(result) {
-  const n = result.issues.length;
-  return `Audit complete. Score ${result.score}. ${n} ${n === 1 ? 'issue' : 'issues'}.`;
-}
-
+/**
+ * The workbench: source, preview and findings side by side, with splitters
+ * between them. Typing updates the editor at once; the preview and the audit
+ * wait for a pause.
+ */
 export default function Workbench() {
   const dispatch = useDispatch();
+  const store = useStore();
   const { html, css, rejected } = useSelector((state) => state.editor);
   const result = useSelector((state) => state.audit.result);
-  const previousScore = useSelector((state) => state.audit.previousScore);
-  const store = useStore();
-  const [previewFocused, setPreviewFocused] = useState(false);
-  const [pageTitle, setPageTitle] = useState('Preview');
-  const [frameSize, setFrameSize] = useState(null);
+  const selectedId = useSelector((state) => state.audit.selectedIssueId);
+  const { reducedMotion } = useSettings();
   const docRef = useRef(null); // the live iframe Document: kept out of Redux
   const frameRef = useRef(null);
   const issuesHeadingRef = useRef(null);
   const editorRef = useRef(null);
-  const selectedId = useSelector((state) => state.audit.selectedIssueId);
 
-  // Typing updates the editor at once; the audit waits for a pause.
   const auditHtml = useDebouncedValue(html, 400);
   const auditCss = useDebouncedValue(css, 400);
+  const { rules, auditDocument } = useAudit({ docRef, html: auditHtml, css: auditCss });
 
   // The selected issue's line in the HTML source, highlighted in the editor. Only
   // while the editor holds exactly the code that was checked: mid-edit the line
@@ -85,66 +62,6 @@ export default function Workbench() {
   );
   const focusIssuesHeading = useCallback(() => issuesHeadingRef.current?.focus(), []);
 
-  // Only the rule packs switched on in settings take part in the audit.
-  const { enabledPacks, reducedMotion } = useSettings();
-  const rules = useMemo(() => rulesFor(enabledPacks), [enabledPacks]);
-
-  // The running audit's controller. Starting a new audit aborts the old one, so
-  // a stale result never reaches Redux or the history.
-  const auditControllerRef = useRef(null);
-
-  const auditDocument = useCallback(
-    async (doc) => {
-      auditControllerRef.current?.abort();
-      const controller = new AbortController();
-      auditControllerRef.current = controller;
-      dispatch(auditStarted());
-      try {
-        // Runs in ~12 ms slices, yielding to the browser in between so typing stays smooth.
-        const results = await runRulesSliced(doc, rules, { signal: controller.signal });
-        if (controller.signal.aborted) return; // superseded while the last rule ran
-        const audit = toAuditResult(results);
-        dispatch(auditCompleted(audit));
-        dispatch(runAdded(audit));
-      } catch (err) {
-        if (err?.name === 'AbortError') return; // a newer audit took over: not a failure
-        // Anything else would leave the pane "checking" forever: record the failure instead.
-        console.error('Audit failed', err);
-        if (!controller.signal.aborted) dispatch(auditFailed(err?.message || String(err)));
-      }
-    },
-    [dispatch, rules],
-  );
-
-  // New code is about to replace the preview's document: stop auditing the old
-  // one now rather than when the new one has loaded. Also stops on unmount.
-  useEffect(() => () => auditControllerRef.current?.abort(), [auditHtml, auditCss]);
-
-  const handleDocument = useCallback(
-    (doc) => {
-      docRef.current = doc;
-      setPageTitle(doc.title.trim() || 'Untitled page');
-      // AccessLab's own listeners (the page's scripts still never run). A click
-      // selects the issue under the pointer, and neither links nor forms may
-      // navigate the frame away from the page being audited.
-      doc.addEventListener(
-        'click',
-        (event) => {
-          event.preventDefault();
-          const hit = issueAt(event.target, selectSortedIssues(store.getState()));
-          dispatch(issueSelected(hit?.id ?? null));
-        },
-        true,
-      );
-      doc.addEventListener('submit', (event) => event.preventDefault(), true);
-      // Show a focus ring on the device frame while keyboard focus is inside the preview.
-      doc.defaultView.addEventListener('focus', () => setPreviewFocused(true));
-      doc.defaultView.addEventListener('blur', () => setPreviewFocused(false));
-      auditDocument(doc);
-    },
-    [auditDocument, dispatch, store],
-  );
-
   /** Select an issue from the list and scroll the preview so its element is centred. */
   const showIssue = useCallback(
     (issue) => {
@@ -163,22 +80,6 @@ export default function Workbench() {
     },
     [dispatch, reducedMotion],
   );
-
-  // Switching a pack on or off re-audits the page already in the preview.
-  useEffect(() => {
-    if (docRef.current) auditDocument(docRef.current);
-  }, [auditDocument]);
-
-  // The preview's size in CSS pixels, shown under it.
-  useEffect(() => {
-    const frame = frameRef.current;
-    if (!frame) return undefined;
-    const observer = new ResizeObserver(() =>
-      setFrameSize({ width: frame.clientWidth, height: frame.clientHeight }),
-    );
-    observer.observe(frame);
-    return () => observer.disconnect();
-  }, []);
 
   // "Check a page" on Home: focus the HTML editor with its text selected, so a
   // paste replaces it. After a tick, because the layout moves focus to <main>
@@ -200,9 +101,6 @@ export default function Workbench() {
   useEffect(() => {
     writePref('paneSizes', sizes); // a convenience: if it is not saved, nothing breaks
   }, [sizes]);
-  const [device, setDevice] = useState('desktop');
-  const status = useSelector((state) => state.audit.status);
-  const auditError = useSelector((state) => state.audit.error);
 
   return (
     <div
@@ -247,39 +145,13 @@ export default function Workbench() {
         containerRef={workbenchRef}
       />
 
-      <section id="pane-preview" className="pane pane--preview" aria-labelledby="preview-heading">
-        <div className="lb-head">
-          <h2 id="preview-heading" className="lb-head__title">
-            {pageTitle} <span>as rendered, scripts off</span>
-          </h2>
-          <Segmented
-            legend="Preview width"
-            name="device"
-            value={device}
-            onChange={setDevice}
-            options={DEVICES}
-          />
-        </div>
-        <div className="preview-stage">
-          <div className={`sheet sheet--${device}${previewFocused ? ' sheet--focused' : ''}`}>
-            <SandboxFrame
-              html={auditHtml}
-              css={auditCss}
-              onDocument={handleDocument}
-              frameRef={frameRef}
-            />
-          </div>
-          <IssueOverlay frameRef={frameRef} />
-        </div>
-        <div className="lb-foot">
-          <span>Click a marked element to open its finding</span>
-          {frameSize && (
-            <span>
-              {frameSize.width} × {frameSize.height} <span className="sr-only">pixels</span>
-            </span>
-          )}
-        </div>
-      </section>
+      <PreviewPane
+        html={auditHtml}
+        css={auditCss}
+        frameRef={frameRef}
+        docRef={docRef}
+        onDocument={auditDocument}
+      />
 
       <Splitter
         label="Resize issues pane"
@@ -292,45 +164,13 @@ export default function Workbench() {
         containerRef={workbenchRef}
       />
 
-      <section id="pane-issues" className="pane pane--findings" aria-labelledby="issues-heading">
-        <div className="pane__body findings">
-          <ScoreReading
-            score={rules.length ? result?.score : undefined}
-            previousScore={previousScore}
-            issues={rules.length ? result?.issues : []}
-            auditing={status === 'running'}
-            failed={status === 'failed'}
-            headingRef={issuesHeadingRef}
-          />
-          <p className="sr-only" aria-live="polite">
-            {result && announcement(result)}
-          </p>
-          <PackSettings />
-          {status === 'failed' && (
-            <div className="notice" role="alert">
-              <p>
-                <strong>The page could not be checked.</strong> {auditError?.replace(/\.$/, '')}.{' '}
-                {result
-                  ? 'The findings below are from the last check that worked.'
-                  : 'No findings are shown.'}{' '}
-                Edit the code to try again.
-              </p>
-            </div>
-          )}
-          {rules.length === 0 ? (
-            <div className="empty-state">
-              <p className="empty-state__title">All rule packs are off</p>
-              <p>Nothing is being checked. Switch on a rule pack above to audit the page.</p>
-            </div>
-          ) : status === 'failed' && !result ? null : (
-            <IssueList
-              onFixApplied={focusIssuesHeading}
-              onShowIssue={showIssue}
-              onShowInCode={showInCode}
-            />
-          )}
-        </div>
-      </section>
+      <FindingsPane
+        hasRules={rules.length > 0}
+        headingRef={issuesHeadingRef}
+        onFixApplied={focusIssuesHeading}
+        onShowIssue={showIssue}
+        onShowInCode={showInCode}
+      />
     </div>
   );
 }

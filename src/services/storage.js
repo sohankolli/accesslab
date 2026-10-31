@@ -1,4 +1,3 @@
-// services/storage.js
 // localStorage can be full, blocked or unavailable: every access is guarded, and
 // writes report whether they worked so the UI can tell the user.
 const KEY = 'accesslab:v1';

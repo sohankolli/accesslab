@@ -1,4 +1,3 @@
-// features/report/TrendChart.jsx
 // A hand-drawn SVG line of scores, oldest to newest (no chart library). It is
 // drawn in real pixels at the width it is given, so labels stay readable on
 // phones. The drawing is decorative; the caption states the same facts in words.

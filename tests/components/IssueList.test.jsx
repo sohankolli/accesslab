@@ -98,6 +98,12 @@ describe('IssueList', () => {
     ]);
   });
 
+  it("starts each group's list at its first number, so list numbering matches", () => {
+    setup();
+    const starts = screen.getAllByRole('list').map((ol) => ol.start);
+    expect(starts).toEqual([1, 2, 4]);
+  });
+
   it('shows a plain title and who it affects; details only in the open row', () => {
     setup({ selected: 'img-alt:body > img' });
     const img = within(row('The image has no text alternative'));

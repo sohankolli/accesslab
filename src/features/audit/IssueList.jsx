@@ -96,7 +96,9 @@ function IssueList({ onFixApplied, onShowIssue, onShowInCode }) {
                 <span className="sr-only">{group.rows.length === 1 ? 'issue' : 'issues'}</span>
               </span>
             </h3>
-            <ol className="rows">
+            {/* start: the list numbers run on across groups, so a screen reader's
+                "item 4" matches the visible number and the pin on the preview. */}
+            <ol className="rows" start={group.rows[0].number}>
               {group.rows.map(({ issue, number }) => (
                 <IssueRow
                   key={issue.id}

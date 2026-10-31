@@ -10,6 +10,7 @@ import editorReducer, {
   htmlChanged,
   cssChanged,
   fixApplied,
+  MAX_PAGE_BYTES,
 } from '../../src/features/editor/editorSlice';
 
 const audit = (ranAt, score, severities = []) => ({
@@ -123,5 +124,36 @@ describe('fixApplied', () => {
     const once = state.css;
     state = editorReducer(state, fixApplied(fix));
     expect(state.css).toBe(once);
+  });
+});
+
+describe('editorSlice size cap', () => {
+  const empty = { ...editorReducer(undefined, { type: 'init' }), html: '', css: '' };
+
+  it('accepts a page of exactly 500 KB', () => {
+    const state = editorReducer(empty, htmlChanged('a'.repeat(MAX_PAGE_BYTES)));
+    expect(state.html).toHaveLength(MAX_PAGE_BYTES);
+    expect(state.rejected).toBeNull();
+  });
+
+  it('rejects HTML that would take the page over 500 KB, and keeps the old code', () => {
+    const start = { ...empty, html: '<p>old</p>', css: 'p {}' };
+    const state = editorReducer(start, htmlChanged('a'.repeat(MAX_PAGE_BYTES)));
+    expect(state.html).toBe('<p>old</p>');
+    expect(state.rejected).toEqual({ lang: 'html', bytes: MAX_PAGE_BYTES + 4 });
+  });
+
+  it('counts UTF-8 bytes, not characters', () => {
+    // "₹" is 3 bytes in UTF-8: this text is a third of the cap in characters but over it in bytes.
+    const state = editorReducer(empty, cssChanged('₹'.repeat(MAX_PAGE_BYTES / 3 + 1)));
+    expect(state.css).toBe('');
+    expect(state.rejected.lang).toBe('css');
+  });
+
+  it('clears the message after the next accepted edit', () => {
+    let state = editorReducer(empty, htmlChanged('a'.repeat(MAX_PAGE_BYTES + 1)));
+    expect(state.rejected).not.toBeNull();
+    state = editorReducer(state, htmlChanged('<p>hi</p>'));
+    expect(state).toMatchObject({ html: '<p>hi</p>', rejected: null });
   });
 });

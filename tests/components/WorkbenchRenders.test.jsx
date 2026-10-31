@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, afterEach, beforeAll } from 'vitest';
-import { render, cleanup, fireEvent } from '@testing-library/react';
+import { render, cleanup, fireEvent, screen } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router';
 import Workbench from '../../src/features/audit/Workbench';
@@ -69,5 +69,27 @@ describe('Workbench typing', () => {
 
     expect(store.getState().editor.html).toBe('<p>ab</p>');
     expect(rowRenders.count).toBe(before);
+  });
+
+  it('refuses a paste over 500 KB with a message, and keeps the code', () => {
+    const store = makeStore();
+    const { container } = render(
+      <Provider store={store}>
+        <SettingsProvider>
+          <MemoryRouter>
+            <Workbench />
+          </MemoryRouter>
+        </SettingsProvider>
+      </Provider>,
+    );
+    const input = container.querySelector('#html-input');
+    const before = input.value;
+    fireEvent.change(input, { target: { value: 'a'.repeat(600 * 1024) } });
+
+    expect(screen.getByRole('alert').textContent).toContain(
+      'That HTML was not added. It would make the page 601 KB',
+    );
+    expect(input.value).toBe(before);
+    expect(store.getState().editor.html).toBe(before);
   });
 });

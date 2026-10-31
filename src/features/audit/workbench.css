@@ -57,6 +57,9 @@
 .pane--source {
   background: var(--chart);
 }
+.pane--source > .notice {
+  margin: var(--space-3) var(--space-4);
+}
 .tabs-bar {
   display: flex;
   align-items: flex-end;

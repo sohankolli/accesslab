@@ -7,7 +7,7 @@ import { runRulesSliced } from '../../engine/scheduler';
 import { rulesFor } from '../../engine/rules';
 import { useSettings } from '../../context/SettingsContext';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
-import { htmlChanged, cssChanged } from '../editor/editorSlice';
+import { htmlChanged, cssChanged, MAX_PAGE_BYTES } from '../editor/editorSlice';
 import {
   auditStarted,
   auditCompleted,
@@ -46,7 +46,7 @@ function announcement(result) {
 
 export default function Workbench() {
   const dispatch = useDispatch();
-  const { html, css } = useSelector((state) => state.editor);
+  const { html, css, rejected } = useSelector((state) => state.editor);
   const result = useSelector((state) => state.audit.result);
   const previousScore = useSelector((state) => state.audit.previousScore);
   const store = useStore();
@@ -225,6 +225,15 @@ export default function Workbench() {
           highlight={highlight}
           controlRef={editorRef}
         />
+        {rejected && (
+          <div className="notice" role="alert">
+            <p>
+              <strong>That {rejected.lang === 'html' ? 'HTML' : 'CSS'} was not added.</strong> It
+              would make the page {Math.ceil(rejected.bytes / 1024)} KB, and AccessLab checks pages
+              up to {MAX_PAGE_BYTES / 1024} KB. Paste a smaller page or part of it.
+            </p>
+          </div>
+        )}
       </section>
 
       <Splitter

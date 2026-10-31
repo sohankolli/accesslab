@@ -8,7 +8,13 @@ import { rulesFor } from '../../engine/rules';
 import { useSettings } from '../../context/SettingsContext';
 import { useDebouncedValue } from '../../hooks/useDebouncedValue';
 import { htmlChanged, cssChanged } from '../editor/editorSlice';
-import { auditStarted, auditCompleted, issueSelected, selectSortedIssues } from './auditSlice';
+import {
+  auditStarted,
+  auditCompleted,
+  auditFailed,
+  issueSelected,
+  selectSortedIssues,
+} from './auditSlice';
 import { runAdded } from '../report/historySlice';
 import SandboxFrame from './SandboxFrame';
 import IssueList from './IssueList';
@@ -101,7 +107,10 @@ export default function Workbench() {
         dispatch(auditCompleted(audit));
         dispatch(runAdded(audit));
       } catch (err) {
-        if (err.name !== 'AbortError') throw err;
+        if (err?.name === 'AbortError') return; // a newer audit took over: not a failure
+        // Anything else would leave the pane "checking" forever: record the failure instead.
+        console.error('Audit failed', err);
+        if (!controller.signal.aborted) dispatch(auditFailed(err?.message || String(err)));
       }
     },
     [dispatch, rules],
@@ -191,6 +200,7 @@ export default function Workbench() {
   useEffect(() => writePref('paneSizes', sizes), [sizes]);
   const [device, setDevice] = useState('desktop');
   const status = useSelector((state) => state.audit.status);
+  const auditError = useSelector((state) => state.audit.error);
 
   return (
     <div
@@ -278,18 +288,30 @@ export default function Workbench() {
             previousScore={previousScore}
             issues={rules.length ? result?.issues : []}
             auditing={status === 'running'}
+            failed={status === 'failed'}
             headingRef={issuesHeadingRef}
           />
           <p className="sr-only" aria-live="polite">
             {result && announcement(result)}
           </p>
           <PackSettings />
+          {status === 'failed' && (
+            <div className="notice" role="alert">
+              <p>
+                <strong>The page could not be checked.</strong> {auditError?.replace(/\.$/, '')}.{' '}
+                {result
+                  ? 'The findings below are from the last check that worked.'
+                  : 'No findings are shown.'}{' '}
+                Edit the code to try again.
+              </p>
+            </div>
+          )}
           {rules.length === 0 ? (
             <div className="empty-state">
               <p className="empty-state__title">All rule packs are off</p>
               <p>Nothing is being checked. Switch on a rule pack above to audit the page.</p>
             </div>
-          ) : (
+          ) : status === 'failed' && !result ? null : (
             <IssueList
               onFixApplied={focusIssuesHeading}
               onShowIssue={showIssue}

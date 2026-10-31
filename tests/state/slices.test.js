@@ -3,6 +3,7 @@ import historyReducer, { runAdded, historyCleared } from '../../src/features/rep
 import auditReducer, {
   auditStarted,
   auditCompleted,
+  auditFailed,
   selectSortedIssues,
 } from '../../src/features/audit/auditSlice';
 import editorReducer, {
@@ -65,6 +66,17 @@ describe('auditSlice', () => {
     expect(state.previousScore).toBe(67);
     state = auditReducer(state, auditCompleted(audit(3, 100)));
     expect(state.previousScore).toBe(86);
+  });
+
+  it('stops running and keeps the last result when an audit fails', () => {
+    let state = auditReducer(undefined, auditCompleted(audit(1, 67)));
+    state = auditReducer(state, auditStarted());
+    state = auditReducer(state, auditFailed('Out of memory'));
+    expect(state).toMatchObject({ status: 'failed', error: 'Out of memory' });
+    expect(state.result.score).toBe(67);
+    // The next audit clears the error.
+    state = auditReducer(state, auditStarted());
+    expect(state).toMatchObject({ status: 'running', error: null });
   });
 
   it('selectSortedIssues orders by severity and is memoised', () => {

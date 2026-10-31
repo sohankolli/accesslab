@@ -65,14 +65,19 @@ export default function Workbench() {
     return issue && html === auditHtml ? sourceLineOf(html, issue.source) : null;
   }, [selectedId, result, html, auditHtml]);
 
-  /** "Show in code": select the issue's start tag in the HTML editor. */
+  /**
+   * "Show in code": select the issue's start tag in the HTML editor. It reads the
+   * HTML from the store when clicked, so the function never changes while typing
+   * and the memoised issue list does not re-render on every keystroke.
+   */
   const showInCode = useCallback(
     (issue) => {
-      const at = sourceLineOf(html, issue.source);
+      const at = sourceLineOf(store.getState().editor.html, issue.source);
       editorRef.current?.reveal(at?.start ?? 0, at?.end ?? 0);
     },
-    [html],
+    [store],
   );
+  const focusIssuesHeading = useCallback(() => issuesHeadingRef.current?.focus(), []);
 
   // Only the rule packs switched on in settings take part in the audit.
   const { enabledPacks, reducedMotion } = useSettings();
@@ -286,7 +291,7 @@ export default function Workbench() {
             </div>
           ) : (
             <IssueList
-              onFixApplied={() => issuesHeadingRef.current?.focus()}
+              onFixApplied={focusIssuesHeading}
               onShowIssue={showIssue}
               onShowInCode={showInCode}
             />

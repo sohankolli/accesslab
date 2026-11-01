@@ -28,7 +28,7 @@ import Segmented from '../../components/Segmented';
 import Splitter from '../../components/Splitter';
 import { readPref, writePref } from '../../services/storage';
 import './workbench.css';
-
+import { SIMULATIONS } from '../simulate/simulations';
 const DEFAULT_SIZES = { source: 28, issues: 29 }; // the mockup's 400 and 420px at 1440
 const MIN_PREVIEW = 25; // percent: the splitters never squeeze the preview below this
 
@@ -37,15 +37,8 @@ const DEVICES = [
   { value: 'tablet', label: 'Tablet' },
   { value: 'desktop', label: 'Desktop' },
 ];
-const SIMULATIONS = [
-  { value: 'none', label: 'Normal vision' },
-  { value: 'protanopia', label: 'Protanopia (red-vision simulation)' },
-  { value: 'deuteranopia', label: 'Deuteranopia (green-vision simulation)' },
-  { value: 'tritanopia', label: 'Tritanopia (blue-vision simulation)' },
-  { value: 'low-vision', label: 'Low-vision simulation' },
-  { value: 'zoom-200', label: '200% zoom' },
-];
-/** Text for the live region, read out by screen readers after every audit. */
+
+
 function announcement(result) {
   const n = result.issues.length;
   return `Audit complete. Score ${result.score}. ${n} ${n === 1 ? 'issue' : 'issues'}.`;
@@ -267,6 +260,7 @@ export default function Workbench() {
             <SandboxFrame
               html={auditHtml}
               css={auditCss}
+              simulation={simulation}
               onDocument={handleDocument}
               frameRef={frameRef}
             />

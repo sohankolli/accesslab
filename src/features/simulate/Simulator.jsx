@@ -1,117 +1,12 @@
-
 import { useCallback, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { buildDocument } from '../audit/SandboxFrame';
 import { simulationChanged } from '../audit/auditSlice';
+import { linearize } from '../../engine/dom/linearize';
+import { SIMULATIONS } from './simulations';
 import './simulate.css';
 
-const SIMULATIONS = [
-  { value: 'none', label: 'Normal vision' },
-  { value: 'protanopia', label: 'Protanopia approximation' },
-  { value: 'deuteranopia', label: 'Deuteranopia approximation' },
-  { value: 'tritanopia', label: 'Tritanopia approximation' },
-  { value: 'low-vision', label: 'Low-vision approximation' },
-  { value: 'zoom-200', label: '200% preview zoom' },
-];
-
-const FOCUSABLE = [
-  'a[href]',
-  'button:not([disabled])',
-  'input:not([disabled]):not([type="hidden"])',
-  'select:not([disabled])',
-  'textarea:not([disabled])',
-  '[tabindex]:not([tabindex="-1"])',
-  'summary',
-];
-
-function accessibleName(element) {
-  const labelledBy = element.getAttribute('aria-labelledby');
-
-  if (labelledBy) {
-    const name = labelledBy
-      .split(/\s+/)
-      .map((id) => element.ownerDocument.getElementById(id)?.textContent?.trim())
-      .filter(Boolean)
-      .join(' ');
-
-    if (name) return name;
-  }
-
-  const ariaLabel = element.getAttribute('aria-label')?.trim();
-  if (ariaLabel) return ariaLabel;
-
-  if (element.labels?.length) {
-    const label = [...element.labels]
-      .map((item) => item.textContent.trim())
-      .filter(Boolean)
-      .join(' ');
-
-    if (label) return label;
-  }
-
-  if (element.tagName === 'IMG') {
-    return element.getAttribute('alt') || 'Image without alt text';
-  }
-
-  if (['INPUT', 'BUTTON'].includes(element.tagName)) {
-    if (element.value) return element.value;
-  }
-
-  return element.innerText?.trim() ||
-    element.textContent?.trim() ||
-    'Unnamed element';
-}
-
-function readPage(document) {
-  const visible = (element) => {
-    if (element.closest('[hidden], [inert], [aria-hidden="true"]')) {
-      return false;
-    }
-
-    const style = document.defaultView.getComputedStyle(element);
-
-    return style.display !== 'none' && style.visibility !== 'hidden';
-  };
-
-  const focusable = [...document.querySelectorAll(FOCUSABLE.join(','))]
-    .filter(visible)
-    .map((element, index) => ({
-      id: `focus-${index}`,
-      order: index + 1,
-      role: element.getAttribute('role') || element.tagName.toLowerCase(),
-      name: accessibleName(element),
-      state: [
-        element.disabled ? 'disabled' : '',
-        element.getAttribute('aria-expanded') === 'true' ? 'expanded' : '',
-        element.getAttribute('aria-checked') !== null
-          ? `checked: ${element.getAttribute('aria-checked')}`
-          : '',
-      ].filter(Boolean).join(', '),
-    }));
-
-  const headings = [...document.querySelectorAll('h1, h2, h3, h4, h5, h6')]
-    .filter(visible)
-    .map((element, index) => ({
-      id: `heading-${index}`,
-      order: null,
-      role: `${element.tagName.toLowerCase()} heading`,
-      name: accessibleName(element),
-      state: '',
-    }));
-
-  const images = [...document.querySelectorAll('img')]
-    .filter(visible)
-    .map((element, index) => ({
-      id: `image-${index}`,
-      order: null,
-      role: 'image',
-      name: accessibleName(element),
-      state: '',
-    }));
-
-  return [...headings, ...focusable, ...images];
-}
 
 export default function Simulator() {
   const dispatch = useDispatch();
@@ -124,26 +19,47 @@ export default function Simulator() {
   const [elements, setElements] = useState([]);
   const [previewReady, setPreviewReady] = useState(false);
 
-  const srcDoc = useMemo(() => buildDocument(html, css), [html, css]);
+  const srcDoc = useMemo(
+  () => buildDocument(html, css, simulation),
+  [html, css, simulation],
+);
 
   const handlePreviewLoad = useCallback(() => {
-    const document = frameRef.current?.contentDocument;
+  const document = frameRef.current?.contentDocument;
 
-    if (!document?.body) {
-      setElements([]);
-      setPreviewReady(false);
-      return;
-    }
+  if (!document?.body) {
+    setElements([]);
+    setPreviewReady(false);
+    return;
+  }
 
-    setElements(readPage(document));
-    setPreviewReady(true);
-  }, []);
+
+  document.addEventListener(
+    'click',
+    (event) => {
+      event.preventDefault();
+    },
+    true,
+  );
+
+  // Prevent forms from submitting and replacing the preview.
+  document.addEventListener(
+    'submit',
+    (event) => {
+      event.preventDefault();
+    },
+    true,
+  );
+
+  setElements(linearize(document));
+  setPreviewReady(true);
+}, []);
 
   const previewClass = `simulate-frame simulate-frame--${simulation}`;
 
   return (
-    <main className="page simulate-page">
-      <title>Simulate – AccessLab</title>
+    <div className="page simulate-page">
+      <title>Simulate - AccessLab</title>
 
       <header className="page__header">
         <div>
@@ -228,9 +144,9 @@ export default function Simulator() {
         <section className="card simulate-panel" aria-labelledby="tab-title">
           <h2 id="tab-title">Keyboard tab order</h2>
           <p className="simulate-note">
-            An approximate list of visible focusable elements in DOM order.
-            Actual keyboard navigation can differ due to browser behavior
-            and positive tabindex values.
+           An approximate list of visible focusable elements in keyboard tab order.
+Elements with positive tabindex values appear first in ascending order,
+followed by elements in DOM order. Actual browser behavior may vary.
           </p>
 
           {!previewReady ? (
@@ -285,6 +201,6 @@ export default function Simulator() {
           )}
         </section>
       )}
-    </main>
+    </div>
   );
 }

@@ -1,36 +1,20 @@
 
 import { Link } from 'react-router';
+import { listPacks } from '../../engine/rules';
 import { RULE_GUIDES } from './ruleguides';
 
-const GROUPS = [
-  {
-    title: 'WCAG 2.2 A/AA',
-    description: 'Accessibility requirements for text, controls and page structure.',
-    ids: [
-      'img-alt',
-      'form-label',
-      'button-name',
-      'link-name',
-      'color-contrast',
-      'html-lang',
-      'page-title',
-    ],
-  },
-  {
-    title: 'Best practices',
-    description: 'Additional checks that help make pages easier to navigate.',
-    ids: [
-      'heading-order',
-      'tabindex-positive',
-      'duplicate-id',
-      'landmark-main',
-    ],
-  },
-];
+const PACK_DESCRIPTIONS = {
+  'wcag-aa':
+    'Accessibility requirements for text, controls and page structure.',
+  'best-practice':
+    'Additional checks that help make pages easier to navigate.',
+};
 
 export default function Learn() {
+  const groups = listPacks();
+
   return (
-    <main className="page page--narrow">
+    <div className="page page--narrow">
       <title>Learn - AccessLab</title>
 
       <header className="page__header">
@@ -43,16 +27,21 @@ export default function Learn() {
         </div>
       </header>
 
-      {GROUPS.map((group) => (
-        <section key={group.title} className="learn-group">
-          <h2>{group.title}</h2>
-          <p>{group.description}</p>
+      {groups.map((group) => {
+        const guides = group.ruleIds
+          .map((id) => ({ id, guide: RULE_GUIDES[id] }))
+          .filter(({ guide }) => Boolean(guide));
 
-          <div className="learn-grid">
-            {group.ids.map((id) => {
-              const guide = RULE_GUIDES[id];
+        return (
+          <section className="learn-group" key={group.id}>
+            <h2>{group.title}</h2>
+            <p>
+              {PACK_DESCRIPTIONS[group.id] ??
+                `${group.count} accessibility rules in this pack.`}
+            </p>
 
-              return (
+            <div className="learn-grid">
+              {guides.map(({ id, guide }) => (
                 <article className="card learn-card" key={id}>
                   <h3>{guide.title}</h3>
                   <p>{guide.summary}</p>
@@ -63,11 +52,11 @@ export default function Learn() {
                     Read guide
                   </Link>
                 </article>
-              );
-            })}
-          </div>
-        </section>
-      ))}
+              ))}
+            </div>
+          </section>
+        );
+      })}
 
       <section className="card">
         <h2>Try it yourself</h2>
@@ -79,6 +68,6 @@ export default function Learn() {
           Open the workbench
         </Link>
       </section>
-    </main>
+    </div>
   );
 }

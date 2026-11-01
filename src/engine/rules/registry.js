@@ -33,7 +33,12 @@ export function createRegistry() {
     [...packs.values()].filter((p) => enabledIds.includes(p.id)).flatMap((p) => p.rules);
 
   const listPacks = () =>
-    [...packs.values()].map(({ id, title, rules }) => ({ id, title, count: rules.length }));
+  [...packs.values()].map(({ id, title, rules }) => ({
+    id,
+    title,
+    count: rules.length,
+    ruleIds: rules.map((rule) => rule.id),
+  }));
 
   return { registerPack, rulesFor, listPacks };
 }

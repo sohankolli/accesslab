@@ -689,31 +689,6 @@
   }
 }
 
-/* M3: visual accessibility simulation effects.
-   These are illustrative approximations, not clinical simulations. */
-
-.simulation--protanopia .sandbox-frame {
-  filter: url('#al-protanopia');
-}
-
-.simulation--deuteranopia .sandbox-frame {
-  filter: url('#al-deuteranopia');
-}
-
-.simulation--tritanopia .sandbox-frame {
-  filter: url('#al-tritanopia');
-}
-
-.simulation--low-vision .sandbox-frame {
-  filter: blur(1.5px);
-}
-
-.simulation--zoom-200 .sandbox-frame {
-  width: 200%;
-  height: 200%;
-  transform: scale(0.5);
-  transform-origin: top left;
-}
 
 /* M3: illustrative visual accessibility simulations.
    These effects are approximations, not clinical simulations. */

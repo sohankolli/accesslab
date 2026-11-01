@@ -15,9 +15,9 @@ describe('rule registry', () => {
     const reg = createRegistry();
     reg.registerPack({ id: 'a', title: 'Pack A', rules: [rule('a1'), rule('a2')] });
     reg.registerPack({ id: 'b', title: 'Pack B', rules: [rule('b1')] });
-    expect(reg.listPacks()).toEqual([
-      { id: 'a', title: 'Pack A', count: 2 },
-      { id: 'b', title: 'Pack B', count: 1 },
+        expect(reg.listPacks()).toEqual([
+      { id: 'a', title: 'Pack A', count: 2, ruleIds: ['a1', 'a2'] },
+      { id: 'b', title: 'Pack B', count: 1, ruleIds: ['b1'] },
     ]);
     expect(reg.rulesFor(['b', 'a']).map((r) => r.id)).toEqual(['a1', 'a2', 'b1']);
     expect(reg.rulesFor(['b']).map((r) => r.id)).toEqual(['b1']);
@@ -66,9 +66,32 @@ describe('rule registry', () => {
 
 describe('built-in packs', () => {
   it('registers WCAG 2.2 A/AA and best-practice packs covering all eleven rules', () => {
-    expect(listPacks()).toEqual([
-      { id: 'wcag-aa', title: 'WCAG 2.2 A/AA', count: 7 },
-      { id: 'best-practice', title: 'Best practice', count: 4 },
+        expect(listPacks()).toEqual([
+      {
+        id: 'wcag-aa',
+        title: 'WCAG 2.2 A/AA',
+        count: 7,
+        ruleIds: [
+          'img-alt',
+          'form-label',
+          'button-name',
+          'link-name',
+          'color-contrast',
+          'html-lang',
+          'page-title',
+        ],
+      },
+      {
+        id: 'best-practice',
+        title: 'Best practice',
+        count: 4,
+        ruleIds: [
+          'heading-order',
+          'tabindex-positive',
+          'duplicate-id',
+          'landmark-main',
+        ],
+      },
     ]);
     expect(rulesFor(['best-practice']).map((r) => r.id)).toEqual([
       'heading-order',

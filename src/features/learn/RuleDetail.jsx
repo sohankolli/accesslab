@@ -8,20 +8,20 @@ export default function RuleDetail() {
 
   if (!guide) {
     return (
-      <main className="page page--narrow">
+      <div className="page page--narrow">
         <title>Guide not found - AccessLab</title>
         <h1>Guide not found</h1>
         <p>We couldn't find a learning guide for that rule.</p>
         <Link to="/learn" className="btn btn--primary">
           Back to Learn
         </Link>
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="page page--narrow">
-      <title>{guide.title} - AccessLab</title>
+    <div className="page page--narrow">
+      <title>{`${guide.title} – AccessLab`}</title>
 
       <header className="page__header">
         <div>
@@ -59,7 +59,7 @@ export default function RuleDetail() {
           Try it in the Workbench
         </Link>
       </nav>
-    </main>
+    </div>
   );
 }
 

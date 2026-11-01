@@ -64,12 +64,6 @@
 }
 
 
-.simulate-frame--zoom-200 {
-  width: 200%;
-  height: 200%;
-  min-height: 640px;
-  max-width: none;
-}
 
 
 .simulate-list {

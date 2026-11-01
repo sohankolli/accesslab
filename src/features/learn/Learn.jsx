@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { listPacks } from '../../engine/rules';
 import { RULE_GUIDES } from './ruleguides';
+import './learn.css';
 
 const PACK_DESCRIPTIONS = {
   'wcag-aa':

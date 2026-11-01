@@ -1,6 +1,7 @@
 
 import { Link, useParams } from 'react-router';
 import { RULE_GUIDES } from './ruleguides';
+import './learn.css';
 
 export default function RuleDetail() {
   const { ruleId } = useParams();
@@ -44,17 +45,22 @@ export default function RuleDetail() {
 
       <section className="card">
         <h2>Example that needs fixing</h2>
-        <pre><code>{guide.bad}</code></pre>
+        <pre className="learn-code">
+          <code>{guide.bad}</code>
+        </pre>
       </section>
 
       <section className="card">
         <h2>Improved example</h2>
-        <pre><code>{guide.good}</code></pre>
+        <pre className="learn-code">
+          <code>{guide.good}</code>
+        </pre>
       </section>
 
-      <nav aria-label="Learning navigation">
-        <Link to="/learn" className="btn">All guides</Link>
-        {' '}
+      <nav aria-label="Learning navigation" className="learn-nav">
+        <Link to="/learn" className="btn">
+          All guides
+        </Link>
         <Link to="/audit" className="btn btn--primary">
           Try it in the Workbench
         </Link>

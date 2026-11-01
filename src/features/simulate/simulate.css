@@ -48,25 +48,6 @@
   background: var(--page-canvas);
 }
 
-.simulate-frame--protanopia {
-  filter: grayscale(0.65) sepia(0.2) hue-rotate(320deg) saturate(0.8);
-}
-
-.simulate-frame--deuteranopia {
-  filter: grayscale(0.55) sepia(0.15) hue-rotate(35deg) saturate(0.85);
-}
-
-.simulate-frame--tritanopia {
-  filter: grayscale(0.5) sepia(0.25) hue-rotate(90deg) saturate(0.8);
-}
-
-.simulate-frame--low-vision {
-  filter: blur(1.5px);
-}
-
-
-
-
 .simulate-list {
   display: grid;
   gap: var(--space-2);

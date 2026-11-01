@@ -4,5 +4,5 @@ export const SIMULATIONS = [
   { value: 'deuteranopia', label: 'Deuteranopia (green-vision simulation)' },
   { value: 'tritanopia', label: 'Tritanopia (blue-vision simulation)' },
   { value: 'low-vision', label: 'Low-vision simulation' },
-  { value: 'zoom-200', label: '200% zoom' },
+  { value: 'zoom-200', label: '200% text size' },
 ];

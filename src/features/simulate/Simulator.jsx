@@ -5,20 +5,9 @@ import { buildDocument } from '../audit/SandboxFrame';
 import { simulationChanged } from '../audit/auditSlice';
 import IssueOverlay from '../audit/IssueOverlay';
 import { linearize } from '../../engine/dom/linearize';
+import { applySimulation } from '../../engine/simulate/filters';
 import { SIMULATIONS } from './simulations';
 import './simulate.css';
-
-/**
- * Apply a lens to the Simulate page's own copy of the page. This copy is never
- * audited, so a lens can change it freely: the workbench's audited document,
- * the score and the history are not touched.
- * @param {Document} doc
- * @param {string} mode
- */
-function applyLens(doc, mode) {
-  // 200% text doubles the root font size: text sized in px will not grow, which is the finding.
-  doc.documentElement.style.fontSize = mode === 'zoom-200' ? '200%' : '';
-}
 
 /**
  * The Simulate page: the workbench's current page in a separate preview frame,
@@ -71,12 +60,11 @@ export default function Simulator() {
   }, []);
 
   // Switching lens restyles the loaded copy in place: no reload, no audit.
+  // This copy is never audited, so the lens cannot change the score or history.
   useEffect(() => {
     const document = frameRef.current?.contentDocument;
-    if (previewReady && document?.documentElement) applyLens(document, simulation);
+    if (previewReady && document?.body) applySimulation(document, simulation);
   }, [simulation, previewReady, loads]);
-
-  const previewClass = `simulate-frame simulate-frame--${simulation}`;
 
   return (
     <div className="page simulate-page">
@@ -147,7 +135,7 @@ export default function Simulator() {
             <iframe
               ref={frameRef}
               title="Simulated page preview"
-              className={previewClass}
+              className="simulate-frame"
               sandbox="allow-same-origin"
               srcDoc={srcDoc}
               onLoad={handlePreviewLoad}

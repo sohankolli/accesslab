@@ -1,6 +1,7 @@
 
 import { isRendered } from './visibility.js';
 
+/** Elements that can take keyboard focus without a script (a subset of HTML's rules). */
 const FOCUSABLE = [
   'a[href]',
   'button:not([disabled])',
@@ -11,6 +12,15 @@ const FOCUSABLE = [
   '[tabindex]:not([tabindex="-1"])',
 ];
 
+/**
+ * The order in which the Tab key visits a page's elements: first every element
+ * with a positive tabindex, by tabindex value (ties in document order), then
+ * every other focusable element in document order. Leaves out elements that
+ * are disabled, have tabindex="-1", are not rendered, or sit inside hidden,
+ * inert or aria-hidden="true" content. An approximation of browser behaviour.
+ * @param {Document} document  the page to inspect
+ * @returns {Element[]}  focusable elements in tab order
+ */
 export function focusOrder(document) {
   const candidates = [...document.querySelectorAll(FOCUSABLE.join(','))]
     .filter((element) => {

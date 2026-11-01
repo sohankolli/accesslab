@@ -10,7 +10,7 @@ export default function RuleDetail() {
   if (!guide) {
     return (
       <div className="page page--narrow">
-        <title>Guide not found - AccessLab</title>
+        <title>Guide not found – AccessLab</title>
         <h1>Guide not found</h1>
         <p>We couldn't find a learning guide for that rule.</p>
         <Link to="/learn" className="btn btn--primary">

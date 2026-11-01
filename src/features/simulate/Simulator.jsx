@@ -80,7 +80,7 @@ export default function Simulator() {
 
   return (
     <div className="page simulate-page">
-      <title>Simulate - AccessLab</title>
+      <title>Simulate – AccessLab</title>
 
       <header className="page__header">
         <div>

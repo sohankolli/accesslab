@@ -15,7 +15,7 @@ export default function Learn() {
 
   return (
     <div className="page page--narrow">
-      <title>Learn - AccessLab</title>
+      <title>Learn – AccessLab</title>
 
       <header className="page__header">
         <div>

@@ -1,0 +1,66 @@
+/* Inspection marks over a preview frame (workbench and Simulate). */
+
+.marks {
+  position: absolute;
+  pointer-events: none; /* clicks reach the preview below */
+}
+.marks__outlines {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+/* The marks sit on the audited page, usually white, so they keep the light
+   severity colours (--pin-*) in both themes. */
+.mark--critical,
+.pin--critical {
+  --c: var(--pin-critical);
+}
+.mark--serious,
+.pin--serious {
+  --c: var(--pin-serious);
+}
+.mark--moderate,
+.pin--moderate {
+  --c: var(--pin-moderate);
+}
+.mark--minor,
+.pin--minor,
+.mark--review,
+.pin--review {
+  --c: var(--pin-minor);
+}
+.mark {
+  position: absolute;
+  border: 1.5px dashed var(--c);
+  border-radius: 3px;
+}
+.mark.is-selected {
+  border: 2px solid var(--c);
+  box-shadow:
+    0 0 0 5px var(--mark),
+    0 0 0 6px var(--mark-edge);
+  transition: box-shadow var(--duration) var(--ease);
+}
+.pin {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  font: 700 0.75rem/22px var(--font);
+  text-align: center;
+  color: var(--pin-text);
+  background: var(--c);
+  border-radius: var(--radius-full);
+  box-shadow: 0 0 0 2px var(--pin-halo);
+}
+.pin--review {
+  color: var(--c);
+  background: var(--pin-halo);
+  box-shadow:
+    inset 0 0 0 1.5px var(--c),
+    0 0 0 2px var(--pin-halo);
+}
+.pin.is-selected {
+  box-shadow:
+    0 0 0 2px var(--pin-halo),
+    0 0 0 4px var(--mark);
+}

@@ -1,0 +1,110 @@
+.simulate-page {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.simulate-controls,
+.simulate-panel {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3);
+}
+
+.simulate-controls select {
+  width: 100%;
+  max-width: 520px;
+  min-height: var(--target);
+}
+
+.simulate-note {
+  color: var(--graphite);
+  font-size: var(--text-sm);
+}
+
+.simulate-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.simulate-preview-scroll {
+  position: relative; /* the inspection marks are positioned against this */
+  width: 100%;
+  height: min(65vh, 700px);
+  min-height: 320px;
+  overflow: hidden; /* the page scrolls inside its own frame */
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  background: var(--page-canvas);
+}
+
+.simulate-frame {
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: 320px;
+  border: 0;
+  background: var(--page-canvas);
+}
+
+.simulate-list {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.simulate-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-md);
+  overflow-wrap: anywhere;
+}
+
+.simulate-number {
+  display: inline-flex;
+  flex: 0 0 2rem;
+  width: 2rem;
+  height: 2rem;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--lens);
+  border-radius: 50%;
+  font-weight: 700;
+}
+
+.simulate-role {
+  flex: 0 0 8rem;
+  color: var(--graphite);
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+}
+
+.simulate-meta {
+  display: block;
+  margin-top: var(--space-1);
+  color: var(--graphite);
+  font-size: var(--text-sm);
+}
+
+/* The screen-reader view: one line per announcement, in page order. */
+.simulate-list--reader {
+  gap: var(--space-1);
+}
+.simulate-list--reader li {
+  padding: var(--space-2) var(--space-3);
+}
+.simulate-line--text {
+  border-style: dashed;
+}
+/* A control or image with no name: "(no name)" is in the text; the
+   heavier red border is an extra cue, not the only one. */
+.simulate-line--missing {
+  font-weight: 700;
+  border-color: var(--critical);
+  border-width: 2px;
+}

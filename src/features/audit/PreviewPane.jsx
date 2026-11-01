@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useStore } from 'react-redux';
 import { issueSelected, selectSortedIssues } from './auditSlice';
 import { issueAt } from './overlayBoxes';
+import { guardPreview } from './previewGuard';
 import SandboxFrame from './SandboxFrame';
 import IssueOverlay from './IssueOverlay';
 import Segmented from '../../components/Segmented';
@@ -36,19 +37,11 @@ export default function PreviewPane({ html, css, frameRef, docRef, onDocument })
     (doc) => {
       docRef.current = doc;
       setPageTitle(doc.title.trim() || 'Untitled page');
-      // AccessLab's own listeners (the page's scripts still never run). A click
-      // selects the issue under the pointer, and neither links nor forms may
-      // navigate the frame away from the page being audited.
-      doc.addEventListener(
-        'click',
-        (event) => {
-          event.preventDefault();
-          const hit = issueAt(event.target, selectSortedIssues(store.getState()));
-          dispatch(issueSelected(hit?.id ?? null));
-        },
-        true,
-      );
-      doc.addEventListener('submit', (event) => event.preventDefault(), true);
+      // Links and forms may not navigate away; a click selects the issue under the pointer.
+      guardPreview(doc, (event) => {
+        const hit = issueAt(event.target, selectSortedIssues(store.getState()));
+        dispatch(issueSelected(hit?.id ?? null));
+      });
       // Show a focus ring on the device frame while keyboard focus is inside the preview.
       doc.defaultView.addEventListener('focus', () => setPreviewFocused(true));
       doc.defaultView.addEventListener('blur', () => setPreviewFocused(false));

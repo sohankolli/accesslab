@@ -9,6 +9,7 @@ const Workbench = lazy(() => import('../features/audit/Workbench'));
 const Simulator = lazy(() => import('../features/simulate/Simulator'));
 const Report = lazy(() => import('../features/report/Report'));
 const Learn = lazy(() => import('../features/learn/Learn'));
+const RuleDetail = lazy(() => import('../features/learn/RuleDetail'));
 const NotFound = lazy(() => import('./NotFound'));
 
 const page = (Page) => (
@@ -17,8 +18,7 @@ const page = (Page) => (
   </Suspense>
 );
 
-// There is no learn/:ruleId route yet: per-rule guides come in Milestone 4 (see
-// features/learn/Learn.jsx), so such paths fall through to NotFound.
+// Learn has a list page (/learn) and one guide page per rule (/learn/:ruleId).
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -31,6 +31,7 @@ export const router = createBrowserRouter([
       { path: 'report', element: page(Report) },
       { path: 'report/:runId', element: page(Report) },
       { path: 'learn', element: page(Learn) },
+      { path: 'learn/:ruleId', element: page(RuleDetail) },
       { path: '*', element: page(NotFound) },
     ],
   },

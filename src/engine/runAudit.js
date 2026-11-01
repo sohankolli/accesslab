@@ -1,4 +1,3 @@
-// engine/runAudit.js
 export const WEIGHT = { critical: 10, serious: 6, moderate: 3, minor: 1 };
 
 /**

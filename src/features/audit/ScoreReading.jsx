@@ -1,4 +1,3 @@
-// features/audit/ScoreReading.jsx
 import SeverityShape from '../../components/SeverityShape';
 import { SEVERITIES } from '../../components/severityLabels';
 import { acuityFor, snellenLineFor, SNELLEN_LINES, inTheWay, describeDelta } from './acuity';
@@ -34,7 +33,7 @@ function Snellen({ line }) {
  * Keeps the same size in every state, so nothing shifts when results arrive.
  * @param {{score?: number, previousScore?: number|null,
  *          issues?: import('../../engine/types.js').Issue[], auditing?: boolean,
- *          headingRef?: import('react').Ref<HTMLHeadingElement>}} props
+ *          failed?: boolean, headingRef?: import('react').Ref<HTMLHeadingElement>}} props
  *   headingRef goes on the pane's heading, which receives focus after "Apply fix".
  */
 export default function ScoreReading({
@@ -42,6 +41,7 @@ export default function ScoreReading({
   previousScore = null,
   issues = [],
   auditing = false,
+  failed = false,
   headingRef,
 }) {
   const pending = score == null;
@@ -73,7 +73,9 @@ export default function ScoreReading({
           )}
           <p className="acuity">
             {pending ? (
-              auditing ? (
+              failed ? (
+                'The check failed'
+              ) : auditing ? (
                 'Checking the page…'
               ) : (
                 'Not checked yet'

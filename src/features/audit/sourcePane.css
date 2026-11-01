@@ -1,0 +1,132 @@
+/* The source pane: tabs, gutter, code and the selected-line band. */
+
+/* ---------- Source editor ---------- */
+
+.pane--source {
+  background: var(--chart);
+}
+.pane--source > .notice {
+  margin: var(--space-3) var(--space-4);
+}
+.tabs-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-3);
+  height: 48px;
+  padding: 0 var(--space-4);
+  border-bottom: 1px solid var(--rule);
+}
+.tabs {
+  display: flex;
+  gap: var(--space-1);
+}
+.tab {
+  min-width: var(--target);
+  height: 47px;
+  padding: 0 var(--space-3);
+  margin-bottom: -1px;
+  color: var(--graphite);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+.tab:hover {
+  color: var(--ink);
+}
+.tab[aria-selected='true'] {
+  font-weight: 700;
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+.tab:focus-visible {
+  outline-offset: -3px;
+}
+.tabs-bar__meta {
+  align-self: center;
+  margin-left: auto;
+  font-size: var(--text-xs);
+  color: var(--graphite);
+}
+
+.code {
+  --code-size: 0.84375rem; /* 13.5px */
+  --code-leading: 1.5rem; /* 24px; rem, so it scales with the text */
+  --code-pad: var(--space-3);
+  --gutter-w: calc(var(--gutter-ch) * 1ch + 2 * var(--space-3));
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  margin-right: 12px; /* keeps the editor's scrollbar clear of the splitter */
+  display: grid;
+  grid-template-columns: var(--gutter-w) minmax(0, 1fr);
+  overflow: hidden;
+  font: 400 var(--code-size) / var(--code-leading) var(--mono);
+}
+.code[hidden] {
+  display: none;
+}
+.code__gutter {
+  margin: 0;
+  padding: var(--code-pad) var(--space-3) var(--code-pad) 0;
+  overflow: hidden;
+  font: inherit;
+  text-align: right;
+  color: var(--graphite); /* the mockup's lighter grey fails AA */
+  user-select: none;
+}
+.code__input {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: var(--code-pad) var(--space-4) var(--code-pad) var(--space-1);
+  font: inherit;
+  tab-size: 2;
+  white-space: pre;
+  color: var(--ink);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  resize: none;
+}
+.code__input:focus-visible {
+  outline-offset: -3px;
+}
+/* The selected issue's line: dark ink on the yellow marker in both themes. */
+.code__band {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: grid;
+  grid-template-columns: var(--gutter-w) minmax(0, 1fr);
+  overflow: hidden;
+  color: var(--on-mark);
+  background: var(--mark);
+  pointer-events: none;
+  white-space: pre;
+  tab-size: 2;
+}
+.code__band-num {
+  padding-right: var(--space-3);
+  text-align: right;
+}
+.code__band-text {
+  padding-left: var(--space-1);
+  transform: translateX(var(--scroll-x, 0));
+}
+.src-foot {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-xs);
+  color: var(--graphite);
+  border-top: 1px solid var(--rule);
+}
+
+@media (max-width: 1100px) {
+  .pane--source {
+    height: 520px;
+  }
+}

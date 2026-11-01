@@ -1,4 +1,3 @@
-// features/report/compareRuns.js
 // Before/after comparison of two history runs (plain data in, plain data out).
 
 export const SEVERITIES = ['critical', 'serious', 'moderate', 'minor'];

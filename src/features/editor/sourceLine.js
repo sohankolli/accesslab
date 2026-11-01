@@ -1,4 +1,3 @@
-// features/editor/sourceLine.js
 // Find an element's start tag in the HTML source, so selecting an issue can
 // highlight its line in the editor. Issues say which element they are about as
 // "the nth <tag> in the document" (engine/rules/basicRules.js); this scans the

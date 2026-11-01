@@ -1,4 +1,3 @@
-// app/AppLayout.jsx
 import { useEffect, useRef } from 'react';
 import { Outlet, useLocation } from 'react-router';
 import SiteHeader from '../components/SiteHeader';

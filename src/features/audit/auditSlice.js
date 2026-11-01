@@ -1,13 +1,12 @@
-// features/audit/auditSlice.js
 import { createSlice, createSelector } from '@reduxjs/toolkit';
 
 const initialState = {
-  status: 'idle', // 'idle' | 'running' | 'done'
+  status: 'idle', // 'idle' | 'running' | 'done' | 'failed'
   result: null, // AuditResult: plain, serialisable data only
+  error: null, // why the last audit failed (a message), while status is 'failed'
   previousScore: null, // for the before/after delta
   selectedIssueId: null,
   simulation: 'none', // 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'low-vision' | 'zoom-200'
-  overlay: 'issues', // 'issues' | 'tab-order' | 'none'
 };
 
 const auditSlice = createSlice({
@@ -16,11 +15,18 @@ const auditSlice = createSlice({
   reducers: {
     auditStarted(state) {
       state.status = 'running';
+      state.error = null;
     },
     auditCompleted(state, action) {
       state.previousScore = state.result?.score ?? null;
       state.result = action.payload;
       state.status = 'done';
+      state.error = null;
+    },
+    /** The audit threw: stop "checking", keep the last good result, say why. */
+    auditFailed(state, action) {
+      state.status = 'failed';
+      state.error = action.payload;
     },
     issueSelected(state, action) {
       state.selectedIssueId = action.payload;
@@ -28,13 +34,10 @@ const auditSlice = createSlice({
     simulationChanged(state, action) {
       state.simulation = action.payload;
     },
-    overlayChanged(state, action) {
-      state.overlay = action.payload;
-    },
   },
 });
 
-export const { auditStarted, auditCompleted, issueSelected, simulationChanged, overlayChanged } =
+export const { auditStarted, auditCompleted, auditFailed, issueSelected, simulationChanged } =
   auditSlice.actions;
 export default auditSlice.reducer;
 

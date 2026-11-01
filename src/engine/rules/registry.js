@@ -1,4 +1,3 @@
-// engine/rules/registry.js
 // Rules are grouped into packs (WCAG 2.2 A/AA, best practice, India GIGW, ...).
 // Adding coverage = adding a pack; the engine and UI never change.
 const SEVERITIES = new Set(['critical', 'serious', 'moderate', 'minor']);

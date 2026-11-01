@@ -1,4 +1,3 @@
-// components/severityLabels.js
 export const SEVERITIES = ['critical', 'serious', 'moderate', 'minor'];
 
 export const SEVERITY_LABEL = {

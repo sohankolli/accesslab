@@ -1,4 +1,3 @@
-// components/BrandMark.jsx
 /** The AccessLab mark: a "tumbling E", the optotype of an eye chart (decorative). */
 export default function BrandMark({ size = 26 }) {
   return (

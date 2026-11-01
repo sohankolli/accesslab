@@ -3,12 +3,14 @@ import historyReducer, { runAdded, historyCleared } from '../../src/features/rep
 import auditReducer, {
   auditStarted,
   auditCompleted,
+  auditFailed,
   selectSortedIssues,
 } from '../../src/features/audit/auditSlice';
 import editorReducer, {
   htmlChanged,
   cssChanged,
   fixApplied,
+  MAX_PAGE_BYTES,
 } from '../../src/features/editor/editorSlice';
 
 const audit = (ranAt, score, severities = []) => ({
@@ -46,7 +48,7 @@ describe('historySlice', () => {
 
   it('can be cleared', () => {
     const state = historyReducer(undefined, runAdded(audit(1, 50)));
-    expect(historyReducer(state, historyCleared())).toEqual({ runs: [] });
+    expect(historyReducer(state, historyCleared())).toEqual({ runs: [], saveFailed: false });
   });
 });
 
@@ -65,6 +67,17 @@ describe('auditSlice', () => {
     expect(state.previousScore).toBe(67);
     state = auditReducer(state, auditCompleted(audit(3, 100)));
     expect(state.previousScore).toBe(86);
+  });
+
+  it('stops running and keeps the last result when an audit fails', () => {
+    let state = auditReducer(undefined, auditCompleted(audit(1, 67)));
+    state = auditReducer(state, auditStarted());
+    state = auditReducer(state, auditFailed('Out of memory'));
+    expect(state).toMatchObject({ status: 'failed', error: 'Out of memory' });
+    expect(state.result.score).toBe(67);
+    // The next audit clears the error.
+    state = auditReducer(state, auditStarted());
+    expect(state).toMatchObject({ status: 'running', error: null });
   });
 
   it('selectSortedIssues orders by severity and is memoised', () => {
@@ -111,5 +124,36 @@ describe('fixApplied', () => {
     const once = state.css;
     state = editorReducer(state, fixApplied(fix));
     expect(state.css).toBe(once);
+  });
+});
+
+describe('editorSlice size cap', () => {
+  const empty = { ...editorReducer(undefined, { type: 'init' }), html: '', css: '' };
+
+  it('accepts a page of exactly 500 KB', () => {
+    const state = editorReducer(empty, htmlChanged('a'.repeat(MAX_PAGE_BYTES)));
+    expect(state.html).toHaveLength(MAX_PAGE_BYTES);
+    expect(state.rejected).toBeNull();
+  });
+
+  it('rejects HTML that would take the page over 500 KB, and keeps the old code', () => {
+    const start = { ...empty, html: '<p>old</p>', css: 'p {}' };
+    const state = editorReducer(start, htmlChanged('a'.repeat(MAX_PAGE_BYTES)));
+    expect(state.html).toBe('<p>old</p>');
+    expect(state.rejected).toEqual({ lang: 'html', bytes: MAX_PAGE_BYTES + 4 });
+  });
+
+  it('counts UTF-8 bytes, not characters', () => {
+    // "₹" is 3 bytes in UTF-8: this text is a third of the cap in characters but over it in bytes.
+    const state = editorReducer(empty, cssChanged('₹'.repeat(MAX_PAGE_BYTES / 3 + 1)));
+    expect(state.css).toBe('');
+    expect(state.rejected.lang).toBe('css');
+  });
+
+  it('clears the message after the next accepted edit', () => {
+    let state = editorReducer(empty, htmlChanged('a'.repeat(MAX_PAGE_BYTES + 1)));
+    expect(state.rejected).not.toBeNull();
+    state = editorReducer(state, htmlChanged('<p>hi</p>'));
+    expect(state).toMatchObject({ html: '<p>hi</p>', rejected: null });
   });
 });

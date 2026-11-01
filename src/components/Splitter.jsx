@@ -1,4 +1,3 @@
-// components/Splitter.jsx
 // A "window splitter" (WAI-ARIA APG pattern): a focusable separator whose value
 // is the width of the pane it controls, as a percentage of the workbench.
 // Arrow keys move it 2% (Shift: 10%), Home/End jump to the limits, and a

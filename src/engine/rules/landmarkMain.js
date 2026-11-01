@@ -1,4 +1,3 @@
-// engine/rules/landmarkMain.js
 import { issue, isFragment } from './basicRules.js';
 
 export const landmarkMain = {

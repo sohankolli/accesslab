@@ -1,5 +1,3 @@
-// features/audit/overlayBoxes.js
-
 /**
  * Issues about the whole page (<html>, or <head> content such as <title>) have
  * no box of their own to highlight; the list marks them "Whole page" instead.

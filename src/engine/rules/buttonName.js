@@ -1,4 +1,3 @@
-// engine/rules/buttonName.js
 import { accessibleName } from '../dom/accessibleName.js';
 import { issue } from './basicRules.js';
 

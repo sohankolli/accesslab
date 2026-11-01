@@ -1,4 +1,3 @@
-// engine/rules/index.js
 // Registers the built-in rule packs. Adding a rule means adding its file and
 // one entry in a pack below; the registry validates it on registration.
 import { registerPack, rulesFor, listPacks } from './registry.js';

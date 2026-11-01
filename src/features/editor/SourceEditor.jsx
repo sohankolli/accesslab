@@ -1,4 +1,3 @@
-// features/editor/SourceEditor.jsx
 import {
   useCallback,
   useEffect,

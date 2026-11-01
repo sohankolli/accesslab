@@ -1,4 +1,3 @@
-// engine/scheduler.js
 // The engine needs the live DOM, and Web Workers have no DOM, so rules must run on
 // the main thread. To keep typing smooth on large pages, the audit runs in slices:
 // after each slice of about 12 ms it yields to the browser, and a newer audit can

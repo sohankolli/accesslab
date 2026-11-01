@@ -1,4 +1,3 @@
-// features/audit/IssueOverlay.jsx
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { overlayBoxes } from './overlayBoxes';

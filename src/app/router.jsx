@@ -1,4 +1,3 @@
-// app/router.jsx
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router';
 import AppLayout from './AppLayout';
@@ -18,8 +17,8 @@ const page = (Page) => (
   </Suspense>
 );
 
-// learn/:ruleId (RuleDetail) is added with the Learn pages in a later milestone;
-// until then such paths fall through to NotFound.
+// There is no learn/:ruleId route yet: per-rule guides come in Milestone 4 (see
+// features/learn/Learn.jsx), so such paths fall through to NotFound.
 export const router = createBrowserRouter([
   {
     path: '/',

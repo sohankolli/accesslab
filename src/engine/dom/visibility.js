@@ -1,4 +1,3 @@
-// engine/dom/visibility.js
 // Is an element actually rendered and visible?
 
 /**

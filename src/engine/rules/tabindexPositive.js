@@ -1,4 +1,3 @@
-// engine/rules/tabindexPositive.js
 import { issue } from './basicRules.js';
 
 export const tabindexPositive = {

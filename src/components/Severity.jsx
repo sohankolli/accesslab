@@ -1,4 +1,3 @@
-// components/Severity.jsx
 import SeverityShape from './SeverityShape';
 import { SEVERITY_LABEL } from './severityLabels';
 

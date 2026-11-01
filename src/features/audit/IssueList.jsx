@@ -1,5 +1,4 @@
-// features/audit/IssueList.jsx
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useRef } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { RULE_BY_ID } from '../../engine/rules';
 import { selectSortedIssues } from './auditSlice';
@@ -8,6 +7,7 @@ import { isPageLevel } from './overlayBoxes';
 import IssueRow from './IssueRow';
 import Severity from '../../components/Severity';
 import { SEVERITIES } from '../../components/severityLabels';
+import './issueList.css';
 
 /**
  * Every finding from the latest check, numbered in one sequence (the same
@@ -21,8 +21,11 @@ import { SEVERITIES } from '../../components/severityLabels';
  *   onFixApplied: called after a fix is applied, to move focus;
  *   onShowIssue: select an issue (or null to clear) and scroll the preview to it;
  *   onShowInCode: open the editor at the issue's element.
+ * Memoised (see the export): it re-renders only when the audit result or the
+ * selected issue changes, not on every keystroke in the editor. The parent must
+ * pass stable callbacks (useCallback) for that to hold.
  */
-export default function IssueList({ onFixApplied, onShowIssue, onShowInCode }) {
+function IssueList({ onFixApplied, onShowIssue, onShowInCode }) {
   const dispatch = useDispatch();
   const issues = useSelector(selectSortedIssues);
   const result = useSelector((state) => state.audit.result);
@@ -93,7 +96,9 @@ export default function IssueList({ onFixApplied, onShowIssue, onShowInCode }) {
                 <span className="sr-only">{group.rows.length === 1 ? 'issue' : 'issues'}</span>
               </span>
             </h3>
-            <ol className="rows">
+            {/* start: the list numbers run on across groups, so a screen reader's
+                "item 4" matches the visible number and the pin on the preview. */}
+            <ol className="rows" start={group.rows[0].number}>
               {group.rows.map(({ issue, number }) => (
                 <IssueRow
                   key={issue.id}
@@ -117,3 +122,5 @@ export default function IssueList({ onFixApplied, onShowIssue, onShowInCode }) {
     </div>
   );
 }
+
+export default memo(IssueList);

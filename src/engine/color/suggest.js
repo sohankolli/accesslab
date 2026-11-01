@@ -1,4 +1,3 @@
-// engine/color/suggest.js
 // Find the nearest passing text colour by changing lightness only (hue kept).
 import { contrastRatio } from './contrast.js';
 

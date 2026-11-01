@@ -1,4 +1,3 @@
-// features/audit/IssueRow.jsx
 import { useId } from 'react';
 import CodeText from '../../components/CodeText';
 import { wcagRefs, isBestPractice } from './wcagLinks';

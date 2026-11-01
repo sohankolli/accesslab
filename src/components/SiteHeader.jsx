@@ -1,4 +1,3 @@
-// components/SiteHeader.jsx
 import { Link, NavLink } from 'react-router';
 import { useSettings } from '../context/SettingsContext';
 import BrandMark from './BrandMark';

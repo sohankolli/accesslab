@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router';
 const SHORTCUTS = [
   { keys: 'Alt + Shift + H', label: 'Go to Home', path: '/' },
   { keys: 'Alt + Shift + W', label: 'Go to Workbench', path: '/audit' },
-  { keys: 'Alt + Shift + S', label: 'Go to Simulate', path: '/simulate' },
+  { keys: 'Alt + Shift + S', label: 'Go to Simulate (vision lenses)', path: '/simulate' },
   { keys: 'Alt + Shift + R', label: 'Go to Report', path: '/report' },
   { keys: 'Alt + Shift + L', label: 'Go to Learn', path: '/learn' },
   { keys: '?', label: 'Open keyboard shortcut help' },

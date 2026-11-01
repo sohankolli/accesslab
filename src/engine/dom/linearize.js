@@ -1,52 +1,54 @@
+// Produce the sequence a screen reader would announce in browse mode.
 import { accessibleName } from './accessibleName.js';
 import { roleOf } from './roles.js';
-import { isRendered } from './visibility.js';
-import { focusOrder } from './focusOrder.js';
 
-const readableName = (element) =>
-  accessibleName(element) || 'Unnamed element';
+const LANDMARKS = new Set(['navigation', 'main', 'banner', 'contentinfo', 'form', 'list', 'table']);
+const LEAVES = new Set([
+  'heading',
+  'link',
+  'button',
+  'img',
+  'textbox',
+  'searchbox',
+  'checkbox',
+  'radio',
+  'combobox',
+  'listbox',
+  'slider',
+]); // name already covers children
+const SKIP = new Set(['SCRIPT', 'STYLE', 'TEMPLATE', 'NOSCRIPT']);
 
-/**
- * Creates a simplified screen-reader outline of a document.
- * This is an educational approximation, not a real screen-reader transcript.
- */
-export function linearize(document) {
-  const headings = [...document.querySelectorAll('h1, h2, h3, h4, h5, h6')]
-    .filter(isRendered)
-    .filter((element) => !element.closest('[aria-hidden="true"], [inert]'))
-    .map((element, index) => ({
-      id: `heading-${index}`,
-      order: null,
-      role: `${element.tagName.toLowerCase()} heading`,
-      name: readableName(element),
-      state: '',
-    }));
+export function linearize(root) {
+  const lines = [];
+  const walk = (node) => {
+    if (node.nodeType === 3) {
+      const text = node.textContent.replace(/\s+/g, ' ').trim();
+      if (text) lines.push({ role: 'text', text });
+      return;
+    }
+    if (node.nodeType !== 1 || SKIP.has(node.tagName)) return;
+    if (node.hidden || node.getAttribute('aria-hidden') === 'true') return;
 
-  const focusable = focusOrder(document).map((element, index) => ({
-    id: `focus-${index}`,
-    order: index + 1,
-    role: roleOf(element) || element.tagName.toLowerCase(),
-    name: readableName(element),
-    state: [
-      element.disabled ? 'disabled' : '',
-      element.getAttribute('aria-expanded') === 'true' ? 'expanded' : '',
-      element.getAttribute('aria-checked') !== null
-        ? `checked: ${element.getAttribute('aria-checked')}`
-        : '',
-    ].filter(Boolean).join(', '),
-  }));
-
-  const images = [...document.querySelectorAll('img')]
-    .filter(isRendered)
-    .filter((element) => !element.closest('[aria-hidden="true"], [inert]'))
-    .filter((element) => element.getAttribute('alt') !== '')
-    .map((element, index) => ({
-      id: `image-${index}`,
-      order: null,
-      role: roleOf(element) || 'image',
-      name: accessibleName(element) || 'Image without alt text',
-      state: '',
-    }));
-
-  return [...headings, ...focusable, ...images];
+    const role = roleOf(node);
+    if (role === 'presentation' || role === 'none') {
+      if (node.tagName === 'IMG') return; // decorative image: silent
+    } else if (LEAVES.has(role)) {
+      const name = accessibleName(node);
+      const level =
+        role === 'heading'
+          ? ` level ${node.getAttribute('aria-level') ?? /^H(\d)$/.exec(node.tagName)?.[1] ?? 2}`
+          : '';
+      lines.push({ role, text: `${role}${level}, ${name || '(no name)'}`, missing: !name });
+      return;
+    } else if (LANDMARKS.has(role)) {
+      lines.push({ role, text: `${role} start` });
+      node.childNodes.forEach(walk);
+      lines.push({ role, text: `${role} end` });
+      return;
+    }
+    node.childNodes.forEach(walk);
+  };
+  // A Document is node type 9, which walk() would ignore: start at its <body>.
+  walk(root.nodeType === 9 ? root.body : root);
+  return lines;
 }

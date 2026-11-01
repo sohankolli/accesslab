@@ -5,9 +5,32 @@ import { buildDocument } from '../audit/SandboxFrame';
 import { simulationChanged } from '../audit/auditSlice';
 import IssueOverlay from '../audit/IssueOverlay';
 import { linearize } from '../../engine/dom/linearize';
+import { focusOrder } from '../../engine/dom/focusOrder';
+import { accessibleName } from '../../engine/dom/accessibleName';
+import { roleOf } from '../../engine/dom/roles';
 import { applySimulation } from '../../engine/simulate/filters';
 import { SIMULATIONS } from './simulations';
 import './simulate.css';
+
+/**
+ * The page's keyboard stops, in tab order, as plain data for the list.
+ * @param {Document} doc
+ */
+function tabStops(doc) {
+  return focusOrder(doc).map((element, index) => ({
+    order: index + 1,
+    role: roleOf(element) || element.tagName.toLowerCase(),
+    name: accessibleName(element) || '(no name)',
+    state: [
+      element.getAttribute('aria-expanded') === 'true' ? 'expanded' : '',
+      element.getAttribute('aria-checked') !== null
+        ? `checked: ${element.getAttribute('aria-checked')}`
+        : '',
+    ]
+      .filter(Boolean)
+      .join(', '),
+  }));
+}
 
 /**
  * The Simulate page: the workbench's current page in a separate preview frame,
@@ -21,7 +44,8 @@ export default function Simulator() {
 
   const frameRef = useRef(null);
   const [activeView, setActiveView] = useState('preview');
-  const [elements, setElements] = useState([]);
+  const [lines, setLines] = useState([]); // the screen-reader view, in page order
+  const [stops, setStops] = useState([]); // the keyboard tab order
   const [previewReady, setPreviewReady] = useState(false);
   const [loads, setLoads] = useState(0); // counts loaded documents, so the marks re-measure
 
@@ -32,7 +56,8 @@ export default function Simulator() {
     const document = frameRef.current?.contentDocument;
 
     if (!document?.body) {
-      setElements([]);
+      setLines([]);
+      setStops([]);
       setPreviewReady(false);
       return;
     }
@@ -54,7 +79,8 @@ export default function Simulator() {
       true,
     );
 
-    setElements(linearize(document));
+    setLines(linearize(document));
+    setStops(tabStops(document));
     setPreviewReady(true);
     setLoads((n) => n + 1);
   }, []);
@@ -162,18 +188,18 @@ followed by elements in DOM order. Actual browser behavior may vary.
 
           {!previewReady ? (
             <p>The preview has not finished loading. Open Visual preview first.</p>
-          ) : elements.filter((element) => element.order !== null).length === 0 ? (
+          ) : stops.length === 0 ? (
             <p>No focusable elements were found.</p>
           ) : (
             <ol className="simulate-list">
-              {elements.filter((element) => element.order !== null).map((element) => (
-                <li key={element.id}>
-                  <span className="simulate-number">{element.order}</span>
+              {stops.map((stop) => (
+                <li key={stop.order}>
+                  <span className="simulate-number">{stop.order}</span>
                   <span>
-                    <strong>{element.name}</strong>
+                    <strong>{stop.name}</strong>
                     <span className="simulate-meta">
-                      {element.role}
-                      {element.state ? ` · ${element.state}` : ''}
+                      {stop.role}
+                      {stop.state ? ` · ${stop.state}` : ''}
                     </span>
                   </span>
                 </li>
@@ -187,28 +213,28 @@ followed by elements in DOM order. Actual browser behavior may vary.
         <section className="card simulate-panel" aria-labelledby="reader-title">
           <h2 id="reader-title">Screen-reader view</h2>
           <p className="simulate-note">
-            A simplified outline of headings, controls and images. This is
-            not a real screen-reader speech transcript.
+            What a screen reader reads in browse mode, in page order: landmarks as
+            they start and end, headings with their level, links, buttons and fields
+            as &ldquo;role, name&rdquo;, and the text between them. Hidden content and
+            decorative images are skipped. A simplified model, not a real screen
+            reader&rsquo;s speech.
           </p>
 
           {!previewReady ? (
             <p>The preview has not finished loading. Open Visual preview first.</p>
-          ) : elements.length === 0 ? (
-            <p>No headings, controls or images were found.</p>
+          ) : lines.length === 0 ? (
+            <p>The page has no content a screen reader would read.</p>
           ) : (
-            <ul className="simulate-list">
-              {elements.map((element) => (
-                <li key={element.id}>
-                  <span className="simulate-role">{element.role}</span>
-                  <span>
-                    <strong>{element.name}</strong>
-                    {element.state && (
-                      <span className="simulate-meta">{element.state}</span>
-                    )}
-                  </span>
+            <ol className="simulate-list simulate-list--reader">
+              {lines.map((line, index) => (
+                <li
+                  key={index}
+                  className={`simulate-line simulate-line--${line.role}${line.missing ? ' simulate-line--missing' : ''}`}
+                >
+                  {line.text}
                 </li>
               ))}
-            </ul>
+            </ol>
           )}
         </section>
       )}

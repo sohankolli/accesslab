@@ -91,3 +91,22 @@
   color: var(--graphite);
   font-size: var(--text-sm);
 }
+
+/* The screen-reader view: one line per announcement, in page order. */
+.simulate-list--reader {
+  gap: var(--space-1);
+}
+.simulate-list--reader li {
+  padding: var(--space-2) var(--space-3);
+}
+.simulate-line--text {
+  border-style: dashed;
+}
+/* A control or image with no name: "(no name)" is in the text; the
+   heavier red border is an extra cue, not the only one. */
+.simulate-line--missing {
+  font-weight: 700;
+  border-color: var(--critical);
+  border-width: 2px;
+}
+

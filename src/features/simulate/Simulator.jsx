@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { buildDocument } from '../audit/SandboxFrame';
 import { simulationChanged } from '../audit/auditSlice';
 import IssueOverlay from '../audit/IssueOverlay';
+import { guardPreview } from '../audit/previewGuard';
 import { linearize } from '../../engine/dom/linearize';
 import { focusOrder } from '../../engine/dom/focusOrder';
 import { accessibleName } from '../../engine/dom/accessibleName';
@@ -62,22 +63,7 @@ export default function Simulator() {
       return;
     }
 
-    document.addEventListener(
-      'click',
-      (event) => {
-        event.preventDefault();
-      },
-      true,
-    );
-
-    // Prevent forms from submitting and replacing the preview.
-    document.addEventListener(
-      'submit',
-      (event) => {
-        event.preventDefault();
-      },
-      true,
-    );
+    guardPreview(document); // links and forms may not navigate the preview away
 
     setLines(linearize(document));
     setStops(tabStops(document));

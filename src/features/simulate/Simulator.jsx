@@ -148,6 +148,8 @@ export default function Simulator() {
               ref={frameRef}
               title="Simulated page preview"
               className="simulate-frame"
+              /* Same rule as the audit frame: allow-same-origin lets AccessLab
+                 read and restyle the copy; allow-scripts must never be added. */
               sandbox="allow-same-origin"
               srcDoc={srcDoc}
               onLoad={handlePreviewLoad}

@@ -1,4 +1,3 @@
-
 .simulate-page {
   display: grid;
   gap: var(--space-4);
@@ -109,4 +108,3 @@
   border-color: var(--critical);
   border-width: 2px;
 }
-

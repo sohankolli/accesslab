@@ -86,8 +86,8 @@ export default function Simulator() {
         <div>
           <h1 className="page__title">Simulate</h1>
           <p className="page__lead">
-            Explore visual, keyboard and screen-reader accessibility
-            using your current workbench page.
+            Explore visual, keyboard and screen-reader accessibility using your current workbench
+            page.
           </p>
         </div>
 
@@ -103,9 +103,7 @@ export default function Simulator() {
           <span className="field__label">Visual simulation</span>
           <select
             value={simulation}
-            onChange={(event) =>
-              dispatch(simulationChanged(event.target.value))
-            }
+            onChange={(event) => dispatch(simulationChanged(event.target.value))}
           >
             {SIMULATIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -116,8 +114,8 @@ export default function Simulator() {
         </label>
 
         <p className="simulate-note">
-          Visual simulations are illustrative approximations. They do not
-          reproduce every person's experience or replace testing with users.
+          Visual simulations are illustrative approximations. They do not reproduce every person's
+          experience or replace testing with users.
         </p>
       </section>
 
@@ -158,9 +156,9 @@ export default function Simulator() {
           </div>
 
           <p className="simulate-note">
-            The preview updates when the HTML or CSS in the workbench changes.
-            Page scripts remain disabled. This is a separate copy of the page:
-            lenses never change the audit, the score or the history.
+            The preview updates when the HTML or CSS in the workbench changes. Page scripts remain
+            disabled. This is a separate copy of the page: lenses never change the audit, the score
+            or the history.
           </p>
         </section>
       )}
@@ -169,9 +167,9 @@ export default function Simulator() {
         <section className="card simulate-panel" aria-labelledby="tab-title">
           <h2 id="tab-title">Keyboard tab order</h2>
           <p className="simulate-note">
-           An approximate list of visible focusable elements in keyboard tab order.
-Elements with positive tabindex values appear first in ascending order,
-followed by elements in DOM order. Actual browser behavior may vary.
+            An approximate list of visible focusable elements in keyboard tab order. Elements with
+            positive tabindex values appear first in ascending order, followed by elements in DOM
+            order. Actual browser behavior may vary.
           </p>
 
           {!previewReady ? (
@@ -201,11 +199,10 @@ followed by elements in DOM order. Actual browser behavior may vary.
         <section className="card simulate-panel" aria-labelledby="reader-title">
           <h2 id="reader-title">Screen-reader view</h2>
           <p className="simulate-note">
-            What a screen reader reads in browse mode, in page order: landmarks as
-            they start and end, headings with their level, links, buttons and fields
-            as &ldquo;role, name&rdquo;, and the text between them. Hidden content and
-            decorative images are skipped. A simplified model, not a real screen
-            reader&rsquo;s speech.
+            What a screen reader reads in browse mode, in page order: landmarks as they start and
+            end, headings with their level, links, buttons and fields as &ldquo;role, name&rdquo;,
+            and the text between them. Hidden content and decorative images are skipped. A
+            simplified model, not a real screen reader&rsquo;s speech.
           </p>
 
           {!previewReady ? (

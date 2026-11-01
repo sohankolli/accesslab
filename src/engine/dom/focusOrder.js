@@ -1,4 +1,3 @@
-
 import { isRendered } from './visibility.js';
 
 /** Elements that can take keyboard focus without a script (a subset of HTML's rules). */
@@ -22,16 +21,15 @@ const FOCUSABLE = [
  * @returns {Element[]}  focusable elements in tab order
  */
 export function focusOrder(document) {
-  const candidates = [...document.querySelectorAll(FOCUSABLE.join(','))]
-    .filter((element) => {
-      if (element.closest('[hidden], [inert], [aria-hidden="true"]')) {
-        return false;
-      }
+  const candidates = [...document.querySelectorAll(FOCUSABLE.join(','))].filter((element) => {
+    if (element.closest('[hidden], [inert], [aria-hidden="true"]')) {
+      return false;
+    }
 
-      if (!isRendered(element)) return false;
+    if (!isRendered(element)) return false;
 
-      return element.tabIndex >= 0;
-    });
+    return element.tabIndex >= 0;
+  });
 
   return candidates
     .map((element, domOrder) => ({

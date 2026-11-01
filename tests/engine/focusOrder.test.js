@@ -1,4 +1,3 @@
-
 import { describe, it, expect } from 'vitest';
 import { JSDOM } from 'jsdom';
 import { focusOrder } from '../../src/engine/dom/focusOrder';
@@ -29,11 +28,7 @@ describe('focusOrder', () => {
       <button id="c" tabindex="1">C</button>
     `);
 
-    expect(focusOrder(document).map((element) => element.id)).toEqual([
-      'c',
-      'a',
-      'b',
-    ]);
+    expect(focusOrder(document).map((element) => element.id)).toEqual(['c', 'a', 'b']);
   });
 
   it('excludes negative tabindex, disabled and hidden elements', () => {
@@ -46,9 +41,7 @@ describe('focusOrder', () => {
       <div aria-hidden="true"><button id="inside-aria-hidden">Hidden</button></div>
     `);
 
-    expect(focusOrder(document).map((element) => element.id)).toEqual([
-      'visible',
-    ]);
+    expect(focusOrder(document).map((element) => element.id)).toEqual(['visible']);
   });
 
   it('excludes elements hidden with CSS', () => {
@@ -58,8 +51,6 @@ describe('focusOrder', () => {
       <button id="visibility-hidden" style="visibility:hidden">Hidden</button>
     `);
 
-    expect(focusOrder(document).map((element) => element.id)).toEqual([
-      'visible',
-    ]);
+    expect(focusOrder(document).map((element) => element.id)).toEqual(['visible']);
   });
 });

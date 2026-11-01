@@ -1,4 +1,3 @@
-
 import { Link, useParams } from 'react-router';
 import { RULE_GUIDES } from './ruleguides';
 import './learn.css';
@@ -68,4 +67,3 @@ export default function RuleDetail() {
     </div>
   );
 }
-

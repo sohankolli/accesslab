@@ -1,4 +1,3 @@
-
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
@@ -53,25 +52,25 @@ describe('KeyboardShortcuts', () => {
   });
 
   it('closes help when Escape is pressed', () => {
-  renderShortcuts();
+    renderShortcuts();
 
-  fireEvent.keyDown(window, { key: '?', shiftKey: true });
-  expect(document.querySelector('dialog').open).toBe(true);
+    fireEvent.keyDown(window, { key: '?', shiftKey: true });
+    expect(document.querySelector('dialog').open).toBe(true);
 
-  fireEvent.keyDown(window, { key: 'Escape' });
+    fireEvent.keyDown(window, { key: 'Escape' });
 
-  expect(document.querySelector('dialog').open).toBe(false);
-});
-  it('does not open help while typing in an input', () => {
-  renderShortcuts();
-
-  fireEvent.keyDown(screen.getByRole('textbox', { name: 'Test input' }), {
-    key: '?',
-    shiftKey: true,
+    expect(document.querySelector('dialog').open).toBe(false);
   });
+  it('does not open help while typing in an input', () => {
+    renderShortcuts();
 
-  expect(document.querySelector('dialog').open).toBe(false);
-});
+    fireEvent.keyDown(screen.getByRole('textbox', { name: 'Test input' }), {
+      key: '?',
+      shiftKey: true,
+    });
+
+    expect(document.querySelector('dialog').open).toBe(false);
+  });
 
   it('navigates to Learn with Alt+Shift+L', async () => {
     const { router } = renderShortcuts('/');

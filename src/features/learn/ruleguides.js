@@ -1,4 +1,3 @@
-
 export const RULE_GUIDES = {
   'img-alt': {
     title: 'Images need text alternatives',
@@ -43,7 +42,8 @@ export const RULE_GUIDES = {
     fix: 'Adjust the text or background colour to meet the applicable contrast ratio.',
     bad: '<p style="color: #aaa; background: #fff">Important text</p>',
     good: '<p style="color: #222; background: #fff">Important text</p>',
-    example: 'AccessLab measures contrast where it can determine the effective background. Images and gradients may need manual review.',
+    example:
+      'AccessLab measures contrast where it can determine the effective background. Images and gradients may need manual review.',
   },
   'html-lang': {
     title: 'Set the page language',
@@ -97,6 +97,7 @@ export const RULE_GUIDES = {
     fix: 'Wrap the primary page content in one visible main element.',
     bad: '<div class="content">Page content</div>',
     good: '<main>Page content</main>',
-    example: 'Use sections and articles for other content regions rather than adding extra main landmarks.',
+    example:
+      'Use sections and articles for other content regions rather than adding extra main landmarks.',
   },
 };

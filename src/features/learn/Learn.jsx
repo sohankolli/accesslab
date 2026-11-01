@@ -4,10 +4,8 @@ import { RULE_GUIDES } from './ruleguides';
 import './learn.css';
 
 const PACK_DESCRIPTIONS = {
-  'wcag-aa':
-    'Accessibility requirements for text, controls and page structure.',
-  'best-practice':
-    'Additional checks that help make pages easier to navigate.',
+  'wcag-aa': 'Accessibility requirements for text, controls and page structure.',
+  'best-practice': 'Additional checks that help make pages easier to navigate.',
 };
 
 export default function Learn() {
@@ -21,8 +19,7 @@ export default function Learn() {
         <div>
           <h1 className="page__title">Learn accessibility</h1>
           <p className="page__lead">
-            Understand common accessibility issues, why they matter,
-            and how to fix them.
+            Understand common accessibility issues, why they matter, and how to fix them.
           </p>
         </div>
       </header>
@@ -36,8 +33,7 @@ export default function Learn() {
           <section className="learn-group" key={group.id}>
             <h2>{group.title}</h2>
             <p>
-              {PACK_DESCRIPTIONS[group.id] ??
-                `${group.count} accessibility rules in this pack.`}
+              {PACK_DESCRIPTIONS[group.id] ?? `${group.count} accessibility rules in this pack.`}
             </p>
 
             <div className="learn-grid">
@@ -45,10 +41,7 @@ export default function Learn() {
                 <article className="card learn-card" key={id}>
                   <h3>{guide.title}</h3>
                   <p>{guide.summary}</p>
-                  <Link
-                    to={`/learn/${id}`}
-                    className="btn btn--primary"
-                  >
+                  <Link to={`/learn/${id}`} className="btn btn--primary">
                     Read guide
                   </Link>
                 </article>
@@ -60,10 +53,7 @@ export default function Learn() {
 
       <section className="card">
         <h2>Try it yourself</h2>
-        <p>
-          Audit your own HTML and CSS to find accessibility issues
-          and experiment with fixes.
-        </p>
+        <p>Audit your own HTML and CSS to find accessibility issues and experiment with fixes.</p>
         <Link to="/audit" className="btn btn--primary">
           Open the workbench
         </Link>

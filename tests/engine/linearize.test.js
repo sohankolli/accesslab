@@ -46,9 +46,11 @@ describe('linearize (design doc Listing 15)', () => {
   });
 
   it('gives headings their level, from the tag or aria-level', () => {
-    expect(
-      read(`<h1>Menu</h1><h3>Drinks</h3><h2 aria-level="4">Hot</h2>`),
-    ).toEqual(['heading level 1, Menu', 'heading level 3, Drinks', 'heading level 4, Hot']);
+    expect(read(`<h1>Menu</h1><h3>Drinks</h3><h2 aria-level="4">Hot</h2>`)).toEqual([
+      'heading level 1, Menu',
+      'heading level 3, Drinks',
+      'heading level 4, Hot',
+    ]);
   });
 
   it('reads links and buttons as "role, name"', () => {

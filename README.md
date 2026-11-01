@@ -80,15 +80,15 @@ needs fixing next to an improved one.
 Press <kbd>?</kbd> anywhere outside a text field for the shortcut help; <kbd>Esc</kbd> closes
 it. Shortcuts are ignored while you type in a field or the editor.
 
-| Keys                 | Action                                 |
-| -------------------- | -------------------------------------- |
-| `Alt` + `Shift` + `H` | Go to Home                             |
-| `Alt` + `Shift` + `W` | Go to the Workbench                    |
-| `Alt` + `Shift` + `S` | Go to Simulate (the vision lenses)     |
-| `Alt` + `Shift` + `R` | Go to the Report                       |
-| `Alt` + `Shift` + `L` | Go to Learn                            |
-| `?`                  | Open the shortcut help                 |
-| `Esc`                | Close the shortcut help                |
+| Keys                  | Action                             |
+| --------------------- | ---------------------------------- |
+| `Alt` + `Shift` + `H` | Go to Home                         |
+| `Alt` + `Shift` + `W` | Go to the Workbench                |
+| `Alt` + `Shift` + `S` | Go to Simulate (the vision lenses) |
+| `Alt` + `Shift` + `R` | Go to the Report                   |
+| `Alt` + `Shift` + `L` | Go to Learn                        |
+| `?`                   | Open the shortcut help             |
+| `Esc`                 | Close the shortcut help            |
 
 ## Getting started
 
@@ -106,6 +106,7 @@ npm run dev        # http://localhost:5173, then open "Workbench"
 | `npm run preview`      | Serve the production build locally              |
 | `npm run lint`         | ESLint, including `eslint-plugin-jsx-a11y`      |
 | `npm run format`       | Format every file with Prettier                 |
+| `npm run format:check` | Check formatting without changing files (CI)    |
 | `npm test`             | Vitest in watch mode (`npm test -- --run` once) |
 | `npm run coverage`     | Tests with a coverage report                    |
 
@@ -160,8 +161,8 @@ Text on images or gradients is listed for manual review and is not scored.
 failing fixture for every rule, registry validation, scheduler slicing and cancellation, focus
 order, the screen-reader linearizer, the simulation filters, reducers, and React Testing
 Library tests for the workbench, the issue list, settings, shortcuts and the rule that a lens
-never changes the audit. CI (GitHub Actions) runs lint, the tests and the production build on every
-pull request.
+never changes the audit. CI (GitHub Actions) runs lint, a Prettier format check, the tests and the
+production build on every pull request.
 
 ## Limitations
 

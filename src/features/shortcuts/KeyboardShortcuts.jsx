@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router';
 
@@ -16,9 +15,7 @@ function isTypingTarget(target) {
   if (!(target instanceof Element)) return false;
 
   return Boolean(
-    target.closest(
-      'input, textarea, select, [contenteditable="true"], [role="textbox"]',
-    ),
+    target.closest('input, textarea, select, [contenteditable="true"], [role="textbox"]'),
   );
 }
 
@@ -62,10 +59,7 @@ export default function KeyboardShortcuts() {
         return;
       }
 
-      if (
-        event.key === '?' &&
-        !isTypingTarget(event.target)
-      ) {
+      if (event.key === '?' && !isTypingTarget(event.target)) {
         event.preventDefault();
         setOpen(true);
       }

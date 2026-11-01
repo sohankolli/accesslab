@@ -1,4 +1,3 @@
-// engine/dom/accessibleName.js
 // Simplified version of the W3C "Accessible Name and Description
 // Computation" (accname). Covers the cases AccessLab's rules need.
 

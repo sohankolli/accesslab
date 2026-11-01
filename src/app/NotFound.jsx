@@ -1,4 +1,3 @@
-// app/NotFound.jsx
 import { Link } from 'react-router';
 
 export default function NotFound() {

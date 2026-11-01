@@ -1,4 +1,3 @@
-// app/ErrorPage.jsx
 import { isRouteErrorResponse, Link, useRouteError } from 'react-router';
 import SiteHeader from '../components/SiteHeader';
 import SiteFooter from '../components/SiteFooter';

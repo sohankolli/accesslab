@@ -1,4 +1,3 @@
-// context/SettingsContext.jsx
 import { createContext, useContext, useEffect, useMemo, useState } from 'react';
 import { readPref, writePref } from '../services/storage';
 import { ALL_PACK_IDS } from '../engine/rules';

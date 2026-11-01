@@ -1,4 +1,3 @@
-// engine/dom/roles.js
 // Implicit ARIA roles for common elements (subset of the HTML-AAM mapping).
 const heading = () => 'heading';
 const IMPLICIT = {

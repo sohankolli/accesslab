@@ -1,4 +1,3 @@
-// features/audit/PackSettings.jsx
 import { listPacks } from '../../engine/rules';
 import { useSettings } from '../../context/SettingsContext';
 

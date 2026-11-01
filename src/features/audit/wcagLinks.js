@@ -1,4 +1,3 @@
-// features/audit/wcagLinks.js
 // Links from a rule's WCAG reference to W3C's "Understanding" page for each
 // success criterion, which explains who it helps and why.
 

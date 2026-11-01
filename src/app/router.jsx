@@ -1,4 +1,3 @@
-// app/router.jsx
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter } from 'react-router';
 import AppLayout from './AppLayout';
@@ -19,8 +18,7 @@ const page = (Page) => (
   </Suspense>
 );
 
-// Learn pages include a list and individual rule guides.
-// until then such paths fall through to NotFound.
+// Learn has a list page (/learn) and one guide page per rule (/learn/:ruleId).
 export const router = createBrowserRouter([
   {
     path: '/',

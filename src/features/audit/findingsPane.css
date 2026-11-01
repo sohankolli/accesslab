@@ -1,0 +1,159 @@
+/* The findings pane: the reading (score, acuity, eye chart), the tally and the
+   rule packs. The numbered rows are in issueList.css. */
+
+/* ---------- Findings pane ---------- */
+
+.pane--findings {
+  background: var(--chart);
+}
+.findings {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The reading: score, acuity and the eye chart. */
+.reading {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 172px;
+  gap: var(--space-4);
+  padding: var(--space-5) var(--space-5) var(--space-4);
+  border-bottom: 1px solid var(--rule);
+}
+.score {
+  min-height: 65px; /* the same height with or without a score */
+  font-size: var(--text-display);
+  font-weight: 800;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+}
+.score small {
+  margin-left: var(--space-1);
+  font-size: 1.125rem;
+  font-weight: 500;
+  letter-spacing: 0;
+  color: var(--graphite);
+}
+.acuity {
+  margin-top: 10px;
+  font-size: 0.9375rem;
+}
+.delta {
+  margin-top: 2px;
+  font-size: var(--text-sm);
+  color: var(--graphite);
+}
+
+/* The decorative Snellen chart (aria-hidden). Sizes are px on purpose: it is a
+   picture of a chart, not text to read. */
+.snellen {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  align-content: start;
+  gap: 3px;
+  padding: 2px 34px 0 var(--space-3);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.18em;
+  white-space: nowrap;
+  border-left: 1px solid var(--rule);
+  user-select: none;
+}
+.snellen span {
+  position: relative;
+  display: block;
+}
+.snellen span::before {
+  content: attr(data-letters);
+}
+.snellen .is-dim {
+  color: var(--faint);
+}
+/* The reached line: underlined 10px past its letters (::before holds the letters). */
+.snellen .is-here {
+  margin: 0 -10px -3px;
+  padding: 0 10px 1px;
+  border-bottom: 2px solid var(--lens);
+}
+.snellen .is-here::after {
+  content: attr(data-acuity);
+  position: absolute;
+  top: 50%;
+  left: calc(100% - 2px);
+  transform: translateY(-50%);
+  font-size: 11px;
+  letter-spacing: 0;
+  color: var(--lens);
+}
+
+/* Tally by severity, each with its shape. */
+.tally {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2) 14px;
+  margin: 0;
+  padding: var(--space-3) var(--space-5);
+  list-style: none;
+  font-size: var(--text-sm);
+  border-bottom: 1px solid var(--rule);
+}
+.tally__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.tally__item b {
+  font-size: var(--text-md);
+}
+.tally__item--critical b {
+  color: var(--critical);
+}
+.tally__item--serious b {
+  color: var(--serious);
+}
+.tally__item--moderate b {
+  color: var(--moderate);
+}
+.tally__item--minor b {
+  color: var(--minor);
+}
+
+/* "Check against" rule packs. */
+.packs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0 var(--space-4);
+  margin: 0;
+  padding: 0 var(--space-5);
+  min-width: 0;
+  font-size: var(--text-sm);
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+}
+.packs__legend {
+  float: left; /* lets the legend sit in the row like the labels */
+  margin-right: var(--space-4);
+  padding: 0;
+  line-height: var(--target);
+  color: var(--graphite);
+}
+.packs__option {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--target);
+  cursor: pointer;
+}
+
+@media (max-width: 1100px) {
+  .pane--findings {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 700px) {
+  .reading {
+    padding: var(--space-4);
+  }
+}

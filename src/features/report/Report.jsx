@@ -1,4 +1,3 @@
-// features/report/Report.jsx
 import { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router';
@@ -22,6 +21,15 @@ export default function Report() {
 function ReportView({ runId }) {
   const dispatch = useDispatch();
   const runs = useSelector((state) => state.history.runs); // newest first
+  const saveFailed = useSelector((state) => state.history.saveFailed);
+  const saveNotice = saveFailed && (
+    <div className="notice" role="note">
+      <p>
+        <strong>History can’t be saved in this browser.</strong> Storage is full or blocked, so
+        these checks are lost when you close or reload the tab.
+      </p>
+    </div>
+  );
 
   // Default comparison: the latest run (or the one named in /report/:runId) as
   // "after", and the run just before it as "before" (the next newer one if it is the oldest).
@@ -42,6 +50,7 @@ function ReportView({ runId }) {
         <div className="page__header">
           <h1 className="page__title">Report</h1>
         </div>
+        {saveNotice}
         <div className="empty-state">
           <h2 className="empty-state__title">No checks yet</h2>
           <p>Every check the workbench runs is recorded here, with its score and findings.</p>
@@ -77,6 +86,7 @@ function ReportView({ runId }) {
           Clear history
         </button>
       </div>
+      {saveNotice}
 
       <section className="section" aria-labelledby="trend-heading">
         <h2 id="trend-heading" className="section__title">

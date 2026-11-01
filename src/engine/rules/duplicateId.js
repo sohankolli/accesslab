@@ -1,4 +1,3 @@
-// engine/rules/duplicateId.js
 import { issue } from './basicRules.js';
 
 export const duplicateId = {

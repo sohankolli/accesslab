@@ -1,3 +1,5 @@
 dist
 coverage
 package-lock.json
+# Design mockup: its code panel is preformatted text that Prettier would re-indent.
+docs/design/direction.html

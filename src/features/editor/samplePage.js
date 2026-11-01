@@ -1,4 +1,3 @@
-// features/editor/samplePage.js
 // Preloaded into the editor so the workbench is never empty. It contains four
 // deliberate problems: an image without alt, an input named only by its
 // placeholder, a heading that jumps from h1 to h3, and light grey text whose

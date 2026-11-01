@@ -1,13 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useDispatch, useSelector, useStore } from 'react-redux';
-import { issueSelected, selectSortedIssues, simulationChanged } from './auditSlice';
-import { SIMULATIONS } from '../simulate/simulations';
+import { useDispatch, useStore } from 'react-redux';
+import { issueSelected, selectSortedIssues } from './auditSlice';
 import { issueAt } from './overlayBoxes';
 import SandboxFrame from './SandboxFrame';
 import IssueOverlay from './IssueOverlay';
 import Segmented from '../../components/Segmented';
 import './previewPane.css';
-import '../simulate/simulate.css';
 
 const DEVICES = [
   { value: 'mobile', label: 'Phone' },
@@ -33,7 +31,6 @@ export default function PreviewPane({ html, css, frameRef, docRef, onDocument })
   const [previewFocused, setPreviewFocused] = useState(false);
   const [frameSize, setFrameSize] = useState(null);
   const [device, setDevice] = useState('desktop');
-  const simulation = useSelector((state) => state.audit.simulation);
 
   const handleDocument = useCallback(
     (doc) => {
@@ -84,31 +81,10 @@ export default function PreviewPane({ html, css, frameRef, docRef, onDocument })
           onChange={setDevice}
           options={DEVICES}
         />
-        <label className="simulation-control">
-          <span>Vision simulation</span>
-          <select
-            value={simulation}
-            onChange={(event) => dispatch(simulationChanged(event.target.value))}
-          >
-            {SIMULATIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </label>
       </div>
       <div className="preview-stage">
-        <div
-          className={`sheet sheet--${device}${previewFocused ? ' sheet--focused' : ''} simulation--${simulation}`}
-        >
-          <SandboxFrame
-            html={html}
-            css={css}
-            simulation={simulation}
-            onDocument={handleDocument}
-            frameRef={frameRef}
-          />
+        <div className={`sheet sheet--${device}${previewFocused ? ' sheet--focused' : ''}`}>
+          <SandboxFrame html={html} css={css} onDocument={handleDocument} frameRef={frameRef} />
         </div>
         <IssueOverlay frameRef={frameRef} />
       </div>

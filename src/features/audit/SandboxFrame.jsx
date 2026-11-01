@@ -1,15 +1,8 @@
 import { useMemo, useRef } from 'react';
 
 /** Wrap the user's HTML and CSS into one document for the iframe's srcdoc. */
-export function buildDocument(html, css, simulation = 'none') {
-  const zoomStyle =
-    simulation === 'zoom-200'
-      ? '<style>html { font-size: 200% !important; }</style>'
-      : '';
-
-  const style =
-    `<style>${css.replace(/<\/style/gi, '<\\/style')}</style>` +
-    zoomStyle;
+export function buildDocument(html, css) {
+  const style = `<style>${css.replace(/<\/style/gi, '<\\/style')}</style>`;
 
   if (/<html[\s>]/i.test(html)) {
     // A full page: inject the CSS into its <head>.
@@ -27,21 +20,11 @@ export function buildDocument(html, css, simulation = 'none') {
   );
 }
 
-/** @param {{html: string, css: string, simulation?: string, onDocument: (doc: Document) => void, frameRef?: {current: HTMLIFrameElement|null}}} props */
-export default function SandboxFrame({
-  html,
-  css,
-  simulation = 'none',
-  onDocument,
-  frameRef: outerRef,
-}) {
+/** @param {{html: string, css: string, onDocument: (doc: Document) => void, frameRef?: {current: HTMLIFrameElement|null}}} props */
+export default function SandboxFrame({ html, css, onDocument, frameRef: outerRef }) {
   const ownRef = useRef(null);
   const frameRef = outerRef ?? ownRef;
-
-  const srcDoc = useMemo(
-    () => buildDocument(html, css, simulation),
-    [html, css, simulation],
-  );
+  const srcDoc = useMemo(() => buildDocument(html, css), [html, css]);
 
   return (
     <iframe

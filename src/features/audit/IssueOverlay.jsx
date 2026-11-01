@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { overlayBoxes } from './overlayBoxes';
 import { selectSortedIssues } from './auditSlice';
+import './issueOverlay.css';
 
 /** Space between an element and its dashed mark, as in the mockup. */
 const PAD = 5;
@@ -15,8 +16,13 @@ const PIN_OUT = 14;
  * solid border and a yellow ring. Purely visual (aria-hidden): the list carries
  * the same information for everyone. Clicks go through to the preview, where
  * Workbench's listener selects issues.
+ * @param {{
+ *   frameRef: {current: HTMLIFrameElement|null},  the preview frame to draw over
+ *   refreshKey?: unknown,  change it to re-measure, e.g. after a new document
+ *     loaded or a Simulate lens changed the page's layout
+ * }} props
  */
-export default function IssueOverlay({ frameRef }) {
+export default function IssueOverlay({ frameRef, refreshKey }) {
   const issues = useSelector(selectSortedIssues);
   const selectedId = useSelector((state) => state.audit.selectedIssueId);
   const [layout, setLayout] = useState(null);
@@ -55,7 +61,7 @@ export default function IssueOverlay({ frameRef }) {
       win.removeEventListener('resize', measure);
       observer.disconnect();
     };
-  }, [frameRef, issues]);
+  }, [frameRef, issues, refreshKey]);
 
   if (!layout || !issues.length) return null;
   const { width, height } = layout.frame;

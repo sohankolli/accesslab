@@ -29,13 +29,14 @@
 }
 
 .simulate-preview-scroll {
+  position: relative; /* the inspection marks are positioned against this */
   width: 100%;
   height: min(65vh, 700px);
   min-height: 320px;
-  overflow: auto;
+  overflow: hidden; /* the page scrolls inside its own frame */
   border: 1px solid var(--rule);
   border-radius: var(--radius-md);
-  background: white;
+  background: var(--page-canvas);
 }
 
 .simulate-frame {
@@ -44,7 +45,7 @@
   height: 100%;
   min-height: 320px;
   border: 0;
-  background: white;
+  background: var(--page-canvas);
 }
 
 .simulate-frame--protanopia {
@@ -108,51 +109,4 @@
   margin-top: var(--space-1);
   color: var(--graphite);
   font-size: var(--text-sm);
-}
-
-/* The vision-simulation dropdown in the workbench preview header. */
-.simulation-control {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--graphite);
-}
-
-.simulation-control select {
-  max-width: 100%;
-  min-height: var(--target);
-  padding: var(--space-2) var(--space-3);
-  color: var(--ink);
-  background: var(--chart);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-sm);
-  font: inherit;
-}
-
-/* M3: illustrative visual accessibility simulations in the workbench preview.
-   These effects are approximations, not clinical simulations. */
-
-.simulation--protanopia .sandbox-frame {
-  filter: grayscale(0.65) sepia(0.2) hue-rotate(320deg) saturate(0.8);
-}
-
-.simulation--deuteranopia .sandbox-frame {
-  filter: grayscale(0.55) sepia(0.15) hue-rotate(35deg) saturate(0.85);
-}
-
-.simulation--tritanopia .sandbox-frame {
-  filter: grayscale(0.5) sepia(0.25) hue-rotate(90deg) saturate(0.8);
-}
-
-.simulation--low-vision .sandbox-frame {
-  filter: blur(1.5px);
-}
-
-.simulation--zoom-200 .sandbox-frame {
-  transform: scale(2);
-  transform-origin: top left;
-  width: 50%;
-  height: 50%;
 }

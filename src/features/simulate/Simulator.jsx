@@ -1,13 +1,29 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { buildDocument } from '../audit/SandboxFrame';
 import { simulationChanged } from '../audit/auditSlice';
+import IssueOverlay from '../audit/IssueOverlay';
 import { linearize } from '../../engine/dom/linearize';
 import { SIMULATIONS } from './simulations';
 import './simulate.css';
 
+/**
+ * Apply a lens to the Simulate page's own copy of the page. This copy is never
+ * audited, so a lens can change it freely: the workbench's audited document,
+ * the score and the history are not touched.
+ * @param {Document} doc
+ * @param {string} mode
+ */
+function applyLens(doc, mode) {
+  // 200% text doubles the root font size: text sized in px will not grow, which is the finding.
+  doc.documentElement.style.fontSize = mode === 'zoom-200' ? '200%' : '';
+}
 
+/**
+ * The Simulate page: the workbench's current page in a separate preview frame,
+ * seen through a lens, with keyboard and screen-reader views of it.
+ */
 export default function Simulator() {
   const dispatch = useDispatch();
   const html = useSelector((state) => state.editor.html);
@@ -18,42 +34,47 @@ export default function Simulator() {
   const [activeView, setActiveView] = useState('preview');
   const [elements, setElements] = useState([]);
   const [previewReady, setPreviewReady] = useState(false);
+  const [loads, setLoads] = useState(0); // counts loaded documents, so the marks re-measure
 
-  const srcDoc = useMemo(
-  () => buildDocument(html, css, simulation),
-  [html, css, simulation],
-);
+  // The page itself, without any lens: lenses are applied to the loaded copy below.
+  const srcDoc = useMemo(() => buildDocument(html, css), [html, css]);
 
   const handlePreviewLoad = useCallback(() => {
-  const document = frameRef.current?.contentDocument;
+    const document = frameRef.current?.contentDocument;
 
-  if (!document?.body) {
-    setElements([]);
-    setPreviewReady(false);
-    return;
-  }
+    if (!document?.body) {
+      setElements([]);
+      setPreviewReady(false);
+      return;
+    }
 
+    document.addEventListener(
+      'click',
+      (event) => {
+        event.preventDefault();
+      },
+      true,
+    );
 
-  document.addEventListener(
-    'click',
-    (event) => {
-      event.preventDefault();
-    },
-    true,
-  );
+    // Prevent forms from submitting and replacing the preview.
+    document.addEventListener(
+      'submit',
+      (event) => {
+        event.preventDefault();
+      },
+      true,
+    );
 
-  // Prevent forms from submitting and replacing the preview.
-  document.addEventListener(
-    'submit',
-    (event) => {
-      event.preventDefault();
-    },
-    true,
-  );
+    setElements(linearize(document));
+    setPreviewReady(true);
+    setLoads((n) => n + 1);
+  }, []);
 
-  setElements(linearize(document));
-  setPreviewReady(true);
-}, []);
+  // Switching lens restyles the loaded copy in place: no reload, no audit.
+  useEffect(() => {
+    const document = frameRef.current?.contentDocument;
+    if (previewReady && document?.documentElement) applyLens(document, simulation);
+  }, [simulation, previewReady, loads]);
 
   const previewClass = `simulate-frame simulate-frame--${simulation}`;
 
@@ -131,11 +152,13 @@ export default function Simulator() {
               srcDoc={srcDoc}
               onLoad={handlePreviewLoad}
             />
+            <IssueOverlay frameRef={frameRef} refreshKey={`${loads}:${simulation}`} />
           </div>
 
           <p className="simulate-note">
             The preview updates when the HTML or CSS in the workbench changes.
-            Page scripts remain disabled.
+            Page scripts remain disabled. This is a separate copy of the page:
+            lenses never change the audit, the score or the history.
           </p>
         </section>
       )}

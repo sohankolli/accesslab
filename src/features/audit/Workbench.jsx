@@ -8,6 +8,9 @@ import { issueSelected } from './auditSlice';
 import { findElement, isPageLevel } from './overlayBoxes';
 import { useAudit } from './useAudit';
 import SourceEditor from '../editor/SourceEditor';
+import SourceNotice from '../editor/SourceNotice';
+import ShareLinkButton from '../editor/ShareLinkButton';
+import { useOpenSharedLink } from '../editor/useOpenSharedLink';
 import { sourceLineOf } from '../editor/sourceLine';
 import Splitter from '../../components/Splitter';
 import { readPref, writePref } from '../../services/storage';
@@ -35,6 +38,12 @@ export default function Workbench() {
   const frameRef = useRef(null);
   const issuesHeadingRef = useRef(null);
   const editorRef = useRef(null);
+
+  // One message at a time under the source pane's header (share link, file import).
+  const [notice, setNotice] = useState(
+    /** @type {import('../editor/SourceNotice').Notice|null} */ (null),
+  );
+  useOpenSharedLink(setNotice);
 
   const auditHtml = useDebouncedValue(html, 400);
   const auditCss = useDebouncedValue(css, 400);
@@ -115,6 +124,12 @@ export default function Workbench() {
         <h2 id="source-heading" className="sr-only">
           Source
         </h2>
+        <div className="src-head">
+          <div className="src-head__actions">
+            <ShareLinkButton onNotice={setNotice} />
+          </div>
+        </div>
+        <SourceNotice notice={notice} />
         <SourceEditor
           html={html}
           css={css}

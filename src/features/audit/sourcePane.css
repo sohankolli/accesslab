@@ -8,6 +8,53 @@
 .pane--source > .notice {
   margin: var(--space-3) var(--space-4);
 }
+/* The header: what is loaded, and the share and file buttons. */
+.src-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--rule);
+}
+.src-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+.src-head__status {
+  font-size: var(--text-sm);
+  color: var(--graphite);
+}
+.btn--sm {
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
+}
+/* Share-link and file messages, between the header and the tabs. */
+.pane--source > .src-notice > .notice,
+.pane--source > .notice--stack {
+  margin: var(--space-3) var(--space-4) 0;
+}
+.notice--info {
+  border-color: var(--lens);
+}
+.notice--stack {
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.notice__field {
+  width: 100%;
+  min-height: var(--target);
+  padding: 0 var(--space-2);
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  background: var(--chart);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+}
+
 .tabs-bar {
   display: flex;
   align-items: flex-end;

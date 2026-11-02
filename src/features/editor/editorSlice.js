@@ -6,6 +6,9 @@ export const MAX_PAGE_BYTES = 500 * 1024;
 
 const encoder = new TextEncoder();
 
+/** The page's size: its HTML and CSS in UTF-8 bytes. */
+export const pageBytes = (html, css) => encoder.encode(html).length + encoder.encode(css).length;
+
 /**
  * The page's size in bytes when it is over the cap, otherwise 0. Encoding is
  * skipped when the text is clearly small enough (a UTF-16 unit is at most 3
@@ -13,7 +16,7 @@ const encoder = new TextEncoder();
  */
 function oversize(html, css) {
   if ((html.length + css.length) * 3 <= MAX_PAGE_BYTES) return 0;
-  const bytes = encoder.encode(html).length + encoder.encode(css).length;
+  const bytes = pageBytes(html, css);
   return bytes > MAX_PAGE_BYTES ? bytes : 0;
 }
 
@@ -69,6 +72,23 @@ const editorSlice = createSlice({
       state.rejected = null;
     },
     /**
+     * Open a page from a share link: both tabs at once, under the same size cap
+     * as typing (the link was already checked; this is the last guard).
+     */
+    sharedPageOpened(state, action) {
+      const { html, css } = action.payload;
+      const bytes = oversize(html, css);
+      if (bytes) {
+        state.rejected = { lang: 'html', bytes };
+        return;
+      }
+      state.html = html;
+      state.css = css;
+      state.source = 'link';
+      state.fileName = null;
+      state.rejected = null;
+    },
+    /**
      * Append an issue's one-click CSS fix to the stylesheet as one commented
      * line, so undoing it is just deleting that line. Applying the same fix
      * twice changes nothing.
@@ -83,5 +103,6 @@ const editorSlice = createSlice({
   },
 });
 
-export const { htmlChanged, cssChanged, sampleLoaded, fixApplied } = editorSlice.actions;
+export const { htmlChanged, cssChanged, sampleLoaded, sharedPageOpened, fixApplied } =
+  editorSlice.actions;
 export default editorSlice.reducer;

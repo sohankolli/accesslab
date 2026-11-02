@@ -3,6 +3,8 @@ import ScoreReading from './ScoreReading';
 import PackSettings from './PackSettings';
 import './findingsPane.css';
 import IssueList from './IssueList';
+import PrintableReport from '../report/PrintableReport';
+import { downloadRunJSON, downloadRunCSV } from '../report/reportExport';
 
 /** Text for the live region, read out by screen readers after every audit. */
 function announcement(result) {
@@ -37,14 +39,46 @@ export default function FindingsPane({
     <section id="pane-issues" className="pane pane--findings" aria-labelledby="issues-heading">
       <div className="pane__body findings">
         <ScoreReading
-          score={hasRules ? result?.score : undefined}
-          previousScore={previousScore}
-          issues={hasRules ? result?.issues : []}
-          auditing={status === 'running'}
-          failed={status === 'failed'}
-          headingRef={headingRef}
-        />
-        <p className="sr-only" aria-live="polite">
+  score={hasRules ? result?.score : undefined}
+  previousScore={previousScore}
+  issues={hasRules ? result?.issues : []}
+  auditing={status === 'running'}
+  failed={status === 'failed'}
+  headingRef={headingRef}
+/>
+
+{result && (
+  <>
+    <div className="findings__report-actions">
+      <button
+        type="button"
+        className="btn"
+        onClick={() => downloadRunJSON(result)}
+      >
+        Download JSON
+      </button>
+
+      <button
+        type="button"
+        className="btn"
+        onClick={() => downloadRunCSV(result)}
+      >
+        Download CSV
+      </button>
+
+      <button
+        type="button"
+        className="btn"
+        onClick={() => window.print()}
+      >
+        Print / Save PDF
+      </button>
+    </div>
+
+    <PrintableReport run={result} />
+  </>
+)}
+                  <p className="sr-only" aria-live="polite">
           {result && announcement(result)}
         </p>
         <PackSettings />

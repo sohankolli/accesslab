@@ -1,0 +1,133 @@
+
+/* The report is only displayed in the browser's print preview. */
+.print-report {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 16mm;
+  }
+
+  body * {
+    visibility: hidden !important;
+  }
+
+  .print-report,
+  .print-report * {
+    visibility: visible !important;
+  }
+
+  .print-report {
+    display: block !important;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    color: #172033;
+    background: #fff;
+    font-family: Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.5;
+  }
+
+  .print-report__header {
+    padding-bottom: 14px;
+    border-bottom: 2px solid #172033;
+  }
+
+  .print-report__brand {
+    font-size: 11pt;
+    font-weight: 800;
+    letter-spacing: 3px;
+  }
+
+  .print-report h1 {
+    margin: 8px 0;
+    font-size: 23pt;
+  }
+
+  .print-report h2 {
+    margin: 22px 0 10px;
+    font-size: 15pt;
+    border-bottom: 1px solid #aaa;
+    padding-bottom: 5px;
+  }
+
+  .print-report__score {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid #aaa;
+  }
+
+  .print-report__eyebrow {
+    margin: 0;
+    font-weight: 700;
+  }
+
+  .print-report__number {
+    margin: 5px 0;
+    font-size: 36pt;
+    font-weight: 800;
+  }
+
+  .print-report__number span {
+    font-size: 14pt;
+  }
+
+  .print-report__chart {
+    text-align: center;
+    line-height: 1.25;
+  }
+
+  .print-report__chart p {
+    margin: 2px;
+  }
+
+  .print-report__chart .is-reached {
+    font-weight: 800;
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+  }
+
+  .print-report__counts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 22px;
+  }
+
+  .print-report__finding {
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+    break-inside: avoid;
+  }
+
+  .print-report__finding h3 {
+    margin: 0 0 6px;
+    font-size: 12pt;
+  }
+
+  .print-report__finding p {
+    margin: 3px 0;
+    overflow-wrap: anywhere;
+  }
+
+  .print-report code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 9pt;
+  }
+
+  .print-report__comparison {
+    break-inside: avoid;
+  }
+
+  .print-report__footer {
+    margin-top: 24px;
+    padding-top: 8px;
+    border-top: 1px solid #aaa;
+    font-size: 9pt;
+  }
+}

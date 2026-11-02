@@ -7,7 +7,7 @@ import prettier from 'eslint-config-prettier';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage']),
+  globalIgnores(['dist', 'coverage', 'public/ort', 'ml/data', 'ml/node_modules']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
@@ -35,6 +35,11 @@ export default defineConfig([
     // full reload for these files, so the export rule is off for them.
     files: ['src/app/router.jsx', 'src/context/*.jsx', 'src/features/audit/SandboxFrame.jsx'],
     rules: { 'react-refresh/only-export-components': 'off' },
+  },
+  {
+    // The model's offline pipeline (ml/) and build scripts run in Node.
+    files: ['ml/**/*.mjs', 'scripts/**/*.mjs'],
+    languageOptions: { globals: { ...globals.node } },
   },
   {
     // Build and test configuration runs in Node.

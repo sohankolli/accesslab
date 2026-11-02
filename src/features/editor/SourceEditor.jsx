@@ -77,6 +77,42 @@ function CodePanel({ lang, label, value, onChange, active, highlight, onCaret, t
     return () => ta.removeEventListener('selectionchange', handler);
   }, [reportCaret, textareaRef]);
 
+  // Where the editor was scrolled and where the caret was just before an edit.
+  // If the edit is refused (over the size cap), React puts the old text back but
+  // the browser leaves the textarea scrolled to the end of the pasted text, so
+  // the code looks empty. handleChange uses this to put the view back.
+  const beforeEdit = useRef(null);
+  useEffect(() => {
+    const ta = textareaRef.current;
+    const remember = () => {
+      beforeEdit.current = {
+        scrollTop: ta.scrollTop,
+        scrollLeft: ta.scrollLeft,
+        start: ta.selectionStart,
+        end: ta.selectionEnd,
+      };
+    };
+    ta.addEventListener('beforeinput', remember); // native: React's onBeforeInput misses paste
+    return () => ta.removeEventListener('beforeinput', remember);
+  }, [textareaRef]);
+
+  const handleChange = (event) => {
+    const ta = event.currentTarget;
+    const next = ta.value;
+    const before = beforeEdit.current;
+    beforeEdit.current = null;
+    onChange(next);
+    // By the time this microtask runs React has either kept the new text or,
+    // when the edit was refused, put the old text back.
+    queueMicrotask(() => {
+      if (!before || ta.value === next) return;
+      ta.setSelectionRange(before.start, before.end);
+      ta.scrollTop = before.scrollTop;
+      ta.scrollLeft = before.scrollLeft;
+      sync();
+    });
+  };
+
   return (
     <div
       role="tabpanel"
@@ -101,7 +137,7 @@ function CodePanel({ lang, label, value, onChange, active, highlight, onCaret, t
         autoCapitalize="off"
         autoComplete="off"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={handleChange}
         onScroll={sync}
         onSelect={(e) => reportCaret(e.currentTarget)}
         onFocus={(e) => {

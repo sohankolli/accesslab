@@ -29,3 +29,6 @@ coverage
 # Local assistant files
 CLAUDE.md
 .claude/
+
+# ONNX Runtime Web files, copied from node_modules by scripts/copy-ort-wasm.mjs
+public/ort/

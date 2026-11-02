@@ -4,7 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
+    "predev": "node scripts/copy-ort-wasm.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/copy-ort-wasm.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint .",
@@ -17,6 +19,7 @@
     "@fontsource-variable/atkinson-hyperlegible-mono": "^5.3.0",
     "@fontsource-variable/atkinson-hyperlegible-next": "^5.3.0",
     "@reduxjs/toolkit": "^2.13.0",
+    "onnxruntime-web": "1.29.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-redux": "^9.3.0",

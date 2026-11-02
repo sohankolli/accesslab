@@ -41,6 +41,12 @@ export default defineConfig([
     files: ['*.config.js', 'tests/**/*.{js,jsx}'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
   },
+  {
+    // Node scripts (the typing benchmark): plain JavaScript run with Node.
+    files: ['scripts/**/*.mjs'],
+    extends: [js.configs.recommended],
+    languageOptions: { globals: globals.node },
+  },
   // Last: turn off stylistic rules that Prettier owns.
   prettier,
 ]);

@@ -51,6 +51,17 @@ export default function Learn() {
         );
       })}
 
+      <section className="learn-group">
+        <h2>Model suggestions</h2>
+        <p>
+          A trained model looks for click-only controls, which the rules cannot see. Read what it
+          was trained on, how accurate it is and when not to trust it.
+        </p>
+        <Link to="/learn/model-card" className="btn">
+          Read the model card
+        </Link>
+      </section>
+
       <section className="card">
         <h2>Try it yourself</h2>
         <p>Audit your own HTML and CSS to find accessibility issues and experiment with fixes.</p>

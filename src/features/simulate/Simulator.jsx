@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router';
 import { useDispatch, useSelector } from 'react-redux';
 import { buildDocument } from '../audit/SandboxFrame';
-import { simulationChanged } from '../audit/auditSlice';
+import { selectResultIsCurrent, simulationChanged } from '../audit/auditSlice';
 import IssueOverlay from '../audit/IssueOverlay';
 import { guardPreview } from '../audit/previewGuard';
 import { linearize } from '../../engine/dom/linearize';
@@ -49,6 +49,10 @@ export default function Simulator() {
   const html = useSelector((state) => state.editor.html);
   const css = useSelector((state) => state.editor.css);
   const simulation = useSelector((state) => state.audit.simulation);
+  // Marks come from the Workbench's last audit. Simulate never runs one (a lens must
+  // never be able to change the score or the history), so after a reload or a
+  // direct visit there may be none for this code: say so instead of showing none.
+  const resultIsCurrent = useSelector(selectResultIsCurrent);
 
   const frameRef = useRef(null);
   const [activeView, setActiveView] = useState('preview');
@@ -153,6 +157,12 @@ export default function Simulator() {
         >
           {activeView === 'preview' && (
             <>
+              {!resultIsCurrent && (
+                <p className="simulate-hint">
+                  Issue marks appear after this page has been checked on the{' '}
+                  <Link to="/audit">Workbench</Link>.
+                </p>
+              )}
               <div className="simulate-preview-scroll">
                 <iframe
                   ref={frameRef}
@@ -164,7 +174,9 @@ export default function Simulator() {
                   srcDoc={srcDoc}
                   onLoad={handlePreviewLoad}
                 />
-                <IssueOverlay frameRef={frameRef} refreshKey={`${loads}:${simulation}`} />
+                {resultIsCurrent && (
+                  <IssueOverlay frameRef={frameRef} refreshKey={`${loads}:${simulation}`} />
+                )}
               </div>
 
               <p className="section__note">

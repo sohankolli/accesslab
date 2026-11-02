@@ -97,3 +97,8 @@
   color: var(--ink);
   box-shadow: inset 4px 0 0 var(--critical);
 }
+
+/* Shown above the preview when there is no audit of this code to draw marks from. */
+.simulate-hint {
+  font-size: var(--text-sm);
+}

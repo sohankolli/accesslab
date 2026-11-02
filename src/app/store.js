@@ -2,10 +2,16 @@ import { configureStore } from '@reduxjs/toolkit';
 import editorReducer from '../features/editor/editorSlice';
 import auditReducer from '../features/audit/auditSlice';
 import historyReducer, { historySaveResult } from '../features/report/historySlice';
+import clickablesReducer from '../features/audit/clickablesSlice';
 import { loadHistory, saveHistory } from '../services/storage';
 
 export const store = configureStore({
-  reducer: { editor: editorReducer, audit: auditReducer, history: historyReducer },
+  reducer: {
+    editor: editorReducer,
+    audit: auditReducer,
+    history: historyReducer,
+    clickables: clickablesReducer,
+  },
   preloadedState: { history: { ...loadHistory(), saveFailed: false } },
 });
 

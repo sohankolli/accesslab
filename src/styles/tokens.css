@@ -71,6 +71,7 @@
   --pin-serious: #9a4a00;
   --pin-moderate: #6f5a00;
   --pin-minor: #45607c;
+  --pin-advisory: #3b2fc9; /* model suggestions */
   --pin-text: #ffffff;
   --pin-halo: #ffffff;
   --page-canvas: #ffffff; /* behind the audited page: browsers default to white */

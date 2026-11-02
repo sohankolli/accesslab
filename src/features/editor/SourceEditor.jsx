@@ -163,7 +163,10 @@ function CodePanel({ lang, label, value, onChange, active, highlight, onCaret, t
  *   html: string, css: string,
  *   onHtmlChange: (v: string) => void, onCssChange: (v: string) => void,
  *   highlight?: {line: number}|null,  the HTML line of the selected issue
- *   controlRef?: import('react').Ref<{reveal: (start: number, end: number) => void}>,
+ *   controlRef?: import('react').Ref<{
+ *     reveal: (start: number, end: number) => void,
+ *     showTab: (lang: 'html'|'css') => void,
+ *   }>,
  * }} props
  */
 export default function SourceEditor({
@@ -182,9 +185,11 @@ export default function SourceEditor({
   const onCssCaret = useCallback((p) => setCaret((c) => ({ ...c, css: p })), []);
 
   // "Show in code": open the HTML tab, select the element's start tag, centre it.
+  // showTab: after a file is opened, show the tab it went into.
   useImperativeHandle(
     controlRef,
     () => ({
+      showTab: setActive,
       reveal(start, end) {
         flushSync(() => setActive('html'));
         const ta = htmlInput.current;

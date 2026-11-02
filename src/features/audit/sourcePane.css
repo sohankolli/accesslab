@@ -17,6 +17,15 @@
   padding: var(--space-2) var(--space-4);
   border-bottom: 1px solid var(--rule);
 }
+.src-head__name {
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 .src-head__actions {
   display: flex;
   flex-wrap: wrap;
@@ -32,6 +41,26 @@
   padding: 0 var(--space-3);
   font-size: var(--text-sm);
 }
+/* While a file is dragged over the pane: the whole pane is the drop target. */
+.pane--source {
+  position: relative;
+}
+.drop-target {
+  position: absolute;
+  inset: var(--space-2);
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  font-weight: 700;
+  text-align: center;
+  color: var(--ink);
+  background: var(--lens-tint);
+  border: 2px dashed var(--lens);
+  border-radius: var(--radius-md);
+  pointer-events: none;
+}
+
 /* Share-link and file messages, between the header and the tabs. */
 .pane--source > .src-notice > .notice,
 .pane--source > .notice--stack {

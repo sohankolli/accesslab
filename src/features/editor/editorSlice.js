@@ -31,37 +31,71 @@ const initialState = {
 };
 
 /**
- * Editing the sample makes it the user's own code. Editing an opened file or a
- * shared page keeps its source, so the header still names what was loaded.
+ * Record where accepted code came from. An opened file sets the source and the
+ * file's name. Typing in the sample makes it the user's own code; typing in an
+ * opened file or a shared page keeps its source, so the header still names
+ * what was loaded.
+ * @param {{source: 'file', fileName: string}} [origin]
  */
-function edited(state) {
-  if (state.source === 'sample') state.source = 'paste';
+function edited(state, origin) {
+  if (origin) {
+    state.source = origin.source;
+    state.fileName = origin.fileName;
+  } else if (state.source === 'sample') {
+    state.source = 'paste';
+  }
 }
+
+/** prepare() for the edit actions: the text, and for a file, where it came from. */
+const withOrigin = (text, origin) => (origin ? { payload: text, meta: origin } : { payload: text });
 
 const editorSlice = createSlice({
   name: 'editor',
   initialState,
   reducers: {
-    /** An edit that would make the page bigger than MAX_PAGE_BYTES is not applied. */
-    htmlChanged(state, action) {
-      const bytes = oversize(action.payload, state.css);
-      if (bytes) {
-        state.rejected = { lang: 'html', bytes };
-        return;
-      }
-      state.html = action.payload;
-      state.rejected = null;
-      edited(state);
+    /**
+     * The HTML tab's new text, from typing or from an opened file. An edit that
+     * would make the page bigger than MAX_PAGE_BYTES is not applied.
+     * Typing: htmlChanged(text). A file: htmlChanged(text, {source: 'file', fileName}).
+     */
+    htmlChanged: {
+      reducer(state, action) {
+        const bytes = oversize(action.payload, state.css);
+        if (bytes) {
+          state.rejected = { lang: 'html', bytes };
+          return;
+        }
+        state.html = action.payload;
+        state.rejected = null;
+        edited(state, action.meta);
+      },
+      prepare: withOrigin,
     },
-    cssChanged(state, action) {
-      const bytes = oversize(state.html, action.payload);
-      if (bytes) {
-        state.rejected = { lang: 'css', bytes };
-        return;
-      }
-      state.css = action.payload;
+    cssChanged: {
+      reducer(state, action) {
+        const bytes = oversize(state.html, action.payload);
+        if (bytes) {
+          state.rejected = { lang: 'css', bytes };
+          return;
+        }
+        state.css = action.payload;
+        state.rejected = null;
+        edited(state, action.meta);
+      },
+      prepare: withOrigin,
+    },
+    /**
+     * A file too big to read at all (over the cap on its own): refused with the
+     * same message as an oversized paste, counting the other tab as well.
+     */
+    oversizeFileRefused(state, action) {
+      const { lang, fileBytes } = action.payload;
+      const other = lang === 'html' ? pageBytes('', state.css) : pageBytes(state.html, '');
+      state.rejected = { lang, bytes: fileBytes + other };
+    },
+    /** Forget a refused edit, when a new file is opened and the old notice no longer applies. */
+    rejectionCleared(state) {
       state.rejected = null;
-      edited(state);
     },
     /** Replace the editors' contents with the built-in sample page. */
     sampleLoaded(state) {
@@ -103,6 +137,13 @@ const editorSlice = createSlice({
   },
 });
 
-export const { htmlChanged, cssChanged, sampleLoaded, sharedPageOpened, fixApplied } =
-  editorSlice.actions;
+export const {
+  htmlChanged,
+  cssChanged,
+  oversizeFileRefused,
+  rejectionCleared,
+  sampleLoaded,
+  sharedPageOpened,
+  fixApplied,
+} = editorSlice.actions;
 export default editorSlice.reducer;

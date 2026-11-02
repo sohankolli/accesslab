@@ -10,7 +10,9 @@ import { useAudit } from './useAudit';
 import SourceEditor from '../editor/SourceEditor';
 import SourceNotice from '../editor/SourceNotice';
 import ShareLinkButton from '../editor/ShareLinkButton';
+import OpenFileButton from '../editor/OpenFileButton';
 import { useOpenSharedLink } from '../editor/useOpenSharedLink';
+import { useFileImport } from '../editor/useFileImport';
 import { sourceLineOf } from '../editor/sourceLine';
 import Splitter from '../../components/Splitter';
 import { readPref, writePref } from '../../services/storage';
@@ -30,7 +32,7 @@ const MIN_PREVIEW = 25; // percent: the splitters never squeeze the preview belo
 export default function Workbench() {
   const dispatch = useDispatch();
   const store = useStore();
-  const { html, css, rejected } = useSelector((state) => state.editor);
+  const { html, css, rejected, source, fileName } = useSelector((state) => state.editor);
   const result = useSelector((state) => state.audit.result);
   const selectedId = useSelector((state) => state.audit.selectedIssueId);
   const { reducedMotion } = useSettings();
@@ -44,6 +46,41 @@ export default function Workbench() {
     /** @type {import('../editor/SourceNotice').Notice|null} */ (null),
   );
   useOpenSharedLink(setNotice);
+  const showTab = useCallback((lang) => editorRef.current?.showTab(lang), []);
+  const openFiles = useFileImport({ onNotice: setNotice, onShowTab: showTab });
+
+  // A file dragged over the source pane: show where to drop it. Only drags that
+  // carry files count, not text dragged inside the editor. dragenter and
+  // dragleave fire for every child crossed, hence the counter.
+  const [dropping, setDropping] = useState(false);
+  const dragDepth = useRef(0);
+  const carriesFiles = (event) => event.dataTransfer?.types?.includes('Files');
+  const dropHandlers = {
+    onDragEnter(event) {
+      if (!carriesFiles(event)) return;
+      event.preventDefault();
+      dragDepth.current += 1;
+      setDropping(true);
+    },
+    onDragOver(event) {
+      if (!carriesFiles(event)) return;
+      event.preventDefault(); // allows the drop
+      event.dataTransfer.dropEffect = 'copy';
+    },
+    onDragLeave(event) {
+      if (!carriesFiles(event)) return;
+      dragDepth.current = Math.max(0, dragDepth.current - 1);
+      if (dragDepth.current === 0) setDropping(false);
+    },
+    onDrop(event) {
+      if (!carriesFiles(event)) return;
+      event.preventDefault(); // stops the browser opening the file itself
+      dragDepth.current = 0;
+      setDropping(false);
+      const files = [...event.dataTransfer.files];
+      if (files.length) openFiles(files);
+    },
+  };
 
   const auditHtml = useDebouncedValue(html, 400);
   const auditCss = useDebouncedValue(css, 400);
@@ -120,12 +157,24 @@ export default function Workbench() {
       <title>Workbench – AccessLab</title>
       <h1 className="sr-only">Audit workbench</h1>
 
-      <section id="pane-source" className="pane pane--source" aria-labelledby="source-heading">
+      <section
+        id="pane-source"
+        className="pane pane--source"
+        aria-labelledby="source-heading"
+        {...dropHandlers}
+      >
         <h2 id="source-heading" className="sr-only">
           Source
         </h2>
         <div className="src-head">
+          {source === 'file' && fileName && (
+            <p className="src-head__name" title={fileName}>
+              <span className="sr-only">Opened file: </span>
+              {fileName}
+            </p>
+          )}
           <div className="src-head__actions">
+            <OpenFileButton onFiles={openFiles} />
             <ShareLinkButton onNotice={setNotice} />
           </div>
         </div>
@@ -138,6 +187,11 @@ export default function Workbench() {
           highlight={highlight}
           controlRef={editorRef}
         />
+        {dropping && (
+          <div className="drop-target" aria-hidden="true">
+            Drop an .html or .css file to open it
+          </div>
+        )}
         {rejected && (
           <div className="notice" role="alert">
             <p>

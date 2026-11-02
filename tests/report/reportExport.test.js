@@ -1,4 +1,3 @@
-
 import { describe, it, expect } from 'vitest';
 import { exportRunJSON, exportRunCSV } from '../../src/features/report/reportExport';
 
@@ -49,9 +48,7 @@ describe('report exports', () => {
       ],
     };
 
-    expect(exportRunCSV(specialRun)).toContain(
-      '"Missing ""alt"", please fix"',
-    );
+    expect(exportRunCSV(specialRun)).toContain('"Missing ""alt"", please fix"');
   });
 
   it('supports older runs without saved findings', () => {

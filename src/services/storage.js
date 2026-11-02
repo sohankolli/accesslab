@@ -1,13 +1,10 @@
-
 // localStorage can be full, blocked or unavailable: every access is guarded.
 const KEY = 'accesslab:v1';
 
 function read() {
   try {
     const data = JSON.parse(localStorage.getItem(KEY));
-    return data && typeof data === 'object' && !Array.isArray(data)
-      ? data
-      : {};
+    return data && typeof data === 'object' && !Array.isArray(data) ? data : {};
   } catch {
     return {};
   }
@@ -53,5 +50,4 @@ export const loadHistory = () => {
   return { runs: Array.isArray(runs) ? runs.filter(isRun) : [] };
 };
 
-export const saveHistory = ({ runs }) =>
-  write({ ...read(), history: { runs } });
+export const saveHistory = ({ runs }) => write({ ...read(), history: { runs } });

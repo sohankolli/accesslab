@@ -71,52 +71,40 @@ function ReportView({ runId }) {
   return (
     <div className="page report">
       <title>Report – AccessLab</title>
-<div className="page__header">
-  <div>
-    <h1 className="page__title">Report</h1>
-    <p className="page__lead">
-      Your last {runs.length} {runs.length === 1 ? 'check' : 'checks'}, saved in this browser.
-    </p>
-  </div>
+      <div className="page__header">
+        <div>
+          <h1 className="page__title">Report</h1>
+          <p className="page__lead">
+            Your last {runs.length} {runs.length === 1 ? 'check' : 'checks'}, saved in this browser.
+          </p>
+        </div>
 
-  <div className="report__actions">
-    <button
-      type="button"
-      className="btn"
-      onClick={() => downloadRunJSON(after)}
-    >
-      Download JSON
-    </button>
+        <div className="report__actions">
+          <button type="button" className="btn" onClick={() => downloadRunJSON(after)}>
+            Download JSON
+          </button>
 
-       <button
-      type="button"
-      className="btn"
-      onClick={() => downloadRunCSV(after)}
-    >
-      Download CSV
-    </button>
+          <button type="button" className="btn" onClick={() => downloadRunCSV(after)}>
+            Download CSV
+          </button>
 
-    <button
-      type="button"
-      className="btn"
-      onClick={() => window.print()}
-    >
-      Print / Save PDF
-    </button>
+          <button type="button" className="btn" onClick={() => window.print()}>
+            Print / Save PDF
+          </button>
 
-    <button
-      type="button"
-      className="btn"
-      onClick={() => {
-        if (window.confirm('Delete all saved checks?')) {
-          dispatch(historyCleared());
-        }
-      }}
-    >
-      Clear history
-    </button>
-  </div>
-</div>
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              if (window.confirm('Delete all saved checks?')) {
+                dispatch(historyCleared());
+              }
+            }}
+          >
+            Clear history
+          </button>
+        </div>
+      </div>
 
       {saveNotice}
 
@@ -247,11 +235,10 @@ function ReportView({ runId }) {
             ))}
           </tbody>
         </table>
-            </section>
+      </section>
 
       {/* Printable PDF report */}
       <PrintableReport run={after} beforeRun={before} />
-
     </div>
   );
 }

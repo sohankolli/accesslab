@@ -22,26 +22,25 @@ const audit = (ranAt, score, severities = []) => ({
 });
 
 describe('historySlice', () => {
-it('stores newest first with issue counts and findings per severity', () => {
-  const state = historyReducer(
-    undefined,
-    runAdded(audit(1000, 67, ['critical', 'critical', 'moderate'])),
-  );
+  it('stores newest first with issue counts and findings per severity', () => {
+    const state = historyReducer(
+      undefined,
+      runAdded(audit(1000, 67, ['critical', 'critical', 'moderate'])),
+    );
 
-  expect(state.runs).toHaveLength(1);
-  expect(state.runs[0]).toMatchObject({
-    id: '1000',
-    ranAt: 1000,
-    score: 67,
-    counts: { critical: 2, moderate: 1 },
-    issues: [
-      { id: 'r:0', severity: 'critical' },
-      { id: 'r:1', severity: 'critical' },
-      { id: 'r:2', severity: 'moderate' },
-    ],
+    expect(state.runs).toHaveLength(1);
+    expect(state.runs[0]).toMatchObject({
+      id: '1000',
+      ranAt: 1000,
+      score: 67,
+      counts: { critical: 2, moderate: 1 },
+      issues: [
+        { id: 'r:0', severity: 'critical' },
+        { id: 'r:1', severity: 'critical' },
+        { id: 'r:2', severity: 'moderate' },
+      ],
+    });
   });
-});
-
 
   it('keeps only the newest 20 runs', () => {
     let state = historyReducer(undefined, { type: 'init' });

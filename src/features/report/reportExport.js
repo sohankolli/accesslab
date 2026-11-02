@@ -1,4 +1,3 @@
-
 import { acuityFor } from '../audit/acuity';
 
 function reportData(run) {
@@ -73,17 +72,9 @@ export function downloadFile(content, filename, type) {
 }
 
 export function downloadRunJSON(run) {
-  downloadFile(
-    exportRunJSON(run),
-    `accesslab-report-${run.id}.json`,
-    'application/json',
-  );
+  downloadFile(exportRunJSON(run), `accesslab-report-${run.id}.json`, 'application/json');
 }
 
 export function downloadRunCSV(run) {
-  downloadFile(
-    exportRunCSV(run),
-    `accesslab-report-${run.id}.csv`,
-    'text/csv;charset=utf-8',
-  );
+  downloadFile(exportRunCSV(run), `accesslab-report-${run.id}.csv`, 'text/csv;charset=utf-8');
 }

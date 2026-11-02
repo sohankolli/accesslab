@@ -1,4 +1,3 @@
-
 import { acuityFor, SNELLEN_LINES } from '../audit/acuity';
 import { SEVERITIES, SEVERITY_LABEL } from '../../components/severityLabels';
 import './printReport.css';
@@ -13,9 +12,8 @@ function countIssues(issues = []) {
   return SEVERITIES.reduce(
     (counts, severity) => ({
       ...counts,
-      [severity]: issues.filter(
-        (issue) => issue.severity === severity && !issue.needsReview,
-      ).length,
+      [severity]: issues.filter((issue) => issue.severity === severity && !issue.needsReview)
+        .length,
     }),
     {},
   );
@@ -42,9 +40,7 @@ export default function PrintableReport({ run, beforeRun = null }) {
   const issues = run.issues ?? [];
   const counts = countIssues(issues);
   const acuity = acuityFor(run.score);
-  const comparison = beforeRun
-    ? compareFindings(beforeRun.issues ?? [], issues)
-    : null;
+  const comparison = beforeRun ? compareFindings(beforeRun.issues ?? [], issues) : null;
 
   return (
     <section className="print-report" aria-label="Printable accessibility audit report">
@@ -58,9 +54,12 @@ export default function PrintableReport({ run, beforeRun = null }) {
         <div>
           <p className="print-report__eyebrow">Accessibility score</p>
           <p className="print-report__number">
-            {run.score}<span> / 100</span>
+            {run.score}
+            <span> / 100</span>
           </p>
-          <p>Eye-chart reading: <strong>{acuity}</strong></p>
+          <p>
+            Eye-chart reading: <strong>{acuity}</strong>
+          </p>
         </div>
 
         <div className="print-report__chart" aria-label={`Eye chart reading ${acuity}`}>
@@ -86,7 +85,8 @@ export default function PrintableReport({ run, beforeRun = null }) {
             </p>
           ))}
           <p>
-            <strong>{issues.filter((issue) => issue.needsReview).length}</strong> Needs manual review
+            <strong>{issues.filter((issue) => issue.needsReview).length}</strong> Needs manual
+            review
           </p>
         </div>
       </section>
@@ -100,8 +100,11 @@ export default function PrintableReport({ run, beforeRun = null }) {
             Current score: <strong>{run.score}</strong>
           </p>
           <p>
-            Score change: <strong>{run.score - beforeRun.score > 0 ? '+' : ''}
-              {run.score - beforeRun.score}</strong>
+            Score change:{' '}
+            <strong>
+              {run.score - beforeRun.score > 0 ? '+' : ''}
+              {run.score - beforeRun.score}
+            </strong>
           </p>
           <ul>
             <li>Fixed findings: {comparison.fixed}</li>
@@ -122,16 +125,32 @@ export default function PrintableReport({ run, beforeRun = null }) {
               <h3>
                 {index + 1}. {issue.message}
               </h3>
-              <p><strong>Severity:</strong> {SEVERITY_LABEL[issue.severity] ?? issue.severity}</p>
-              <p><strong>Rule:</strong> {issue.ruleId}</p>
-              <p><strong>Element:</strong> <code>{issue.selector || 'Page-level finding'}</code></p>
+              <p>
+                <strong>Severity:</strong> {SEVERITY_LABEL[issue.severity] ?? issue.severity}
+              </p>
+              <p>
+                <strong>Rule:</strong> {issue.ruleId}
+              </p>
+              <p>
+                <strong>Element:</strong> <code>{issue.selector || 'Page-level finding'}</code>
+              </p>
               {issue.snippet && (
-                <p><strong>Element preview:</strong> <code>{issue.snippet}</code></p>
+                <p>
+                  <strong>Element preview:</strong> <code>{issue.snippet}</code>
+                </p>
               )}
-              {issue.impact && <p><strong>Impact:</strong> {issue.impact}</p>}
-              <p><strong>Suggested fix:</strong> {issue.fix?.text || 'Review this element manually.'}</p>
+              {issue.impact && (
+                <p>
+                  <strong>Impact:</strong> {issue.impact}
+                </p>
+              )}
+              <p>
+                <strong>Suggested fix:</strong> {issue.fix?.text || 'Review this element manually.'}
+              </p>
               {issue.needsReview && (
-                <p><strong>Manual review required.</strong></p>
+                <p>
+                  <strong>Manual review required.</strong>
+                </p>
               )}
             </article>
           ))

@@ -1,4 +1,3 @@
-
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import PrintableReport from '../../src/features/report/PrintableReport';
@@ -56,22 +55,16 @@ describe('PrintableReport', () => {
   });
 
   it('renders findings with their elements and suggested fixes', () => {
-  const { container } = render(<PrintableReport run={firstRun} />);
+    const { container } = render(<PrintableReport run={firstRun} />);
 
-  expect(
-    container.querySelectorAll('h3').length,
-  ).toBe(2);
+    expect(container.querySelectorAll('h3').length).toBe(2);
 
-  expect(
-    screen.getAllByText(/The image has no alternative text/).length,
-  ).toBe(2);
+    expect(screen.getAllByText(/The image has no alternative text/).length).toBe(2);
 
-  expect(screen.getAllByText('img').length).toBe(2);
+    expect(screen.getAllByText('img').length).toBe(2);
 
-  expect(
-    screen.getAllByText('Add descriptive alternative text.').length,
-  ).toBe(2);
-});
+    expect(screen.getAllByText('Add descriptive alternative text.').length).toBe(2);
+  });
 
   it('shows before-and-after improvement counts', () => {
     render(<PrintableReport run={secondRun} beforeRun={firstRun} />);
@@ -84,11 +77,7 @@ describe('PrintableReport', () => {
   });
 
   it('renders an empty report when there are no findings', () => {
-    render(
-      <PrintableReport
-        run={{ ...firstRun, issues: [], score: 100 }}
-      />,
-    );
+    render(<PrintableReport run={{ ...firstRun, issues: [], score: 100 }} />);
 
     expect(screen.getByText('No findings were recorded in this audit.')).toBeTruthy();
   });

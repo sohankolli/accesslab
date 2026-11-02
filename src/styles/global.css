@@ -491,7 +491,10 @@ main {
   border: 1px solid var(--rule);
   border-radius: var(--radius-sm);
 }
-.card + .card {
+/* Only cards stacked in the page's normal flow get space between them. Cards in
+   a grid or flex container are spaced by that container's gap instead, so an
+   extra top margin would push every card after the first out of line. */
+.page > .card + .card {
   margin-top: var(--space-5);
 }
 .card__title {

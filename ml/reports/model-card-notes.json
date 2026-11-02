@@ -1,0 +1,17 @@
+{
+ "note": "Written by hand after reading every error the shipped model made on the test sites (reports/errors.json: 5 false positives, 28 false negatives at the shipped threshold; fewer than the 50 + 50 planned because the test set has only 94 positives). Merged into the manifest by train/card.py.",
+ "failurePatterns": [
+  "Images in a product or brand grid with a pointer cursor are flagged although nothing handles their clicks (all 5 false positives were product images on one shop page).",
+  "Game boards are missed: chess squares and similar grids of plain divs with no pointer cursor and no button-like class names scored just under the threshold (0.48 against 0.51).",
+  "Cards whose only content is an image, like the rock, paper and scissors choices, are missed: there is no text or class word to go on.",
+  "Some misses are not really controls: the crawler labels a container as clickable when it carries one listener for its children (an FAQ wrapper, a list, a <main>). These are label noise of the delegation kind, at container level.",
+  "A div with an inline onclick but no pointer cursor and no button-like class (\"Search User\") was missed: the model leans on the cursor and on class words."
+ ],
+ "limitations": [
+  "It was trained on a stand-in corpus of hobby and teaching projects from GitHub, not on the planned Tranco crawl of popular sites. Treat it as a demonstration until it is retrained on the Tranco crawl.",
+  "React, Vue and Angular pages are almost absent from the training data (a handful of pages), so it has not been measured on framework-built sites.",
+  "The test websites hold 94 click-only controls, most of them on a few sites, so every percentage on this page has a wide margin; the 95% intervals are shown where they were measured.",
+  "The model in use is the gradient-boosting baseline: the graph network missed the ship gate. Its scores still come from the same 552 cues and the same calibration."
+ ],
+ "labelProbeReading": "Read by hand: the 12 disagreements on pages used for training are 5 hover-effect squares (moving the mouse to click recolours them), 4 countdown timers that tick every second, 1 list item whose content is a button, and 2 unclear (a 'Blog' paragraph and an icon image). None is clearly a click-only control the labeller missed, so the probe's rate is a loose upper bound."
+}

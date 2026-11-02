@@ -1,0 +1,307 @@
+{
+ "summary": {
+  "method": "Random sample of labelled candidates; each clicked once at its centre in the live page. \"responds\": the DOM, address or a dialog changed within 400 ms. Skipped as untestable: pages that change by themselves, and elements whose centre is a link or button. A response can still come from a handler on an ancestor, so disagreement is an upper bound on label noise.",
+  "sampled": 300,
+  "tested": 287,
+  "untestable": {
+   "element-not-found": 0,
+   "changes-by-itself": 5,
+   "click-lands-on-a-control": 7,
+   "not-clickable": 1,
+   "error": 0
+  },
+  "label1": {
+   "responds": 6,
+   "noResponse": 0
+  },
+  "label0": {
+   "responds": 40,
+   "noResponse": 241
+  },
+  "disagreementRate": 0.13937282229965156,
+  "disagreementRateUsedPages": 0.1643835616438356,
+  "testedUsedPages": 73
+ },
+ "disagreements": [
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": false,
+   "category": "demo-projects",
+   "snippet": "<div class=\"square\" data-al-id=\"302\"></div>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": false,
+   "category": "demo-projects",
+   "snippet": "<li data-al-id=\"10\"> <button class=\"choose-insect-btn\" data-al-id=\"11\"> <p data-al-id=\"12\">Mosquito</p> <img src=\"http://pngimg.com/uploads/mosquito/mosquito_PN"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<li data-al-id=\"1356\"><a href=\"../../../content/patterns/menu-button/examples/menu-button-actions-active-descendant.html\" data-al-id=\"1357\">Actions Menu Button "
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": false,
+   "category": "demo-projects",
+   "snippet": "<div class=\"square\" data-al-id=\"78\"></div>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<li data-al-id=\"117\"> Browsers do not manage visibility of elements referenced by aria-activedescendant like they do for elements with focus. When a keyboard ev"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": false,
+   "category": "demo-projects",
+   "snippet": "<div class=\"square\" data-al-id=\"327\"></div>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<th scope=\"row\" data-al-id=\"320\"> <code data-al-id=\"321\">id=\"string\"</code> </th>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<li data-al-id=\"617\"><a href=\"../patterns/listbox/examples/listbox-rearrangeable.html\" data-al-id=\"618\">Listboxes with Rearrangeable Options</a></li>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "admin-templates",
+   "snippet": "<li data-al-id=\"418\"> <span class=\"rank-list__rank\" data-al-id=\"419\">2</span> <span class=\"rank-list__title\" data-al-id=\"420\">John Doe</span> <span class=\"rank-"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "demo-projects",
+   "snippet": "<span data-al-id=\"194\">5:00 pm - 7:00 pm</span>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": false,
+   "category": "demo-projects",
+   "snippet": "<div class=\"square\" data-al-id=\"472\"></div>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": false,
+   "category": "demo-projects",
+   "snippet": "<p class=\"score-container\" data-al-id=\"17\">Score: <span id=\"score\" data-al-id=\"18\">0</span></p>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<ul data-al-id=\"383\"> <li data-al-id=\"384\"><a href=\"../patterns/radio/examples/radio-activedescendant.html\" data-al-id=\"385\">Radio Group Using aria-activedescen"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<td data-al-id=\"324\"> <ul data-al-id=\"325\"> <li data-al-id=\"326\">Referenced by <code data-al-id=\"327\">for</code> attribute of <code data-al-id=\"328\">label</code"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "landing-pages",
+   "snippet": "<section class=\"client\" id=\"clients\" data-al-id=\"71\"> <div class=\"row\" data-al-id=\"72\"> <h2 data-al-id=\"73\">Clients</h2> <div class=\"client__logos\" data-al-id=\""
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<td data-al-id=\"68\"><a href=\"../../patterns/patterns.html\" data-al-id=\"69\">Patterns</a></td>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<span class=\"hljs-attr\" data-al-id=\"875\">id</span>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": false,
+   "category": "demo-projects",
+   "snippet": "<p data-al-id=\"15\">Blog</p>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<span class=\"hljs-attr\" data-al-id=\"603\">id</span>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": false,
+   "category": "demo-projects",
+   "snippet": "<span class=\"minutes\" data-al-id=\"9\">59</span>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "admin-templates",
+   "snippet": "<td data-al-id=\"461\"><span class=\"row-product\" data-al-id=\"462\"><span class=\"row-product__icon\" data-al-id=\"463\"><i class=\"fa-solid fa-building\" data-al-id=\"464"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": false,
+   "category": "demo-projects",
+   "snippet": "<h3 data-al-id=\"7\">Days</h3>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<li data-al-id=\"366\"><a href=\"../patterns/combobox/examples/combobox-autocomplete-none.html\" data-al-id=\"367\">Editable Combobox without Autocomplete</a> (<abbr "
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": false,
+   "category": "demo-projects",
+   "snippet": "<div data-al-id=\"2\"> <span id=\"hours\" data-al-id=\"3\">05</span> <span class=\"text\" data-al-id=\"4\"> Hours </span> </div>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "demo-projects",
+   "snippet": "<div class=\"class-info\" data-al-id=\"101\"> <h3 class=\"mb-1\" data-al-id=\"102\">Aerobics</h3> <span data-al-id=\"103\"><strong data-al-id=\"104\">Trained by</strong> - "
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<li data-al-id=\"174\">In both cases DOM focus remains on the textbox.</li>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<span class=\"hljs-name\" data-al-id=\"930\">li</span>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<tr data-test-id=\"button-aria-label\" data-al-id=\"414\"> <td data-al-id=\"415\"></td> <th scope=\"row\" data-al-id=\"416\"> <code data-al-id=\"417\">aria-label=\"States\"</"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<span class=\"hljs-name\" data-al-id=\"637\">li</span>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<span class=\"hljs-string\" data-al-id=\"804\">\"lb1-nj\"</span>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<td data-al-id=\"1072\"><a href=\"../../../content/patterns/treeview/examples/treeview-navigation.html\" data-al-id=\"1073\">Navigation Treeview</a> </td>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": false,
+   "category": "demo-projects",
+   "snippet": "<img src=\"images/que_icon.svg\" alt=\"icon\" data-al-id=\"64\">"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<li data-al-id=\"91\">If a slide has a visible label, its accessible label is provided by the property <a href=\"https://w3c.github.io/aria/#aria-labelledby\" class"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "landing-pages",
+   "snippet": "<ul class=\"work__list\" data-al-id=\"43\"> <li data-al-id=\"44\">React</li> <li data-al-id=\"45\">Next.js</li> <li data-al-id=\"46\">Node</li> <li data-al-id=\"47\">MongoD"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<td data-al-id=\"2066\"><a href=\"../../../content/patterns/carousel/examples/carousel-2-tablist.html\" data-al-id=\"2067\">Auto-Rotating Image Carousel with Tabs for"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "reference-examples",
+   "snippet": "<span class=\"hljs-name\" data-al-id=\"552\">li</span>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "demo-projects",
+   "snippet": "<div class=\"car\" data-al-id=\"4\"> <div class=\"wheel wheel1\" data-al-id=\"5\"> <img src=\"tyreback2.png\" alt=\"\" data-al-id=\"6\"> </div> <div class=\"wheel wheel2\" data"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": false,
+   "category": "demo-projects",
+   "snippet": "<div class=\"square\" data-al-id=\"281\"></div>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "admin-templates",
+   "snippet": "<th scope=\"col\" data-al-id=\"455\">Company</th>"
+  },
+  {
+   "label": 0,
+   "outcome": "responds",
+   "delegated": true,
+   "category": "framework-apps",
+   "snippet": "<p data-al-id=\"22\">Double-click to edit a todo</p>"
+  }
+ ]
+}

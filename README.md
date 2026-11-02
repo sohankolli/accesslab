@@ -14,6 +14,13 @@ app with Redux Toolkit and React Router.
 - **Live audit.** An HTML/CSS editor (tabs, line numbers, caret position) feeds a sandboxed
   preview; 400 ms after you stop typing the page is re-rendered and checked again. Code that
   would make the page larger than 500 KB is refused.
+- **Open files.** "Open file" (or dropping a file on the editor) loads an `.html` or `.htm` file
+  into the HTML tab and a `.css` file into the CSS tab. The file is read in the browser and goes
+  through the same 500 KB cap and sandboxed preview as pasted code. For a React, Vue or Angular
+  app, paste the rendered page's outerHTML from the browser's developer tools.
+- **Share links.** "Copy share link" packs the HTML and CSS into the link itself
+  (`/audit#s=…`, compressed). The code sits in the URL fragment, which browsers never send to a
+  server, so sharing uploads nothing. Links over 32,000 characters are not made.
 - **Findings people can read.** Each finding has a plain title and says who it affects
   ("Screen reader users hear "image" and nothing else."), with the element, the rule, a link to
   the WCAG criterion and the fix. The score is also read as eye-chart acuity: 77 "reads at
@@ -183,5 +190,5 @@ production build on every pull request.
 Milestones 1 (scaffold, first audit) and 2 (rule packs, contrast and fixes, all eleven core
 rules, overlays, sliced audits, report) are complete. Milestone 3 work so far: the Simulate page
 (colour-vision, low-vision and 200% text lenses, the tab-order list and the screen-reader view),
-the Learn guides and keyboard shortcuts. Still to come: CodeMirror editors, share links and
-GitHub import.
+the Learn guides, keyboard shortcuts, share links and file import. Still to come: CodeMirror
+editors.

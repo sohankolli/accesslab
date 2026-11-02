@@ -11,7 +11,9 @@ import { createEngine } from './engine.js';
 // by scripts/copy-ort-wasm.mjs): the default public CDN is blocked by the
 // Content Security Policy. One thread, because threads need cross-origin
 // isolation, which the app does not enable.
-ort.env.wasm.wasmPaths = '/ort/';
+ort.env.wasm.wasmPaths = {
+  wasm: '/ort/ort-wasm-simd-threaded.wasm',
+};
 ort.env.wasm.numThreads = 1;
 
 const engine = createEngine({ ort });

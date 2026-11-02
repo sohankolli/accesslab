@@ -5,6 +5,9 @@ import { defineConfig } from 'vite';
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  optimizeDeps: {
+    exclude: ['onnxruntime-web/wasm'],
+  },
   resolve: {
     alias: {
       // The model worker uses ONNX Runtime's build that loads its WebAssembly

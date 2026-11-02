@@ -37,6 +37,34 @@
   font-size: var(--text-sm);
   color: var(--graphite);
 }
+.src-help {
+  flex-basis: 100%;
+  font-size: var(--text-sm);
+  color: var(--graphite);
+}
+.src-help summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--target);
+  width: fit-content;
+  cursor: pointer;
+}
+/* The marker as a turning triangle, since the summary is a flex row. */
+.src-help summary::before {
+  content: '▸';
+}
+.src-help[open] summary::before {
+  content: '▾';
+}
+.src-help summary::-webkit-details-marker {
+  display: none;
+}
+.src-help p {
+  max-width: 40rem;
+  padding-bottom: var(--space-2);
+  color: var(--ink);
+}
 .btn--sm {
   padding: 0 var(--space-3);
   font-size: var(--text-sm);

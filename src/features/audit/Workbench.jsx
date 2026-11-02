@@ -177,6 +177,14 @@ export default function Workbench() {
             <OpenFileButton onFiles={openFiles} />
             <ShareLinkButton onNotice={setNotice} />
           </div>
+          <details className="src-help">
+            <summary>Checking a React, Vue or Angular app?</summary>
+            <p>
+              Open the running page, then in the browser&rsquo;s developer tools copy the{' '}
+              <code>&lt;html&gt;</code> element (right-click, Copy, Copy outerHTML) and paste it
+              here. AccessLab checks the rendered page.
+            </p>
+          </details>
         </div>
         <SourceNotice notice={notice} />
         <SourceEditor

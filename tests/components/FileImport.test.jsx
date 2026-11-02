@@ -204,6 +204,17 @@ describe('Open file', () => {
   });
 });
 
+describe('help for framework apps', () => {
+  it('sits by Open file and says how to check the rendered page', () => {
+    renderWorkbench();
+    const summary = screen.getByText('Checking a React, Vue or Angular app?');
+    const details = summary.closest('details');
+    expect(details.closest('.src-head')).toBe(screen.getByText('Open file').closest('.src-head'));
+    expect(details.textContent).toContain('Copy outerHTML');
+    expect(details.textContent).toContain('AccessLab checks the rendered page.');
+  });
+});
+
 describe('dropping a file on the editor', () => {
   it('shows a drop target while a file is dragged over, and opens the dropped file', async () => {
     const { store } = renderWorkbench();

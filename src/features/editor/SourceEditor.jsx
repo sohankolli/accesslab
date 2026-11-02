@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { flushSync } from 'react-dom';
 import { lineAndColumn } from './sourceLine';
+import TabList from '../../components/TabList';
 
 const TABS = [
   { id: 'html', label: 'HTML' },
@@ -139,7 +140,6 @@ export default function SourceEditor({
 }) {
   const [active, setActive] = useState('html');
   const [caret, setCaret] = useState({ html: null, css: null });
-  const tabRefs = useRef({});
   const htmlInput = useRef(null);
   const cssInput = useRef(null);
   const onHtmlCaret = useCallback((p) => setCaret((c) => ({ ...c, html: p })), []);
@@ -164,20 +164,6 @@ export default function SourceEditor({
     [htmlInput],
   );
 
-  const onTabKey = (event) => {
-    const i = TABS.findIndex((t) => t.id === active);
-    const next = {
-      ArrowRight: TABS[(i + 1) % TABS.length],
-      ArrowLeft: TABS[(i - 1 + TABS.length) % TABS.length],
-      Home: TABS[0],
-      End: TABS.at(-1),
-    }[event.key];
-    if (!next) return;
-    event.preventDefault();
-    setActive(next.id);
-    tabRefs.current[next.id]?.focus();
-  };
-
   const value = active === 'html' ? html : css;
   const lines = countLines(value);
   const pos = caret[active];
@@ -185,25 +171,7 @@ export default function SourceEditor({
   return (
     <>
       <div className="tabs-bar">
-        <div className="tabs" role="tablist" aria-label="Source code">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              ref={(el) => (tabRefs.current[tab.id] = el)}
-              type="button"
-              role="tab"
-              id={`tab-${tab.id}`}
-              className="tab"
-              aria-selected={active === tab.id}
-              aria-controls={`panel-${tab.id}`}
-              tabIndex={active === tab.id ? 0 : -1}
-              onClick={() => setActive(tab.id)}
-              onKeyDown={onTabKey}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <TabList tabs={TABS} active={active} onChange={setActive} label="Source code" />
         <span className="tabs-bar__meta">
           {lines} {lines === 1 ? 'line' : 'lines'}
         </span>

@@ -20,10 +20,20 @@ function oversize(html, css) {
 const initialState = {
   html: SAMPLE_HTML,
   css: SAMPLE_CSS,
-  source: 'paste', // 'paste' | 'file' | 'github' | 'link'
-  sourceUrl: null,
+  /** Where the code came from: 'sample' | 'paste' | 'file' | 'link'. */
+  source: 'sample',
+  /** The name of the file last opened, when source is 'file'; otherwise null. */
+  fileName: null,
   rejected: null, // { lang: 'html'|'css', bytes } when the last edit was over the size cap
 };
+
+/**
+ * Editing the sample makes it the user's own code. Editing an opened file or a
+ * shared page keeps its source, so the header still names what was loaded.
+ */
+function edited(state) {
+  if (state.source === 'sample') state.source = 'paste';
+}
 
 const editorSlice = createSlice({
   name: 'editor',
@@ -38,6 +48,7 @@ const editorSlice = createSlice({
       }
       state.html = action.payload;
       state.rejected = null;
+      edited(state);
     },
     cssChanged(state, action) {
       const bytes = oversize(state.html, action.payload);
@@ -47,13 +58,14 @@ const editorSlice = createSlice({
       }
       state.css = action.payload;
       state.rejected = null;
+      edited(state);
     },
     /** Replace the editors' contents with the built-in sample page. */
     sampleLoaded(state) {
       state.html = SAMPLE_HTML;
       state.css = SAMPLE_CSS;
-      state.source = 'paste';
-      state.sourceUrl = null;
+      state.source = 'sample';
+      state.fileName = null;
       state.rejected = null;
     },
     /**

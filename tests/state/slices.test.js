@@ -10,6 +10,7 @@ import editorReducer, {
   htmlChanged,
   cssChanged,
   fixApplied,
+  sampleLoaded,
   MAX_PAGE_BYTES,
 } from '../../src/features/editor/editorSlice';
 
@@ -100,9 +101,37 @@ describe('editorSlice', () => {
   it('starts with the sample page and updates html and css', () => {
     let state = editorReducer(undefined, { type: 'init' });
     expect(state.html).toContain('<html lang="en">');
+    expect(state).toMatchObject({ source: 'sample', fileName: null });
     state = editorReducer(state, htmlChanged('<p>Hi</p>'));
     state = editorReducer(state, cssChanged('p { color: red }'));
     expect(state).toMatchObject({ html: '<p>Hi</p>', css: 'p { color: red }', source: 'paste' });
+  });
+
+  it('keeps a file or link source while the user edits it', () => {
+    const opened = {
+      ...editorReducer(undefined, { type: 'init' }),
+      source: 'file',
+      fileName: 'a.html',
+    };
+    const state = editorReducer(opened, htmlChanged('<p>edited</p>'));
+    expect(state).toMatchObject({ source: 'file', fileName: 'a.html' });
+  });
+
+  it('a refused edit does not change the source', () => {
+    const start = editorReducer(undefined, { type: 'init' });
+    const state = editorReducer(start, htmlChanged('a'.repeat(MAX_PAGE_BYTES + 1)));
+    expect(state.source).toBe('sample');
+  });
+
+  it('sampleLoaded puts back the sample and clears the file name', () => {
+    const opened = {
+      ...editorReducer(undefined, cssChanged('x')),
+      source: 'file',
+      fileName: 'a.css',
+    };
+    const state = editorReducer(opened, sampleLoaded());
+    expect(state).toMatchObject({ source: 'sample', fileName: null });
+    expect(state.css).not.toBe('x');
   });
 });
 

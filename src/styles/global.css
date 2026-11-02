@@ -402,13 +402,66 @@ main {
   max-width: 40rem;
 }
 
-/* A plain section on the chart: ruled off, never boxed inside another box. */
+/* A plain section on the chart: ruled off, never boxed inside another box.
+   Used by Report, Simulate and Learn. */
+.section {
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--rule);
+}
 .section + .section {
   margin-top: var(--space-7);
 }
 .section__title {
   margin-bottom: var(--space-4);
   font-size: var(--text-lg);
+}
+/* A short grey line under a section title or after its content. */
+.section__note {
+  max-width: 46rem;
+  font-size: var(--text-sm);
+  color: var(--graphite);
+}
+
+/* A label above its control. */
+.field {
+  display: grid;
+  gap: var(--space-1);
+}
+.field__label {
+  font-size: var(--text-sm);
+  font-weight: 700;
+}
+
+/* ---------- Tabs (components/TabList.jsx) ---------- */
+
+/* Underlined tabs, as on the Workbench: the chosen tab is ink, bold and
+   underlined, never shown by colour alone. */
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+.tab {
+  min-width: var(--target);
+  min-height: var(--target);
+  padding: 0 var(--space-3);
+  margin-bottom: -1px;
+  color: var(--graphite);
+  background: none;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  cursor: pointer;
+}
+.tab:hover {
+  color: var(--ink);
+}
+.tab[aria-selected='true'] {
+  font-weight: 700;
+  color: var(--ink);
+  border-bottom-color: var(--ink);
+}
+.tab:focus-visible {
+  outline-offset: -3px;
 }
 
 /* ---------- Empty and status states ---------- */
@@ -491,7 +544,10 @@ main {
   border: 1px solid var(--rule);
   border-radius: var(--radius-sm);
 }
-.card + .card {
+/* Only cards stacked in the page's normal flow get space between them. Cards in
+   a grid or flex container are spaced by that container's gap instead, so an
+   extra top margin would push every card after the first out of line. */
+.page > .card + .card {
   margin-top: var(--space-5);
 }
 .card__title {
@@ -514,7 +570,7 @@ main {
 }
 
 .shortcut-dialog::backdrop {
-  background: rgb(0 0 0 / 55%);
+  background: var(--backdrop);
 }
 
 .shortcut-dialog__header {

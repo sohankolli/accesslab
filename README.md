@@ -109,6 +109,7 @@ npm run dev        # http://localhost:5173, then open "Workbench"
 | `npm run format:check` | Check formatting without changing files (CI)    |
 | `npm test`             | Vitest in watch mode (`npm test -- --run` once) |
 | `npm run coverage`     | Tests with a coverage report                    |
+| `npm run bench:typing` | Typing benchmark in headless Chrome             |
 
 ## Architecture
 

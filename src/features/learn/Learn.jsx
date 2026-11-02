@@ -30,30 +30,38 @@ export default function Learn() {
           .filter(({ guide }) => Boolean(guide));
 
         return (
-          <section className="learn-group" key={group.id}>
-            <h2>{group.title}</h2>
-            <p>
+          <section className="section" key={group.id} aria-labelledby={`pack-${group.id}`}>
+            <h2 id={`pack-${group.id}`} className="section__title">
+              {group.title}
+            </h2>
+            <p className="learn-intro">
               {PACK_DESCRIPTIONS[group.id] ?? `${group.count} accessibility rules in this pack.`}
             </p>
 
-            <div className="learn-grid">
+            <ul className="learn-grid">
               {guides.map(({ id, guide }) => (
-                <article className="card learn-card" key={id}>
-                  <h3>{guide.title}</h3>
-                  <p>{guide.summary}</p>
-                  <Link to={`/learn/${id}`} className="btn btn--primary">
-                    Read guide
-                  </Link>
-                </article>
+                <li key={id}>
+                  <article className="learn-card">
+                    <h3>{guide.title}</h3>
+                    <p>{guide.summary}</p>
+                    <Link to={`/learn/${id}`} className="btn">
+                      Read guide
+                    </Link>
+                  </article>
+                </li>
               ))}
-            </div>
+            </ul>
           </section>
         );
       })}
 
-      <section className="card">
-        <h2>Try it yourself</h2>
-        <p>Audit your own HTML and CSS to find accessibility issues and experiment with fixes.</p>
+      <section className="section" aria-labelledby="try-heading">
+        <h2 id="try-heading" className="section__title">
+          Try it yourself
+        </h2>
+        <p className="learn-intro">
+          Audit your own HTML and CSS to find accessibility issues and experiment with fixes.
+        </p>
         <Link to="/audit" className="btn btn--primary">
           Open the workbench
         </Link>

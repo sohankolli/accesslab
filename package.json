@@ -14,7 +14,7 @@
     "format:check": "prettier --check .",
     "test": "vitest",
     "coverage": "vitest run --coverage",
-    "ml:bench": "node scripts/bench-clickables.mjs"
+    "ml:bench": "node scripts/bench-clickables.mjs",
     "bench:typing": "vite build && node scripts/bench-typing.mjs"
   },
   "dependencies": {

@@ -55,7 +55,26 @@ export default function Learn() {
         );
       })}
 
- main
+      <section className="section" aria-labelledby="model-heading">
+        <h2 id="model-heading" className="section__title">
+          Model suggestions
+        </h2>
+        <p className="learn-intro">
+          A trained model looks for click-only controls, which the rules cannot see. Read what it
+          was trained on, how accurate it is and when not to trust it.
+        </p>
+        <Link to="/learn/model-card" className="btn">
+          Read the model card
+        </Link>
+      </section>
+
+      <section className="section" aria-labelledby="try-heading">
+        <h2 id="try-heading" className="section__title">
+          Try it yourself
+        </h2>
+        <p className="learn-intro">
+          Audit your own HTML and CSS to find accessibility issues and experiment with fixes.
+        </p>
         <Link to="/audit" className="btn btn--primary">
           Open the workbench
         </Link>

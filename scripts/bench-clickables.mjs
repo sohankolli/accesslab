@@ -8,6 +8,7 @@
 // manifest's ship gate (public/models/clickables-v1.json), and the model is
 // switched on by default only if every gate condition then passes.
 // Needs Playwright (npm i -D playwright, or set CHROMIUM_PATH to a Chromium).
+/* global document -- the waitForFunction callbacks run inside the browser page */
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';

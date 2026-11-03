@@ -1,6 +1,37 @@
 // Simplified version of the W3C "Accessible Name and Description
 // Computation" (accname). Covers the cases AccessLab's rules need.
 
+import { roleOf } from './roles.js';
+
+/**
+ * Roles that take their name from their content when nothing else names them
+ * (WAI-ARIA 1.2, "Roles Supporting Name from Content"). The role can come from
+ * the tag (<h2>, <button>) or from a role attribute (<div role="heading">).
+ */
+const NAME_FROM_CONTENT = new Set([
+  'button',
+  'cell',
+  'checkbox',
+  'columnheader',
+  'gridcell',
+  'heading',
+  'link',
+  'menuitem',
+  'menuitemcheckbox',
+  'menuitemradio',
+  'option',
+  'radio',
+  'row',
+  'rowheader',
+  'switch',
+  'tab',
+  'tooltip',
+  'treeitem',
+]);
+
+/** Elements named from content by their tag alone, when no role attribute overrides it. */
+const NATIVE_NAME_FROM_CONTENT = /^(BUTTON|A|H[1-6]|SUMMARY)$/;
+
 const clean = (s) => (s ?? '').replace(/\s+/g, ' ').trim();
 
 /** Text a screen reader would read from an element's descendants. */
@@ -47,8 +78,13 @@ export function accessibleName(el) {
     return clean(el.value) || { submit: 'Submit', reset: 'Reset' }[el.type] || '';
   }
 
-  // 4. Name from content (buttons, links, headings)
-  if (/^(BUTTON|A|H[1-6]|SUMMARY)$/.test(el.tagName) || el.getAttribute('role') === 'button') {
+  // 4. Name from content (buttons, links, headings, tabs, ...), whether the role
+  //    comes from the tag or from a role attribute.
+  const role = roleOf(el);
+  const fromContent = el.hasAttribute('role')
+    ? NAME_FROM_CONTENT.has(role)
+    : NAME_FROM_CONTENT.has(role) || NATIVE_NAME_FROM_CONTENT.test(el.tagName);
+  if (fromContent) {
     const text = clean(subtreeText(el));
     if (text) return text;
   }

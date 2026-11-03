@@ -15,6 +15,7 @@
     "test": "vitest",
     "coverage": "vitest run --coverage",
     "ml:bench": "node scripts/bench-clickables.mjs"
+    "bench:typing": "vite build && node scripts/bench-typing.mjs"
   },
   "dependencies": {
     "@fontsource-variable/atkinson-hyperlegible-mono": "^5.3.0",

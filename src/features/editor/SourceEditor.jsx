@@ -9,6 +9,7 @@ import {
 } from 'react';
 import { flushSync } from 'react-dom';
 import { lineAndColumn } from './sourceLine';
+import TabList from '../../components/TabList';
 
 const TABS = [
   { id: 'html', label: 'HTML' },
@@ -76,6 +77,42 @@ function CodePanel({ lang, label, value, onChange, active, highlight, onCaret, t
     return () => ta.removeEventListener('selectionchange', handler);
   }, [reportCaret, textareaRef]);
 
+  // Where the editor was scrolled and where the caret was just before an edit.
+  // If the edit is refused (over the size cap), React puts the old text back but
+  // the browser leaves the textarea scrolled to the end of the pasted text, so
+  // the code looks empty. handleChange uses this to put the view back.
+  const beforeEdit = useRef(null);
+  useEffect(() => {
+    const ta = textareaRef.current;
+    const remember = () => {
+      beforeEdit.current = {
+        scrollTop: ta.scrollTop,
+        scrollLeft: ta.scrollLeft,
+        start: ta.selectionStart,
+        end: ta.selectionEnd,
+      };
+    };
+    ta.addEventListener('beforeinput', remember); // native: React's onBeforeInput misses paste
+    return () => ta.removeEventListener('beforeinput', remember);
+  }, [textareaRef]);
+
+  const handleChange = (event) => {
+    const ta = event.currentTarget;
+    const next = ta.value;
+    const before = beforeEdit.current;
+    beforeEdit.current = null;
+    onChange(next);
+    // By the time this microtask runs React has either kept the new text or,
+    // when the edit was refused, put the old text back.
+    queueMicrotask(() => {
+      if (!before || ta.value === next) return;
+      ta.setSelectionRange(before.start, before.end);
+      ta.scrollTop = before.scrollTop;
+      ta.scrollLeft = before.scrollLeft;
+      sync();
+    });
+  };
+
   return (
     <div
       role="tabpanel"
@@ -100,7 +137,7 @@ function CodePanel({ lang, label, value, onChange, active, highlight, onCaret, t
         autoCapitalize="off"
         autoComplete="off"
         value={value}
-        onChange={(e) => onChange(e.target.value)}
+        onChange={handleChange}
         onScroll={sync}
         onSelect={(e) => reportCaret(e.currentTarget)}
         onFocus={(e) => {
@@ -139,7 +176,6 @@ export default function SourceEditor({
 }) {
   const [active, setActive] = useState('html');
   const [caret, setCaret] = useState({ html: null, css: null });
-  const tabRefs = useRef({});
   const htmlInput = useRef(null);
   const cssInput = useRef(null);
   const onHtmlCaret = useCallback((p) => setCaret((c) => ({ ...c, html: p })), []);
@@ -164,20 +200,6 @@ export default function SourceEditor({
     [htmlInput],
   );
 
-  const onTabKey = (event) => {
-    const i = TABS.findIndex((t) => t.id === active);
-    const next = {
-      ArrowRight: TABS[(i + 1) % TABS.length],
-      ArrowLeft: TABS[(i - 1 + TABS.length) % TABS.length],
-      Home: TABS[0],
-      End: TABS.at(-1),
-    }[event.key];
-    if (!next) return;
-    event.preventDefault();
-    setActive(next.id);
-    tabRefs.current[next.id]?.focus();
-  };
-
   const value = active === 'html' ? html : css;
   const lines = countLines(value);
   const pos = caret[active];
@@ -185,25 +207,7 @@ export default function SourceEditor({
   return (
     <>
       <div className="tabs-bar">
-        <div className="tabs" role="tablist" aria-label="Source code">
-          {TABS.map((tab) => (
-            <button
-              key={tab.id}
-              ref={(el) => (tabRefs.current[tab.id] = el)}
-              type="button"
-              role="tab"
-              id={`tab-${tab.id}`}
-              className="tab"
-              aria-selected={active === tab.id}
-              aria-controls={`panel-${tab.id}`}
-              tabIndex={active === tab.id ? 0 : -1}
-              onClick={() => setActive(tab.id)}
-              onKeyDown={onTabKey}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <TabList tabs={TABS} active={active} onChange={setActive} label="Source code" />
         <span className="tabs-bar__meta">
           {lines} {lines === 1 ? 'line' : 'lines'}
         </span>

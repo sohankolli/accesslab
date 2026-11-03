@@ -7,7 +7,7 @@ import prettier from 'eslint-config-prettier';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
-  globalIgnores(['dist', 'coverage']),
+  globalIgnores(['dist', 'coverage', 'public/ort', 'ml/data', 'ml/node_modules']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
@@ -37,9 +37,20 @@ export default defineConfig([
     rules: { 'react-refresh/only-export-components': 'off' },
   },
   {
+    // The model's offline pipeline (ml/) and build scripts run in Node.
+    files: ['ml/**/*.mjs', 'scripts/**/*.mjs'],
+    languageOptions: { globals: { ...globals.node } },
+  },
+  {
     // Build and test configuration runs in Node.
     files: ['*.config.js', 'tests/**/*.{js,jsx}'],
     languageOptions: { globals: { ...globals.node, ...globals.browser } },
+  },
+  {
+    // Node scripts (the typing benchmark): plain JavaScript run with Node.
+    files: ['scripts/**/*.mjs'],
+    extends: [js.configs.recommended],
+    languageOptions: { globals: globals.node },
   },
   // Last: turn off stylistic rules that Prettier owns.
   prettier,

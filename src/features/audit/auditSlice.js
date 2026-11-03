@@ -3,6 +3,7 @@ import { createSlice, createSelector } from '@reduxjs/toolkit';
 const initialState = {
   status: 'idle', // 'idle' | 'running' | 'done' | 'failed'
   result: null, // AuditResult: plain, serialisable data only
+  checked: null, // { html, css }: the code `result` belongs to (the same strings as the editor's)
   error: null, // why the last audit failed (a message), while status is 'failed'
   previousScore: null, // for the before/after delta
   selectedIssueId: null,
@@ -17,11 +18,16 @@ const auditSlice = createSlice({
       state.status = 'running';
       state.error = null;
     },
-    auditCompleted(state, action) {
-      state.previousScore = state.result?.score ?? null;
-      state.result = action.payload;
-      state.status = 'done';
-      state.error = null;
+    /** auditCompleted(result, {html, css}): the result and the code that was checked. */
+    auditCompleted: {
+      reducer(state, action) {
+        state.previousScore = state.result?.score ?? null;
+        state.result = action.payload;
+        state.checked = action.meta ?? null;
+        state.status = 'done';
+        state.error = null;
+      },
+      prepare: (result, checked = null) => ({ payload: result, meta: checked }),
     },
     /** The audit threw: stop "checking", keep the last good result, say why. */
     auditFailed(state, action) {
@@ -40,6 +46,16 @@ const auditSlice = createSlice({
 export const { auditStarted, auditCompleted, auditFailed, issueSelected, simulationChanged } =
   auditSlice.actions;
 export default auditSlice.reducer;
+
+/**
+ * Whether the last audit result is for exactly the code now in the editor.
+ * Simulate uses it to explain missing marks; it never runs an audit itself.
+ * @param {{audit: {result: unknown, checked: {html: string, css: string}|null}, editor: {html: string, css: string}}} state
+ */
+export const selectResultIsCurrent = (state) =>
+  Boolean(state.audit.result) &&
+  state.audit.checked?.html === state.editor.html &&
+  state.audit.checked?.css === state.editor.css;
 
 const ORDER = ['critical', 'serious', 'moderate', 'minor'];
 

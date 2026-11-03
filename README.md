@@ -28,6 +28,8 @@ app with Redux Toolkit and React Router.
 - **Score and history.** A weighted 0–100 score, the change since the last run, and a report
   page comparing any two of the last 20 runs.
 - **Simulate, Learn and keyboard shortcuts**: see their sections below.
+- **Model suggestions**: a trained model flags elements that look clickable but are not
+  controls, which the rules cannot see (below).
 - **Built to its own standard.** Set in Atkinson Hyperlegible (self-hosted); light, dark and
   system themes; every text colour passes WCAG AA in both (checked by a test with the engine's
   own contrast maths); 44 px touch targets; keyboard-resizable panes; and AccessLab scores 100
@@ -90,6 +92,49 @@ it. Shortcuts are ignored while you type in a field or the editor.
 | `?`                   | Open the shortcut help             |
 | `Esc`                 | Close the shortcut help            |
 
+## Model suggestions: click-only controls
+
+Many sites build buttons from a `<div>` or `<span>` with a click handler. A mouse user never
+notices, but a keyboard cannot reach them and a screen reader does not announce them (WCAG 2.1.1
+and 4.1.2). The preview runs with scripts off, so those handlers never attach and the rules
+cannot see the problem.
+
+A model reads what is left in the page: 92 cues per element (tag, pointer cursor, inline `on…`
+attributes, tabindex, background, rounded corners, size, text length, icons inside, and
+class-name words). It reads them for the element and for its parent, children, siblings,
+grandparent and grandchildren.
+
+- **Possibly click-only.** Suggestions appear in their own group in the findings list,
+  numbered and pinned on the preview, with a confidence: "Looks like a button but is not one
+  (84%)".
+- **Why we think so.** An open suggestion lists the cues that mattered most. These are measured
+  by rescoring the element with one group of cues removed at a time.
+- **Fix.** Use a `<button>`, or add `role="button"`, `tabindex="0"` and an Enter and Space
+  handler. Both are shown as code you can copy.
+- **Not an issue.** Hides a suggestion and keeps a record in this browser (the element's 552
+  numbers, no page text). The records can be exported as JSON to retrain the model.
+- **Switch.** "Suggestions from the model" sits under the rule packs. Suggestions never change
+  the score, the history or the report.
+- **Model card.** The model card at `/learn/model-card` shows what the model was trained on,
+  how it measured on websites it never saw, where it fails and when not to trust it. Every
+  number on it is read from the model's manifest.
+
+The model runs in a Web Worker with ONNX Runtime Web. Its WebAssembly runtime is served by the
+app itself (`scripts/copy-ort-wasm.mjs`, run before `dev` and `build`), and the Content Security
+Policy allows `'wasm-unsafe-eval'` and `worker-src 'self'`. If the model cannot load, the switch
+says "Model suggestions are unavailable" and everything else works as before.
+
+Try it with [`docs/click-only-demo.html`](docs/click-only-demo.html). The rules score that page
+100, and the model finds its four click-only controls.
+
+**Status.** The model in use is a calibrated gradient-boosting fallback. On 113 websites it
+never saw, its precision was 0.93 and its recall 0.70; the ship gate's numbers are in
+[`ml/reports/evaluation.md`](ml/reports/evaluation.md). It is switched off by default because
+the graph network the plan calls for missed the ship gate. The model was trained on a stand-in
+corpus of GitHub-hosted sites, because the planned Tranco crawl could not run from the build
+machine. The pipeline, how to rebuild the dataset and how to retrain are in
+[`ml/README.md`](ml/README.md). Feature owner: Manasvi (branch `feature/ml-clickables`).
+
 ## Getting started
 
 Requires Node.js 22.
@@ -109,19 +154,24 @@ npm run dev        # http://localhost:5173, then open "Workbench"
 | `npm run format:check` | Check formatting without changing files (CI)    |
 | `npm test`             | Vitest in watch mode (`npm test -- --run` once) |
 | `npm run coverage`     | Tests with a coverage report                    |
+| `npm run ml:bench`     | Time the model in the built app's Web Worker    |
+| `npm run bench:typing` | Typing benchmark in headless Chrome             |
 
 ## Architecture
 
 ```
 src/
   engine/      plain JavaScript, no React: rules, registry, scheduler, contrast, DOM helpers
-               (accessible names, roles, focus order, linearizer), simulation filters
+               (accessible names, roles, focus order, linearizer), simulation filters,
+               ml/ (features shared with the crawler, model worker, explanations)
   features/    one folder per feature: editor, audit (workbench), simulate, learn, report, ...
   app/         store, router, layout
   components/  shared UI (header, footer, segmented control, severity shapes)
   context/     SettingsContext: theme, motion, enabled rule packs
   services/    guarded localStorage access
-tests/         Vitest + jsdom: engine fixtures, reducers, components
+tests/         Vitest + jsdom: engine fixtures, reducers, components, model
+ml/            offline model pipeline: crawler, labels, training, reports (see ml/README.md)
+public/models/ the shipped model and its manifest
 ```
 
 - **The engine never imports React or Redux**, so it is tested on its own with jsdom and could
@@ -161,7 +211,18 @@ Text on images or gradients is listed for manual review and is not scored.
 failing fixture for every rule, registry validation, scheduler slicing and cancellation, focus
 order, the screen-reader linearizer, the simulation filters, reducers, and React Testing
 Library tests for the workbench, the issue list, settings, shortcuts and the rule that a lens
-never changes the audit. CI (GitHub Actions) runs lint, a Prettier format check, the tests and the
+never changes the audit. The model has tests for:
+
+- the 92 features and the neighbourhood views;
+- parity between the app and the crawler's copy of the feature code;
+- the explanations;
+- the model runner with the real model, including a version mismatch and a missing file;
+- ONNX Runtime Web against the training code on 50 stored rows;
+- the interface: suggestions never change the score, "Not an issue" persists, and fallback
+  when the model is unavailable.
+
+The pipeline has its own tests in `ml/` (`npm test` for the labeller and the Chromium/jsdom
+feature parity, `python -m pytest train/tests`). CI (GitHub Actions) runs lint, a Prettier format check, the tests and the
 production build on every pull request.
 
 ## Limitations
@@ -176,6 +237,10 @@ production build on every pull request.
 - Scripts in the audited page never run, so pages that build their content with JavaScript are
   audited in their initial state.
 - Live websites cannot be audited by URL: browsers block reading other sites (CORS).
+- Model suggestions come from a model trained on a stand-in corpus of small GitHub-hosted
+  sites. Its labels have known noise: elements clicked through one listener on the whole
+  document are labelled not clickable, and the 300-label hand-check has not been done yet. It
+  ships switched off by default; see `ml/reports/evaluation.md`.
 
 ## Status
 

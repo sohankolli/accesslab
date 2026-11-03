@@ -24,6 +24,12 @@ export function useAudit({ docRef, html, css }) {
   const rules = useMemo(() => rulesFor(enabledPacks), [enabledPacks]);
 
   const controllerRef = useRef(null);
+  // The code the preview was built from. A change aborts the running audit (below),
+  // so when an audit finishes this is the code it checked.
+  const codeRef = useRef({ html, css });
+  useEffect(() => {
+    codeRef.current = { html, css };
+  }, [html, css]);
 
   const auditDocument = useCallback(
     async (doc) => {
@@ -36,7 +42,7 @@ export function useAudit({ docRef, html, css }) {
         const results = await runRulesSliced(doc, rules, { signal: controller.signal });
         if (controller.signal.aborted) return; // superseded while the last rule ran
         const audit = toAuditResult(results);
-        dispatch(auditCompleted(audit));
+        dispatch(auditCompleted(audit, codeRef.current));
         dispatch(runAdded(audit));
       } catch (err) {
         if (err?.name === 'AbortError') return; // a newer audit took over: not a failure

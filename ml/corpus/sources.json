@@ -1,0 +1,168 @@
+{
+  "note": "Public GitHub repositories of real, hand-written websites, used in place of the Tranco crawl when the public web is not reachable. Each entry is pinned to a commit. 'projects' repos hold many small sites (one per folder); 'template' repos are one site.",
+  "maxSitesPerRepo": 150,
+  "seed": 359,
+  "repos": [
+    {
+      "repo": "bradtraversy/50projects50days",
+      "commit": "c92b0bc3a87fc95d44b89552b7b6a2eeb36ca481",
+      "mode": "projects",
+      "category": "demo-projects"
+    },
+    {
+      "repo": "bradtraversy/vanillawebprojects",
+      "commit": "adc66a181a67049fb413c8862181ddc6c45ba22b",
+      "mode": "projects",
+      "category": "demo-projects"
+    },
+    {
+      "repo": "solygambas/html-css-javascript-projects",
+      "commit": "af1340484b994cb416a25b4001ee39002afaf1ab",
+      "mode": "projects",
+      "category": "demo-projects"
+    },
+    {
+      "repo": "wesbos/JavaScript30",
+      "commit": "c36f2ed261eacb3e9ad83c05eb2fd3a4f72cc82f",
+      "mode": "projects",
+      "category": "demo-projects"
+    },
+    {
+      "repo": "Ayushparikh-code/Web-dev-mini-projects",
+      "commit": "596be779f9099b6fa2714b1a4741946a3915ffc1",
+      "mode": "projects",
+      "category": "demo-projects"
+    },
+    {
+      "repo": "thinkswell/javascript-mini-projects",
+      "commit": "90214581a6a359223f91adc02ed009c1f4dafd50",
+      "mode": "projects",
+      "category": "demo-projects"
+    },
+    {
+      "repo": "keshavgbpecdelhi/Web-Development",
+      "commit": "c1613b1424c3226ecd09ca0f23cd39bc4e32709b",
+      "mode": "projects",
+      "category": "demo-projects"
+    },
+    {
+      "repo": "Vishal-raj-1/Awesome-JavaScript-Projects",
+      "commit": "d5450abfdf1e60e2e00de1597d0894fd44f7fe9a",
+      "mode": "projects",
+      "category": "demo-projects"
+    },
+    {
+      "repo": "florinpop17/frontend-mentor-challenges",
+      "commit": "4add9a6b5d469d6c7f874e17253c898e77018957",
+      "mode": "projects",
+      "category": "landing-pages"
+    },
+    {
+      "repo": "tastejs/todomvc",
+      "commit": "ff43b02e59dfa604386bb382034b2cd07c2bcd8a",
+      "mode": "projects",
+      "category": "framework-apps"
+    },
+    {
+      "repo": "mdn/dom-examples",
+      "commit": "03ae1ffb325a9202d3a64f26ab5b8361392a5368",
+      "mode": "projects",
+      "category": "reference-examples"
+    },
+    {
+      "repo": "mdn/learning-area",
+      "commit": "21973263ba859ff3477919087b488157f9d618a6",
+      "mode": "projects",
+      "category": "reference-examples"
+    },
+    {
+      "repo": "w3c/aria-practices",
+      "commit": "0f765e4dc33e966026114ac12a8380db1de3b787",
+      "mode": "projects",
+      "category": "reference-examples"
+    },
+    {
+      "repo": "ColorlibHQ/gentelella",
+      "commit": "02936f9003baa8473aa39dadd4ce23b679961d53",
+      "mode": "template",
+      "category": "admin-templates",
+      "home": "production/index.html"
+    },
+    {
+      "repo": "puikinsh/Adminator-admin-dashboard",
+      "commit": "4c768545ad0c981c77669a7bf84de75b94d082e0",
+      "mode": "template",
+      "category": "admin-templates",
+      "home": "src/index.html"
+    },
+    {
+      "repo": "puikinsh/CoolAdmin",
+      "commit": "92e2af67f002a3151e193da6e86bd4b3ea1cd1d7",
+      "mode": "template",
+      "category": "admin-templates",
+      "home": "index.html"
+    },
+    {
+      "repo": "puikinsh/Bootstrap-Admin-Template",
+      "commit": "3ee469460fbafe29762dad1a7daecb8df4be0eb0",
+      "mode": "template",
+      "category": "admin-templates",
+      "home": "src-modern/index.html"
+    },
+    {
+      "repo": "dropways/deskapp",
+      "commit": "a4d9f84d11ce280a5a21f244764aef9ce6dd185f",
+      "mode": "template",
+      "category": "admin-templates",
+      "home": "index.html"
+    },
+    {
+      "repo": "zuramai/mazer",
+      "commit": "6ea47abbd5bd60e28b98164e52ada52776e36aca",
+      "mode": "template",
+      "category": "admin-templates",
+      "home": "src/index.html"
+    },
+    {
+      "repo": "adminkit/adminkit",
+      "commit": "d64c91b4d92e3089af9fc7aa7e0378521b5ead44",
+      "mode": "template",
+      "category": "admin-templates",
+      "home": "src/pages/index.html"
+    },
+    {
+      "repo": "moesaid/cleopatra",
+      "commit": "40c56983999a139741a441d279a8335ff159fad2",
+      "mode": "template",
+      "category": "admin-templates",
+      "home": "src/index.html"
+    },
+    {
+      "repo": "themeselection/sneat-bootstrap-html-admin-template-free",
+      "commit": "de094c2bf89e602054b7c14f46c9a3a5b9f6cac9",
+      "mode": "template",
+      "category": "admin-templates",
+      "home": "html/index.html"
+    },
+    {
+      "repo": "stisla/stisla",
+      "commit": "1b2d21233eb04fd4da745abefd510ab012f49f5f",
+      "mode": "projects",
+      "category": "admin-templates"
+    },
+    {
+      "repo": "CommunityPro/portfolio-html",
+      "commit": "724291e11152425565ea77e3a6041f7a33eb7119",
+      "mode": "template",
+      "category": "landing-pages",
+      "home": "src/index.html"
+    },
+    {
+      "repo": "nisarhassan12/portfolio-template",
+      "commit": "f3ed88590be4f2b68ef952430d42cb3b0476b745",
+      "mode": "template",
+      "category": "landing-pages",
+      "home": "index.html"
+    }
+  ]
+}

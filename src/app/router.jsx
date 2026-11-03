@@ -10,6 +10,7 @@ const Simulator = lazy(() => import('../features/simulate/Simulator'));
 const Report = lazy(() => import('../features/report/Report'));
 const Learn = lazy(() => import('../features/learn/Learn'));
 const RuleDetail = lazy(() => import('../features/learn/RuleDetail'));
+const ModelCard = lazy(() => import('../features/learn/ModelCard'));
 const NotFound = lazy(() => import('./NotFound'));
 
 const page = (Page) => (
@@ -31,6 +32,7 @@ export const router = createBrowserRouter([
       { path: 'report', element: page(Report) },
       { path: 'report/:runId', element: page(Report) },
       { path: 'learn', element: page(Learn) },
+      { path: 'learn/model-card', element: page(ModelCard) },
       { path: 'learn/:ruleId', element: page(RuleDetail) },
       { path: '*', element: page(NotFound) },
     ],

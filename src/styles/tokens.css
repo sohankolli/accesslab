@@ -71,6 +71,7 @@
   --pin-serious: #9a4a00;
   --pin-moderate: #6f5a00;
   --pin-minor: #45607c;
+  --pin-advisory: #3b2fc9; /* model suggestions */
   --pin-text: #ffffff;
   --pin-halo: #ffffff;
   --page-canvas: #ffffff; /* behind the audited page: browsers default to white */
@@ -78,6 +79,7 @@
 
   --shadow-sheet: 0 0 0 1px #cfd3cc, 0 30px 60px -30px rgb(25 30 22 / 0.35);
   --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.12);
+  --backdrop: rgb(0 0 0 / 0.55); /* dims the page behind an open dialog */
   --focus-ring: 3px solid var(--lens);
   color-scheme: light;
 }
@@ -103,6 +105,9 @@
   --on-severity: #15171a;
   --shadow-sheet: 0 0 0 1px #3a3e3b, 0 30px 60px -30px rgb(0 0 0 / 0.6);
   --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.5);
+  --backdrop: rgb(
+    0 0 0 / 0.7
+  ); /* the dark page is already dim: darken more to set the dialog apart */
   color-scheme: dark;
 }
 
@@ -128,6 +133,9 @@
     --on-severity: #15171a;
     --shadow-sheet: 0 0 0 1px #3a3e3b, 0 30px 60px -30px rgb(0 0 0 / 0.6);
     --shadow-raised: 0 1px 2px rgb(0 0 0 / 0.5);
+    --backdrop: rgb(
+      0 0 0 / 0.7
+    ); /* the dark page is already dim: darken more to set the dialog apart */
     color-scheme: dark;
   }
 }

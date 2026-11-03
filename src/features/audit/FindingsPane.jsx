@@ -5,6 +5,8 @@ import './findingsPane.css';
 import IssueList from './IssueList';
 import PrintableReport from '../report/PrintableReport';
 import { downloadRunJSON, downloadRunCSV } from '../report/reportExport';
+import ModelSwitch from './ModelSwitch';
+import ClickablesGroup from './ClickablesGroup';
 
 /** Text for the live region, read out by screen readers after every audit. */
 function announcement(result) {
@@ -70,6 +72,7 @@ export default function FindingsPane({
           {result && announcement(result)}
         </p>
         <PackSettings />
+        <ModelSwitch />
         {status === 'failed' && (
           <div className="notice" role="alert">
             <p>
@@ -93,6 +96,7 @@ export default function FindingsPane({
             onShowInCode={onShowInCode}
           />
         )}
+        <ClickablesGroup onShowIssue={onShowIssue} onShowInCode={onShowInCode} />
       </div>
     </section>
   );

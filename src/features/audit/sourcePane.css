@@ -16,31 +16,9 @@
   padding: 0 var(--space-4);
   border-bottom: 1px solid var(--rule);
 }
-.tabs {
-  display: flex;
-  gap: var(--space-1);
-}
-.tab {
-  min-width: var(--target);
+/* .tabs and .tab live in global.css (shared with Simulate); here they fill the bar. */
+.tabs-bar .tab {
   height: 47px;
-  padding: 0 var(--space-3);
-  margin-bottom: -1px;
-  color: var(--graphite);
-  background: none;
-  border: 0;
-  border-bottom: 2px solid transparent;
-  cursor: pointer;
-}
-.tab:hover {
-  color: var(--ink);
-}
-.tab[aria-selected='true'] {
-  font-weight: 700;
-  color: var(--ink);
-  border-bottom-color: var(--ink);
-}
-.tab:focus-visible {
-  outline-offset: -3px;
 }
 .tabs-bar__meta {
   align-self: center;

@@ -1,41 +1,40 @@
-.simulate-page {
-  display: grid;
-  gap: var(--space-4);
+/* The Simulate page: ruled sections like Report, the three views as tabs. */
+
+.simulate-controls .field {
+  max-width: 520px;
+  margin-bottom: var(--space-3);
+}
+.simulate-controls select {
+  width: 100%;
 }
 
-.simulate-controls,
+/* The tab row sits on a rule line, like the Workbench's HTML/CSS tabs. */
+.simulate-tabs {
+  margin-bottom: var(--space-5);
+  border-bottom: 1px solid var(--rule);
+}
+
 .simulate-panel {
   display: grid;
   align-content: start;
-  gap: var(--space-3);
+  gap: var(--space-4);
+}
+.simulate-panel[hidden] {
+  display: none;
+}
+.simulate-panel:focus-visible {
+  outline-offset: 4px;
 }
 
-.simulate-controls select {
-  width: 100%;
-  max-width: 520px;
-  min-height: var(--target);
-}
-
-.simulate-note {
-  color: var(--graphite);
-  font-size: var(--text-sm);
-}
-
-.simulate-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-}
-
+/* The page itself, on its own white canvas, like the Workbench preview. */
 .simulate-preview-scroll {
   position: relative; /* the inspection marks are positioned against this */
   width: 100%;
   height: min(65vh, 700px);
   min-height: 320px;
   overflow: hidden; /* the page scrolls inside its own frame */
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-md);
   background: var(--page-canvas);
+  box-shadow: var(--shadow-sheet);
 }
 
 .simulate-frame {
@@ -47,12 +46,12 @@
   background: var(--page-canvas);
 }
 
+/* Lists: one ruled row per item, like the Report's tables. */
 .simulate-list {
-  display: grid;
-  gap: var(--space-2);
   margin: 0;
   padding: 0;
   list-style: none;
+  border-top: 1px solid var(--rule-strong);
 }
 
 .simulate-list li {
@@ -60,8 +59,7 @@
   align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-3);
-  border: 1px solid var(--rule);
-  border-radius: var(--radius-md);
+  border-bottom: 1px solid var(--rule);
   overflow-wrap: anywhere;
 }
 
@@ -77,13 +75,6 @@
   font-weight: 700;
 }
 
-.simulate-role {
-  flex: 0 0 8rem;
-  color: var(--graphite);
-  font-family: var(--mono);
-  font-size: var(--text-sm);
-}
-
 .simulate-meta {
   display: block;
   margin-top: var(--space-1);
@@ -92,19 +83,22 @@
 }
 
 /* The screen-reader view: one line per announcement, in page order. */
-.simulate-list--reader {
-  gap: var(--space-1);
-}
 .simulate-list--reader li {
   padding: var(--space-2) var(--space-3);
 }
+/* Plain text between the announced elements reads quieter than the elements. */
 .simulate-line--text {
-  border-style: dashed;
+  color: var(--graphite);
 }
-/* A control or image with no name: "(no name)" is in the text; the
-   heavier red border is an extra cue, not the only one. */
+/* A control or image with no name: "(no name)" is in the text; the bold
+   weight and the red bar on the left are extra cues, not the only one. */
 .simulate-line--missing {
   font-weight: 700;
-  border-color: var(--critical);
-  border-width: 2px;
+  color: var(--ink);
+  box-shadow: inset 4px 0 0 var(--critical);
+}
+
+/* Shown above the preview when there is no audit of this code to draw marks from. */
+.simulate-hint {
+  font-size: var(--text-sm);
 }

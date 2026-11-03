@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useDispatch, useStore } from 'react-redux';
-import { issueSelected, selectSortedIssues } from './auditSlice';
+import { issueSelected } from './auditSlice';
+import { selectMarkedFindings } from './clickablesSlice';
 import { issueAt } from './overlayBoxes';
 import { guardPreview } from './previewGuard';
 import SandboxFrame from './SandboxFrame';
@@ -39,7 +40,7 @@ export default function PreviewPane({ html, css, frameRef, docRef, onDocument })
       setPageTitle(doc.title.trim() || 'Untitled page');
       // Links and forms may not navigate away; a click selects the issue under the pointer.
       guardPreview(doc, (event) => {
-        const hit = issueAt(event.target, selectSortedIssues(store.getState()));
+        const hit = issueAt(event.target, selectMarkedFindings(store.getState()));
         dispatch(issueSelected(hit?.id ?? null));
       });
       // Show a focus ring on the device frame while keyboard focus is inside the preview.

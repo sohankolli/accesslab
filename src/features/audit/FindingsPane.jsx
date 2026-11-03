@@ -3,6 +3,8 @@ import ScoreReading from './ScoreReading';
 import PackSettings from './PackSettings';
 import './findingsPane.css';
 import IssueList from './IssueList';
+import PrintableReport from '../report/PrintableReport';
+import { downloadRunJSON, downloadRunCSV } from '../report/reportExport';
 import ModelSwitch from './ModelSwitch';
 import ClickablesGroup from './ClickablesGroup';
 
@@ -46,6 +48,26 @@ export default function FindingsPane({
           failed={status === 'failed'}
           headingRef={headingRef}
         />
+
+        {result && (
+          <>
+            <div className="findings__report-actions">
+              <button type="button" className="btn" onClick={() => downloadRunJSON(result)}>
+                Download JSON
+              </button>
+
+              <button type="button" className="btn" onClick={() => downloadRunCSV(result)}>
+                Download CSV
+              </button>
+
+              <button type="button" className="btn" onClick={() => window.print()}>
+                Print / Save PDF
+              </button>
+            </div>
+
+            <PrintableReport run={result} />
+          </>
+        )}
         <p className="sr-only" aria-live="polite">
           {result && announcement(result)}
         </p>

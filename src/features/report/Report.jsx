@@ -7,6 +7,8 @@ import TrendChart from './TrendChart';
 import Severity from '../../components/Severity';
 import { SEVERITIES, SEVERITY_LABEL } from '../../components/severityLabels';
 import './report.css';
+import { downloadRunJSON, downloadRunCSV } from './reportExport';
+import PrintableReport from './PrintableReport';
 
 const formatTime = (ms) =>
   new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(ms);
@@ -76,16 +78,34 @@ function ReportView({ runId }) {
             Your last {runs.length} {runs.length === 1 ? 'check' : 'checks'}, saved in this browser.
           </p>
         </div>
-        <button
-          type="button"
-          className="btn"
-          onClick={() => {
-            if (window.confirm('Delete all saved checks?')) dispatch(historyCleared());
-          }}
-        >
-          Clear history
-        </button>
+
+        <div className="report__actions">
+          <button type="button" className="btn" onClick={() => downloadRunJSON(after)}>
+            Download JSON
+          </button>
+
+          <button type="button" className="btn" onClick={() => downloadRunCSV(after)}>
+            Download CSV
+          </button>
+
+          <button type="button" className="btn" onClick={() => window.print()}>
+            Print / Save PDF
+          </button>
+
+          <button
+            type="button"
+            className="btn"
+            onClick={() => {
+              if (window.confirm('Delete all saved checks?')) {
+                dispatch(historyCleared());
+              }
+            }}
+          >
+            Clear history
+          </button>
+        </div>
       </div>
+
       {saveNotice}
 
       <section className="section" aria-labelledby="trend-heading">
@@ -216,6 +236,9 @@ function ReportView({ runId }) {
           </tbody>
         </table>
       </section>
+
+      {/* Printable PDF report */}
+      <PrintableReport run={after} beforeRun={before} />
     </div>
   );
 }

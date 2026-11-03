@@ -1,8 +1,6 @@
-// localStorage can be full, blocked or unavailable: every access is guarded, and
-// writes report whether they worked so the UI can tell the user.
+// localStorage can be full, blocked or unavailable: every access is guarded.
 const KEY = 'accesslab:v1';
 
-/** Everything saved, or {} when nothing usable is stored or storage is blocked. */
 function read() {
   try {
     const data = JSON.parse(localStorage.getItem(KEY));
@@ -12,7 +10,6 @@ function read() {
   }
 }
 
-/** @returns {boolean} false when the browser refused to store the data */
 function write(data) {
   try {
     localStorage.setItem(KEY, JSON.stringify(data));
@@ -22,31 +19,35 @@ function write(data) {
   }
 }
 
-/** A saved run the Report page can show: anything else is dropped on load. */
 const isRun = (run) =>
   Boolean(run) &&
   typeof run.id === 'string' &&
   typeof run.ranAt === 'number' &&
   typeof run.score === 'number' &&
   Boolean(run.counts) &&
-  typeof run.counts === 'object';
+  typeof run.counts === 'object' &&
+  !Array.isArray(run.counts) &&
+  // Older saved runs do not have issues, so keep them compatible.
+  (run.issues === undefined ||
+    (Array.isArray(run.issues) &&
+      run.issues.every(
+        (issue) =>
+          issue &&
+          typeof issue === 'object' &&
+          typeof issue.id === 'string' &&
+          typeof issue.message === 'string',
+      )));
 
 export const readPref = (key) => read().prefs?.[key];
 
-/** @returns {boolean} whether the preference was saved */
 export const writePref = (key, value) => {
   const data = read();
   return write({ ...data, prefs: { ...data.prefs, [key]: value } });
 };
 
-/** The saved history, checked: only well-formed runs are kept. */
 export const loadHistory = () => {
   const runs = read().history?.runs;
   return { runs: Array.isArray(runs) ? runs.filter(isRun) : [] };
 };
 
-/**
- * @param {{runs: object[]}} history
- * @returns {boolean} whether the history was saved
- */
 export const saveHistory = ({ runs }) => write({ ...read(), history: { runs } });

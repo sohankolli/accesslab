@@ -3,3 +3,11 @@ coverage
 package-lock.json
 # Design mockup: its code panel is preformatted text that Prettier would re-indent.
 docs/design/direction.html
+# The model pipeline's local data and generated files
+public/ort
+ml/data
+ml/node_modules
+ml/reports/*.json
+tests/ml/fixtures
+ml/.pytest_cache
+ml/train/artifacts

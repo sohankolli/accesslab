@@ -23,6 +23,10 @@
 .pin--moderate {
   --c: var(--pin-moderate);
 }
+.mark--advisory,
+.pin--advisory {
+  --c: var(--pin-advisory); /* model suggestions */
+}
 .mark--minor,
 .pin--minor,
 .mark--review,

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { overlayBoxes } from './overlayBoxes';
-import { selectSortedIssues } from './auditSlice';
+import { selectMarkedFindings } from './clickablesSlice';
 import './issueOverlay.css';
 
 /** Space between an element and its dashed mark, as in the mockup. */
@@ -23,7 +23,7 @@ const PIN_OUT = 14;
  * }} props
  */
 export default function IssueOverlay({ frameRef, refreshKey }) {
-  const issues = useSelector(selectSortedIssues);
+  const issues = useSelector(selectMarkedFindings); // rule findings, then model suggestions
   const selectedId = useSelector((state) => state.audit.selectedIssueId);
   const [layout, setLayout] = useState(null);
 

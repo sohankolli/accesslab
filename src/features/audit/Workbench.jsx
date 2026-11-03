@@ -7,6 +7,8 @@ import { htmlChanged, cssChanged, MAX_PAGE_BYTES } from '../editor/editorSlice';
 import { issueSelected } from './auditSlice';
 import { findElement, isPageLevel } from './overlayBoxes';
 import { useAudit } from './useAudit';
+import { useClickables } from './useClickables';
+import { selectAdvisory } from './clickablesSlice';
 import SourceEditor from '../editor/SourceEditor';
 import { sourceLineOf } from '../editor/sourceLine';
 import Splitter from '../../components/Splitter';
@@ -29,6 +31,7 @@ export default function Workbench() {
   const store = useStore();
   const { html, css, rejected } = useSelector((state) => state.editor);
   const result = useSelector((state) => state.audit.result);
+  const advisory = useSelector(selectAdvisory);
   const selectedId = useSelector((state) => state.audit.selectedIssueId);
   const { reducedMotion } = useSettings();
   const docRef = useRef(null); // the live iframe Document: kept out of Redux
@@ -39,14 +42,24 @@ export default function Workbench() {
   const auditHtml = useDebouncedValue(html, 400);
   const auditCss = useDebouncedValue(css, 400);
   const { rules, auditDocument } = useAudit({ docRef, html: auditHtml, css: auditCss });
+  const checkClickables = useClickables(docRef);
+  // A new preview document: the rules audit it, then the model looks for click-only controls.
+  const onDocument = useCallback(
+    (doc) => {
+      auditDocument(doc);
+      checkClickables(doc);
+    },
+    [auditDocument, checkClickables],
+  );
 
   // The selected issue's line in the HTML source, highlighted in the editor. Only
   // while the editor holds exactly the code that was checked: mid-edit the line
   // could be stale, so no highlight is better than a wrong one.
   const highlight = useMemo(() => {
-    const issue = selectedId && result?.issues.find((i) => i.id === selectedId);
+    const issue =
+      selectedId && [...(result?.issues ?? []), ...advisory].find((i) => i.id === selectedId);
     return issue && html === auditHtml ? sourceLineOf(html, issue.source) : null;
-  }, [selectedId, result, html, auditHtml]);
+  }, [selectedId, result, advisory, html, auditHtml]);
 
   /**
    * "Show in code": select the issue's start tag in the HTML editor. It reads the
@@ -150,7 +163,7 @@ export default function Workbench() {
         css={auditCss}
         frameRef={frameRef}
         docRef={docRef}
-        onDocument={auditDocument}
+        onDocument={onDocument}
       />
 
       <Splitter

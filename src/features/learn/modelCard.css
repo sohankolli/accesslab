@@ -1,0 +1,74 @@
+/* The model card page under Learn. */
+.model-card section {
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+}
+.model-card h2 {
+  margin-bottom: var(--space-3);
+}
+.model-card h3 {
+  margin: var(--space-4) 0 var(--space-2);
+}
+.model-card p + p,
+.model-card ul {
+  margin-top: var(--space-3);
+}
+.model-card ul {
+  padding-left: 1.2em;
+}
+.model-card li + li {
+  margin-top: var(--space-1);
+}
+.model-card .eyebrow {
+  font-size: var(--text-sm);
+  color: var(--graphite);
+}
+.table-wrap {
+  margin-top: var(--space-4);
+  overflow-x: auto;
+}
+.card-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.card-table caption {
+  padding-bottom: var(--space-2);
+  font-weight: 700;
+  text-align: left;
+}
+.card-table th,
+.card-table td {
+  padding: var(--space-2) var(--space-3) var(--space-2) 0;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid var(--rule-soft);
+}
+.card-table thead th {
+  font-weight: 500;
+  color: var(--graphite);
+  border-bottom: 1px solid var(--rule);
+}
+.card-table tbody th {
+  font-weight: 500;
+}
+.reliability {
+  margin: var(--space-5) 0 0;
+}
+.reliability img {
+  max-width: 100%;
+  height: auto;
+  background: var(--page-canvas); /* the diagram is drawn on white */
+  border: 1px solid var(--rule);
+}
+.reliability figcaption {
+  margin-top: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--graphite);
+}
+.card-note {
+  display: block;
+  font-size: var(--text-xs);
+  color: var(--graphite);
+}

@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Labeller fixture</title>
+    <style>
+      .card {
+        cursor: pointer;
+        background: #eef;
+        border-radius: 6px;
+        padding: 8px;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="listener" class="card">Open</div>
+    <span id="react">Like</span>
+    <ul>
+      <li id="keyed" tabindex="0">Menu item</li>
+    </ul>
+    <p id="plain">Just text.</p>
+    <button id="native" type="button"><span id="inside">Send</span></button>
+    <a id="link" href="#x">Link</a>
+    <div id="hidden" class="hidden">Gone</div>
+    <div id="role" role="button" tabindex="0">Has a role</div>
+    <script>
+      document.getElementById('listener').addEventListener('click', () => {});
+      document.getElementById('react')['__reactProps$test'] = { onClick() {} };
+      document.getElementById('keyed').addEventListener('keydown', () => {});
+      document.getElementById('native').addEventListener('click', () => {});
+    </script>
+  </body>
+</html>

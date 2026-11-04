@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router';
 import { MANIFEST_URL, MODEL_BASE, NOT_REACHED } from '../../engine/ml/manifest';
@@ -40,34 +40,51 @@ function gateValue(id, g) {
   return String(g.value);
 }
 
-function GateTable({ caption, gate }) {
+/**
+ * A table that may scroll sideways on a narrow screen. The scrolling box is a
+ * named region in the tab order, so keyboard users can reach it and scroll it
+ * with the arrow keys; it is named by the table's caption.
+ */
+function TableWrap({ caption, children }) {
+  const id = useId();
   return (
-    <div className="table-wrap">
+    // A scrolling box must be focusable so it can be scrolled without a mouse
+    // (WCAG 2.1.1; axe rule scrollable-region-focusable).
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+    <div className="table-wrap" role="region" aria-labelledby={id} tabIndex={0}>
       <table className="card-table">
-        <caption>{caption}</caption>
-        <thead>
-          <tr>
-            <th scope="col">Condition</th>
-            <th scope="col">Target</th>
-            <th scope="col">Measured</th>
-            <th scope="col">Result</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(gate ?? {}).map(([id, g]) => (
-            <tr key={id}>
-              <th scope="row">{GATE_LABELS[id] ?? id}</th>
-              <td>{g.target}</td>
-              <td>
-                {gateValue(id, g)}
-                {g.note && <span className="card-note">{g.note}</span>}
-              </td>
-              <td>{g.pass == null ? 'Not measured' : g.pass ? 'Met' : 'Not met'}</td>
-            </tr>
-          ))}
-        </tbody>
+        <caption id={id}>{caption}</caption>
+        {children}
       </table>
     </div>
+  );
+}
+
+function GateTable({ caption, gate }) {
+  return (
+    <TableWrap caption={caption}>
+      <thead>
+        <tr>
+          <th scope="col">Condition</th>
+          <th scope="col">Target</th>
+          <th scope="col">Measured</th>
+          <th scope="col">Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {Object.entries(gate ?? {}).map(([id, g]) => (
+          <tr key={id}>
+            <th scope="row">{GATE_LABELS[id] ?? id}</th>
+            <td>{g.target}</td>
+            <td>
+              {gateValue(id, g)}
+              {g.note && <span className="card-note">{g.note}</span>}
+            </td>
+            <td>{g.pass == null ? 'Not measured' : g.pass ? 'Met' : 'Not met'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </TableWrap>
   );
 }
 
@@ -78,35 +95,32 @@ function GateTable({ caption, gate }) {
 function Breakdown({ title, rows, field, hasThreshold }) {
   if (!rows?.length) return null;
   return (
-    <div className="table-wrap">
-      <table className="card-table">
-        <caption>{title}</caption>
-        <thead>
-          <tr>
-            <th scope="col">{field === 'framework' ? 'Framework' : 'Kind of site'}</th>
-            <th scope="col">Sites</th>
-            <th scope="col">Elements</th>
-            <th scope="col">Click-only</th>
-            <th scope="col">PR-AUC</th>
-            {hasThreshold && <th scope="col">Precision</th>}
-            {hasThreshold && <th scope="col">Recall</th>}
+    <TableWrap caption={title}>
+      <thead>
+        <tr>
+          <th scope="col">{field === 'framework' ? 'Framework' : 'Kind of site'}</th>
+          <th scope="col">Sites</th>
+          <th scope="col">Elements</th>
+          <th scope="col">Click-only</th>
+          <th scope="col">PR-AUC</th>
+          {hasThreshold && <th scope="col">Precision</th>}
+          {hasThreshold && <th scope="col">Recall</th>}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr key={r[field]}>
+            <th scope="row">{r[field]}</th>
+            <td>{count(r.sites)}</td>
+            <td>{count(r.rows)}</td>
+            <td>{count(r.positives)}</td>
+            <td>{num(r.pr_auc, 3)}</td>
+            {hasThreshold && <td>{pct(r.precision)}</td>}
+            {hasThreshold && <td>{pct(r.recall)}</td>}
           </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r[field]}>
-              <th scope="row">{r[field]}</th>
-              <td>{count(r.sites)}</td>
-              <td>{count(r.rows)}</td>
-              <td>{count(r.positives)}</td>
-              <td>{num(r.pr_auc, 3)}</td>
-              {hasThreshold && <td>{pct(r.precision)}</td>}
-              {hasThreshold && <td>{pct(r.recall)}</td>}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </TableWrap>
   );
 }
 
@@ -322,37 +336,34 @@ export default function ModelCard() {
             rates. With so few click-only controls, a low value is easy to reach and says little.
           </li>
         </ul>
-        <div className="table-wrap">
-          <table className="card-table">
-            <caption>Compared on the same test websites</caption>
-            <thead>
-              <tr>
-                <th scope="col">Model</th>
-                <th scope="col">PR-AUC</th>
-                <th scope="col">Precision</th>
-                <th scope="col">Recall</th>
+        <TableWrap caption="Compared on the same test websites">
+          <thead>
+            <tr>
+              <th scope="col">Model</th>
+              <th scope="col">PR-AUC</th>
+              <th scope="col">Precision</th>
+              <th scope="col">Recall</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(m.metrics?.comparisons ?? []).map((c) => (
+              <tr key={c.model}>
+                <th scope="row">{c.model}</th>
+                <td>{num(c.pr_auc, 3)}</td>
+                <td>{pct(c.precision)}</td>
+                <td>{pct(c.recall)}</td>
               </tr>
-            </thead>
-            <tbody>
-              {(m.metrics?.comparisons ?? []).map((c) => (
-                <tr key={c.model}>
-                  <th scope="row">{c.model}</th>
-                  <td>{num(c.pr_auc, 3)}</td>
-                  <td>{pct(c.precision)}</td>
-                  <td>{pct(c.recall)}</td>
-                </tr>
-              ))}
-              {(m.metrics?.ablations ?? []).map((a) => (
-                <tr key={a.model}>
-                  <th scope="row">{a.model}</th>
-                  <td>{num(a.pr_auc, 3)}</td>
-                  <td>–</td>
-                  <td>–</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+            {(m.metrics?.ablations ?? []).map((a) => (
+              <tr key={a.model}>
+                <th scope="row">{a.model}</th>
+                <td>{num(a.pr_auc, 3)}</td>
+                <td>–</td>
+                <td>–</td>
+              </tr>
+            ))}
+          </tbody>
+        </TableWrap>
         {m.metrics?.seeds && (
           <p>
             The graph network is not stable on this much data: trained three times with different

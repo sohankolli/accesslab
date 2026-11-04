@@ -42,6 +42,19 @@ describe('model card', () => {
     expect(within(status).getAllByText(/never change the score/).length).toBeGreaterThan(0);
   });
 
+  it('makes every scrolling table a named region a keyboard user can reach', async () => {
+    await renderCard();
+    const wraps = [...document.querySelectorAll('.table-wrap')];
+    expect(wraps.length).toBeGreaterThanOrEqual(4);
+    for (const wrap of wraps) {
+      const caption = wrap.querySelector('caption').textContent;
+      expect(wrap.tabIndex).toBe(0);
+      expect(screen.getByRole('region', { name: caption })).toBe(wrap);
+      wrap.focus();
+      expect(document.activeElement).toBe(wrap);
+    }
+  });
+
   it('shows the hand-check result, its method, and what it does not fix', async () => {
     await renderCard();
     const data = screen.getByRole('region', { name: 'What it was trained on' });

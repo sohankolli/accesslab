@@ -2,9 +2,10 @@
 
     python train/train.py --data data/crawl --out ../public/models --reports reports
 
-Every number written by this script is measured here on the crawled data. The
-test sites are scored once, after every choice (model, epochs, temperature,
-threshold) has been made on the training and calibration sites.
+Every number written by this script is measured here on the crawled data.
+Every choice (model, epochs, temperature, threshold) is made by 5-fold
+cross-validation grouped by website on the development sites (the training and
+calibration sites together). The test sites are scored once, at the end.
 """
 from __future__ import annotations
 
@@ -38,9 +39,69 @@ def parse_args():
     ap.add_argument("--reports", type=Path, default=Path("reports"))
     ap.add_argument("--fixtures", type=Path, default=Path("../tests/ml/fixtures"))
     ap.add_argument("--corpus-note", default="")
+    ap.add_argument("--test-sites", type=Path, default=Path(__file__).with_name("test-sites.json"),
+                    help="JSON list of the frozen test websites; missing: a fresh stratified site split")
     ap.add_argument("--keep-delegated", action="store_true",
                     help="also use pages with document-level click listeners (their 0 labels are unreliable)")
     return ap.parse_args()
+
+
+NOT_REACHED = "not reached"
+
+
+def not_reached(entry: dict, keys) -> dict:
+    """Mark values that need the target-precision threshold as "not reached" when no
+    threshold met the target precision on the calibration sites, so the
+    manifest says why they are missing instead of holding null."""
+    for k in keys:
+        v = entry.get(k)
+        if v is None or (isinstance(v, (float, np.floating)) and not np.isfinite(v)):
+            entry[k] = NOT_REACHED
+    return entry
+
+
+FOLDS = 5
+SELECTION_RULE = ("the candidate with the highest out-of-fold PR-AUC in 5-fold cross-validation "
+                  "grouped by website on the development sites; the test sites are never used to choose")
+MIN_PRECISION = 0.50
+THRESHOLD_RULE = ("the lowest threshold whose precision on the out-of-fold predictions is at least 50% "
+                  "(with at least 5 elements flagged); if none reaches 50%, there is no threshold and no "
+                  "suggestions. The test websites are never used to choose it")
+
+# The candidates compared in cross-validation, in this order (it breaks ties).
+CANDIDATES = [
+    {"name": "SIGN graph network, seed 0", "kind": "sign", "seed": 0},
+    {"name": "SIGN graph network, seed 1", "kind": "sign", "seed": 1},
+    {"name": "SIGN graph network, seed 2", "kind": "sign", "seed": 2},
+    {"name": "Gradient boosting, element only", "kind": "gbt", "cols": slice(0, D.NODE_DIM)},
+    {"name": "Gradient boosting with neighbourhood", "kind": "gbt", "cols": slice(0, D.ROW_DIM)},
+]
+
+
+def choose_threshold(y, p):
+    """The operating threshold on out-of-fold predictions, and what it gives there."""
+    t = M.threshold_for_precision(y, p, MIN_PRECISION)
+    if t is None:
+        return None, {"precision": NOT_REACHED, "recall": NOT_REACHED, "flagged": NOT_REACHED}
+    precision, recall, counts = M.precision_recall(y, p, t)
+    return t, {"precision": precision, "recall": recall, "flagged": counts["flagged"]}
+
+
+def fill_unmeasured(obj):
+    """Replace None and NaN, at any depth, with "not measured"."""
+    if isinstance(obj, dict):
+        return {k: fill_unmeasured(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [fill_unmeasured(v) for v in obj]
+    if obj is None or (isinstance(obj, (float, np.floating)) and not np.isfinite(obj)):
+        return "not measured"
+    return obj
+
+
+def count_params(net) -> int:
+    return int(sum(p.numel() for p in net.parameters()))
+
+THRESHOLD_KEYS = ("threshold", "precision", "precision_ci95", "recall", "flagged", "tp", "fp", "fn")
 
 
 def finite(obj):
@@ -98,6 +159,9 @@ def summarise(name, y, p, threshold, sites):
         out["precision_ci95"] = M.site_bootstrap(
             y, p, sites, lambda yy, pp: M.precision_recall(yy, pp, threshold)[0]
         )
+        out["recall_ci95"] = M.site_bootstrap(
+            y, p, sites, lambda yy, pp: M.precision_recall(yy, pp, threshold)[1]
+        )
     return out
 
 
@@ -108,7 +172,8 @@ def breakdown(ds, p, threshold, field):
         sel = values == v
         if sel.sum() < 30:
             continue
-        prec, rec, counts = M.precision_recall(ds.y[sel], p[sel], threshold)
+        prec, rec, counts = (M.precision_recall(ds.y[sel], p[sel], threshold) if threshold is not None
+                             else (float("nan"), float("nan"), {}))
         rows.append({
             field: str(v), "rows": int(sel.sum()), "positives": int(ds.y[sel].sum()),
             "sites": int(len(set(ds.site[sel].tolist()))), "pr_auc": M.pr_auc(ds.y[sel], p[sel]),
@@ -167,9 +232,22 @@ def main():
     # default they are left out of training and evaluation alike.
     keep = np.ones(len(full.y), bool) if args.keep_delegated else ~full.delegated
     ds = full.take(np.flatnonzero(keep))
-    tr_i, cal_i, te_i, split_seed = D.balanced_split(ds.site, ds.y)
-    tr, cal, te = ds.take(tr_i), ds.take(cal_i), ds.take(te_i)
-    assert not (set(tr.site) & set(cal.site)) and not (set(tr.site) & set(te.site)) and not (set(cal.site) & set(te.site))
+    # The test sites are kept apart and scored once at the end. They are frozen
+    # in test-sites.json (the 21 sites of the first corrected-filter run), so
+    # later changes to the data cannot move sites in or out of the test set.
+    # Every other site is a development site, used for every choice.
+    if args.test_sites.exists():
+        test_sites = set(json.loads(args.test_sites.read_text()))
+        is_test = np.isin(ds.site, sorted(test_sites))
+        dev_i, te_i, split_seed = np.flatnonzero(~is_test), np.flatnonzero(is_test), "frozen"
+    else:
+        tr_i, cal_i, te_i, split_seed = D.balanced_split(ds.site, ds.y)
+        dev_i = np.sort(np.concatenate([tr_i, cal_i]))
+    dev, te = ds.take(dev_i), ds.take(te_i)
+    assert not (set(dev.site) & set(te.site))
+    folds = D.grouped_folds(dev.site, dev.y, k=FOLDS)
+    for tr_f, va_f in folds:
+        assert not (set(dev.site[tr_f]) & set(dev.site[va_f]))
 
     def split_stats(part):
         return {"sites": len(set(part.site.tolist())), "rows": int(len(part.y)), "positives": int(part.y.sum())}
@@ -191,81 +269,86 @@ def main():
             "rows_excluded_delegated": int((~keep).sum()),
             "positives_excluded_delegated": int(full.y[~keep].sum()),
             "note": args.corpus_note,
-            "splits": {"train": split_stats(tr), "calibration": split_stats(cal), "test": split_stats(te)},
+            "splits": {"development": split_stats(dev), "test": split_stats(te)},
+            "folds": [{**split_stats(dev.take(va)), "fold": f} for f, (_, va) in enumerate(folds)],
             "split_seed": split_seed,
         },
     }
     print(json.dumps(report["data"], indent=1))
 
-    # ---- Baselines, each with a precision-first threshold chosen on calibration sites ----
-    comparisons = []
-    p_rule_cal, p_rule = rule_scores(cal.X), rule_scores(te.X)
-    comparisons.append(summarise("Rule: pointer cursor and not native", te.y, p_rule, 0.5, te.site))
+    # ---- Model selection by 5-fold cross-validation grouped by site ----
+    # Inside each fold, a few of the fold's training sites are held back for
+    # early stopping (SIGN) and the small grid (gradient boosting), so the
+    # validation fold never influences its own predictions.
+    def inner_split(part, seed):
+        a, b, _ = D.split_by_site(part.site, part.y, seed=seed, fractions=(0.85, 0.15, 0.0))
+        return part.take(a), part.take(b)
 
-    gbt_el, gbt_el_params, _ = fit_gbt(tr.X[:, :D.NODE_DIM], tr.y, cal.X[:, :D.NODE_DIM], cal.y)
-    p_el_cal = gbt_el.predict_proba(cal.X[:, :D.NODE_DIM])[:, 1]
-    p_el = gbt_el.predict_proba(te.X[:, :D.NODE_DIM])[:, 1]
-    t_el = M.threshold_for_precision(cal.y, p_el_cal, TARGET_PRECISION)
-    comparisons.append({**summarise("Gradient boosting, element only", te.y, p_el, t_el, te.site), "params": gbt_el_params})
+    def fit(cand, part, seed=0):
+        inner_tr, inner_va = inner_split(part, seed)
+        if cand["kind"] == "sign":
+            net, info = fit_sign(inner_tr.X, inner_tr.y, inner_va.X, inner_va.y, seed=cand["seed"], score=M.pr_auc)
+            return net, {"best_epoch": info["best_epoch"]}
+        cols = cand["cols"]
+        m, params, _ = fit_gbt(inner_tr.X[:, cols], inner_tr.y, inner_va.X[:, cols], inner_va.y)
+        return m, {"params": params}
 
-    gbt_nb, gbt_nb_params, _ = fit_gbt(tr.X, tr.y, cal.X, cal.y)
-    p_nb_cal = gbt_nb.predict_proba(cal.X)[:, 1]
-    p_nb = gbt_nb.predict_proba(te.X)[:, 1]
-    t_nb = M.threshold_for_precision(cal.y, p_nb_cal, TARGET_PRECISION)
-    comparisons.append({**summarise("Gradient boosting with neighbourhood", te.y, p_nb, t_nb, te.site), "params": gbt_nb_params})
-    print("baselines done", round(time.time() - t0), "s")
+    def z_of(cand, model, X):
+        if cand["kind"] == "sign":
+            return logits(model, X)
+        return model.decision_function(X[:, cand["cols"]])
 
-    # ---- The spec's fallback: the best baseline, calibrated the same way, against the same gate ----
-    z_cal_g, z_te_g = gbt_nb.decision_function(cal.X), gbt_nb.decision_function(te.X)
-    t_g = fit_temperature(z_cal_g.astype(np.float32), cal.y)
-    p_cal_g = 1 / (1 + np.exp(-z_cal_g / t_g))
-    p_te_g = 1 / (1 + np.exp(-z_te_g / t_g))
-    thr_g = M.threshold_for_precision(cal.y, p_cal_g, TARGET_PRECISION)
-    prec_g, rec_g, _ = M.precision_recall(te.y, p_te_g, thr_g) if thr_g is not None else (float("nan"), float("nan"), {})
-    fallback = {
-        "model": "Gradient boosting with neighbourhood, temperature-calibrated",
-        "threshold": thr_g, "precision": prec_g, "recall": rec_g, "ece": M.ece(te.y, p_te_g),
-        "pr_auc": M.pr_auc(te.y, p_te_g),
-    }
-    fallback["passes_precision_and_calibration"] = bool(
-        thr_g is not None and prec_g >= GATE["precision"] and fallback["ece"] <= GATE["ece"]
-    )
-    print("fallback", fallback)
+    for cand in CANDIDATES:
+        cand["oof_z"] = np.zeros(len(dev.y), np.float32)
+        cand["fold_info"] = []
+        for f, (tr_f, va_f) in enumerate(folds):
+            model, info = fit(cand, dev.take(tr_f), seed=f)
+            cand["oof_z"][va_f] = z_of(cand, model, dev.X[va_f])
+            cand["fold_info"].append(info)
+        cand["oof_pr_auc"] = M.pr_auc(dev.y, cand["oof_z"])
+        cand["temperature"] = fit_temperature(cand["oof_z"], dev.y)
+        cand["oof_p"] = 1 / (1 + np.exp(-cand["oof_z"] / cand["temperature"]))
+        cand["threshold"], cand["oof_at_threshold"] = choose_threshold(dev.y, cand["oof_p"])
+        print("cv", cand["name"], round(cand["oof_pr_auc"], 4), "T", round(cand["temperature"], 3),
+              "threshold", cand["threshold"], round(time.time() - t0), "s")
 
-    # ---- The graph network: three seeds, the one best on calibration sites is shipped ----
-    runs = []
-    for seed in SEEDS:
-        net, info = fit_sign(tr.X, tr.y, cal.X, cal.y, seed=seed, score=M.pr_auc)
-        runs.append((info["best_val"], seed, net, info))
-        print("sign seed", seed, info)
-    runs.sort(key=lambda r: -r[0])
-    _, ship_seed, net, ship_info = runs[0]
-    seed_test = [M.pr_auc(te.y, 1 / (1 + np.exp(-logits(r[2], te.X)))) for r in runs]
+    # The rule: the highest out-of-fold PR-AUC wins (ties: the earlier candidate).
+    chosen = max(CANDIDATES, key=lambda c: c["oof_pr_auc"])
 
-    temperature = fit_temperature(logits(net, cal.X), cal.y)
-    p_cal = 1 / (1 + np.exp(-logits(net, cal.X) / temperature))
-    threshold = M.threshold_for_precision(cal.y, p_cal, TARGET_PRECISION)
-    p_te = 1 / (1 + np.exp(-logits(net, te.X) / temperature))
-    sign = summarise("SIGN graph network", te.y, p_te, threshold, te.site)
-    sign.update({
-        "seed": ship_seed, "temperature": temperature, **ship_info,
-        "pr_auc_all_seeds": seed_test,
-        "ece": M.ece(te.y, p_te), "ece_uncalibrated": M.ece(te.y, 1 / (1 + np.exp(-logits(net, te.X)))),
-        "params": int(sum(p.numel() for p in net.parameters())),
-    })
-    comparisons.append(sign)
+    # ---- Retrain every candidate on all development sites, then score the test sites once ----
+    for cand in CANDIDATES:
+        if cand["kind"] == "sign":
+            epochs = int(np.median([i["best_epoch"] for i in cand["fold_info"]]))
+            cand["final"], _ = fit_sign(dev.X, dev.y, None, None, seed=cand["seed"], epochs=epochs, score=M.pr_auc)
+            cand["final_info"] = {"epochs": epochs}
+        else:
+            chosen_params = Counter(json.dumps(i["params"], sort_keys=True) for i in cand["fold_info"]).most_common(1)[0][0]
+            params = json.loads(chosen_params)
+            cand["final"] = HistGradientBoostingClassifier(class_weight="balanced", random_state=0, **params).fit(
+                dev.X[:, cand["cols"]], dev.y)
+            cand["final_info"] = {"params": params}
+        cand["p_te"] = 1 / (1 + np.exp(-z_of(cand, cand["final"], te.X) / cand["temperature"]))
+        cand["test"] = summarise(cand["name"], te.y, cand["p_te"], cand["threshold"], te.site)
+        cand["test"]["ece"] = M.ece(te.y, cand["p_te"])
+    print("final models done", round(time.time() - t0), "s")
 
-    # ---- Ablations: one seed each to fit the time budget ----
+    comparisons = [summarise("Rule: pointer cursor and not native", te.y, rule_scores(te.X), 0.5, te.site)]
+    comparisons += [{**c["test"], "oof_pr_auc": c["oof_pr_auc"], "temperature": c["temperature"], **c["final_info"]}
+                    for c in CANDIDATES]
+    signs = [c for c in CANDIDATES if c["kind"] == "sign"]
+    gbts = [c for c in CANDIDATES if c["kind"] == "gbt"]
+    seed_runs = [{"seed": c["seed"], "oof_pr_auc": c["oof_pr_auc"], "test_pr_auc": c["test"]["pr_auc"]} for c in signs]
+    seed_test = [r["test_pr_auc"] for r in seed_runs]
+
+    # ---- Ablations of the graph network, seed 0, trained on the development sites ----
     ablations = []
     for name, kw in [("SIGN without class-name words", {"words": False}),
                      ("SIGN without neighbourhood", {"neighbourhood": False})]:
-        Xtr, Xcal, Xte = D.mask(tr.X, **kw), D.mask(cal.X, **kw), D.mask(te.X, **kw)
-        scores = []
-        for seed in SEEDS[:1]:
-            n, _ = fit_sign(Xtr, tr.y, Xcal, cal.y, seed=seed, score=M.pr_auc)
-            scores.append(M.pr_auc(te.y, 1 / (1 + np.exp(-logits(n, Xte)))))
-        ablations.append({"model": name, "pr_auc_mean": float(np.mean(scores)), "pr_auc_all_seeds": scores})
-        print(name, scores)
+        a_tr, a_va = inner_split(dev, 0)
+        n, _ = fit_sign(D.mask(a_tr.X, **kw), a_tr.y, D.mask(a_va.X, **kw), a_va.y, seed=0, score=M.pr_auc)
+        score = M.pr_auc(te.y, 1 / (1 + np.exp(-logits(n, D.mask(te.X, **kw)))))
+        ablations.append({"model": name, "pr_auc_mean": score, "pr_auc_all_seeds": [score]})
+        print(name, score)
 
     # ---- A stricter split: whole source repositories held out ----
     groups = np.unique(ds.group)
@@ -284,51 +367,30 @@ def main():
     }
     print("held-out sources", strict)
 
-    # ---- The ship decision (spec section 5): the graph network if it passes the
-    # gate, otherwise the best baseline if it passes on the same terms ----
-    best_gbt = max(comparisons[1:3], key=lambda c: c["pr_auc"])
-    graph_gate = {
-        "precision": {"target": f">= {GATE['precision']}", "value": sign["precision"],
-                      "pass": bool(threshold is not None and sign["precision"] >= GATE["precision"])},
-        "beats_best_gbt": {"target": f"PR-AUC > {best_gbt['model']}", "value": sign["pr_auc"],
-                           "baseline": best_gbt["pr_auc"], "pass": bool(sign["pr_auc"] > best_gbt["pr_auc"]),
-                           "note": f"shipped seed; mean over seeds {np.mean(seed_test):.3f}"},
-        "ece": {"target": f"<= {GATE['ece']}", "value": sign["ece"], "pass": bool(sign["ece"] <= GATE["ece"])},
-    }
-    graph_ok = all(g["pass"] for g in graph_gate.values())
-    use_fallback = not graph_ok and fallback["passes_precision_and_calibration"]
-
-    artifacts = args.out / "artifacts"
-    artifacts.mkdir(exist_ok=True)
-    graph_path = (artifacts if use_fallback else args.out) / ("clickables-graph.onnx" if use_fallback else "clickables-v1.onnx")
-    graph_model = Calibrated(net, temperature).eval()
-    torch.onnx.export(
-        graph_model, torch.from_numpy(te.X[:2]), str(graph_path), input_names=["x"], output_names=["p"],
-        dynamic_axes={"x": {0: "n"}, "p": {0: "n"}}, opset_version=17, dynamo=False,
-    )
-    graph_gate["size"] = {"target": f"<= {GATE['size_bytes']} bytes", "value": graph_path.stat().st_size,
-                          "pass": bool(graph_path.stat().st_size <= GATE["size_bytes"])}
-
+    # ---- Export the chosen model with its temperature folded in ----
     onnx_path = args.out / "clickables-v1.onnx"
-    if use_fallback:
-        from export_gbt import export_hist_gbt
-        export_hist_gbt(gbt_nb, t_g, D.ROW_DIM, str(onnx_path))
-        p_ship, ship_threshold, ship_temperature = p_te_g, thr_g, t_g
-        reference = lambda X: 1 / (1 + np.exp(-gbt_nb.decision_function(X) / t_g))
-        ship_name = "Gradient boosting with neighbourhood (fallback)"
-        architecture = (f"gradient-boosted trees over the 552 neighbourhood features ({gbt_nb.n_iter_} trees, "
-                        f"up to {gbt_nb_params['max_leaf_nodes']} leaves each), temperature-calibrated")
-    else:
-        p_ship, ship_threshold, ship_temperature = p_te, threshold, temperature
+    temperature, ship_threshold, p_ship = chosen["temperature"], chosen["threshold"], chosen["p_te"]
+    if chosen["kind"] == "sign":
+        graph_model = Calibrated(chosen["final"], temperature).eval()
+        torch.onnx.export(
+            graph_model, torch.from_numpy(te.X[:2]), str(onnx_path), input_names=["x"], output_names=["p"],
+            dynamic_axes={"x": {0: "n"}, "p": {0: "n"}}, opset_version=17, dynamo=False,
+        )
         reference = lambda X: graph_model(torch.from_numpy(X)).detach().numpy()
-        ship_name = "SIGN graph network"
-        architecture = f"SIGN-style network: 6 view encoders (92->48), head 288->48->1; {sign['params']} parameters"
+        architecture = f"SIGN-style network: 6 view encoders (92->48), head 288->48->1; {count_params(chosen['final'])} parameters"
+    else:
+        from export_gbt import export_hist_gbt
+        gbt = chosen["final"]
+        export_hist_gbt(gbt, temperature, D.ROW_DIM, str(onnx_path))  # tree feature indices are row columns
+        reference = lambda X: 1 / (1 + np.exp(-gbt.decision_function(X[:, chosen["cols"]]) / temperature))
+        architecture = (f"gradient-boosted trees over {len(range(D.ROW_DIM)[chosen['cols']])} features "
+                        f"({gbt.n_iter_} trees, up to {chosen['final_info']['params']['max_leaf_nodes']} leaves each), "
+                        "temperature-calibrated")
 
     import onnxruntime as ort
     sess = ort.InferenceSession(str(onnx_path), providers=["CPUExecutionProvider"])
     ref_in = te.X[:50]
     ref_out = np.asarray(reference(ref_in), np.float32)
-    parity = float(np.max(np.abs(ref_out - sess.run(["p"], {"x": te.X})[0][:50])))
     full_parity = float(np.max(np.abs(np.asarray(reference(te.X), np.float32) - sess.run(["p"], {"x": te.X})[0])))
     (args.fixtures / "clickables-parity.json").write_text(json.dumps({
         "note": "50 test-site feature rows and the probabilities the training code gives them. "
@@ -338,40 +400,61 @@ def main():
     size = onnx_path.stat().st_size
     sha = hashlib.sha256(onnx_path.read_bytes()).hexdigest()
 
-    shipped = summarise(ship_name, te.y, p_ship, ship_threshold, te.site)
-    shipped["ece"] = M.ece(te.y, p_ship)
+    shipped = chosen["test"]
+    best_gbt_test = max(c["test"]["pr_auc"] for c in gbts)
     gate = {
         "precision": {"target": f">= {GATE['precision']}", "value": shipped["precision"],
                       "pass": bool(ship_threshold is not None and shipped["precision"] >= GATE["precision"])},
-        "beats_best_gbt": graph_gate["beats_best_gbt"] if not use_fallback else {
-            "target": "the graph network beats the best gradient-boosting baseline and passes the gate",
-            "value": sign["pr_auc"], "baseline": best_gbt["pr_auc"], "pass": False,
-            "note": "the graph network missed the gate, so the baseline itself is shipped as the spec's fallback"},
+        "beats_best_gbt": (
+            {"target": "PR-AUC > best gradient boosting on the test sites", "value": shipped["pr_auc"],
+             "baseline": best_gbt_test, "pass": bool(shipped["pr_auc"] > best_gbt_test),
+             "note": f"shipped seed {chosen['seed']}; mean over seeds {np.mean(seed_test):.3f}"}
+            if chosen["kind"] == "sign" else
+            {"target": "the graph network beats the best gradient-boosting baseline",
+             "value": max(seed_test), "baseline": best_gbt_test, "pass": False,
+             "note": "a gradient-boosting model was chosen by out-of-fold PR-AUC, so no graph network ships"}),
         "ece": {"target": f"<= {GATE['ece']}", "value": shipped["ece"], "pass": bool(shipped["ece"] <= GATE["ece"])},
         "size": {"target": f"<= {GATE['size_bytes']} bytes", "value": size, "pass": bool(size <= GATE["size_bytes"])},
         "latency": {"target": f"<= {GATE['latency_ms']} ms for 2,000 elements in the Web Worker", "value": None,
                     "pass": None, "note": "measured in the browser by npm run ml:bench, which fills this in"},
     }
 
-    # ---- Breakdown and error analysis of the shipped model on the test sites ----
-    t_use = ship_threshold if ship_threshold is not None else 0.5
-    breakdowns = {f: breakdown(te, p_ship, t_use, f) for f in ("framework", "category")}
+    # ---- Breakdown and error analysis of the shipped model at its threshold ----
+    breakdowns = {f: breakdown(te, p_ship, ship_threshold, f) for f in ("framework", "category")}
     snippets = load_snippets(args.data / "snippets.jsonl")
-    pred = p_ship >= t_use
     rng = np.random.default_rng(3)
-    fp_idx = np.flatnonzero(pred & (te.y == 0))
-    fn_idx = np.flatnonzero(~pred & (te.y == 1))
+    if ship_threshold is not None:
+        pred = p_ship >= ship_threshold
+        fp_idx = np.flatnonzero(pred & (te.y == 0))
+        fn_idx = np.flatnonzero(~pred & (te.y == 1))
+    else:  # no threshold, so no suggestions and no errors to sample
+        fp_idx = fn_idx = np.array([], int)
     sample = lambda idx: rng.choice(idx, min(50, len(idx)), replace=False) if len(idx) else []
     row = lambda i: {"p": float(p_ship[i]), "site": str(te.site[i]), "category": str(te.category[i]),
                      "snippet": snippets.get(str(te.key[i]), "")}
-    errors = {"model": ship_name, "threshold": t_use,
+    errors = {"model": chosen["name"], "threshold": ship_threshold if ship_threshold is not None else NOT_REACHED,
               "false_positives": [row(i) for i in sample(fp_idx)],
               "false_negatives": [row(i) for i in sample(fn_idx)]}
     reliability_svg(M.reliability(te.y, p_ship), args.reports / "reliability.svg", "Reliability on test sites")
 
+    cross_validation = {
+        "folds": FOLDS, "grouped_by": "website",
+        "rule": SELECTION_RULE,
+        "candidates": [{"model": c["name"], "oof_pr_auc": c["oof_pr_auc"], "temperature": c["temperature"],
+                        "threshold": c["threshold"], **c["oof_at_threshold"]} for c in CANDIDATES],
+        "chosen": chosen["name"],
+    }
+    operating = {
+        "rule": THRESHOLD_RULE,
+        "value": ship_threshold,
+        "outOfFold": chosen["oof_at_threshold"],
+        "test": {k: shipped.get(k) for k in ("precision", "precision_ci95", "recall", "recall_ci95",
+                                             "tp", "fp", "fn", "flagged")},
+    }
     report.update({
-        "comparisons": comparisons, "ablations": ablations, "held_out_sources": strict, "fallback": fallback,
-        "shipped": shipped, "graph_network_gate": graph_gate, "gate": gate, "breakdowns": breakdowns,
+        "cross_validation": cross_validation, "comparisons": comparisons, "ablations": ablations,
+        "held_out_sources": strict, "shipped": shipped, "operating_threshold": operating, "gate": gate,
+        "breakdowns": breakdowns,
         "onnx": {"bytes": size, "sha256": sha, "max_abs_diff_reference_vs_onnxruntime": full_parity},
         "seconds": round(time.time() - t0),
     })
@@ -388,33 +471,54 @@ def main():
         "input": {"name": "x", "dim": D.ROW_DIM},
         "output": {"name": "p"},
         "threshold": ship_threshold,
-        "temperature": ship_temperature,
-        "shipped": "fallback" if use_fallback else "graph",
+        "operatingThreshold": operating,
+        "temperature": temperature,
+        "shipped": "graph" if chosen["kind"] == "sign" else "gradient-boosting",
+        "selection": {"rule": SELECTION_RULE, "model": chosen["name"],
+                      **({"seed": chosen["seed"]} if chosen["kind"] == "sign" else {}),
+                      "reason": (f"Highest out-of-fold PR-AUC ({chosen['oof_pr_auc']:.3f}) of the "
+                                 f"{len(CANDIDATES)} candidates in {FOLDS}-fold cross-validation grouped by website.")},
+        "crossValidation": cross_validation,
         "architecture": architecture,
         "trainedAt": report["generated"],
         "data": {k: report["data"][k] for k in ("sites", "sources", "rows", "positives", "frameworks", "categories",
-                                                  "splits", "note", "rows_excluded_delegated")},
+                                                  "splits", "folds", "note", "rows_excluded_delegated")},
         "metrics": {
-            "test": {k: shipped[k] for k in ("model", "pr_auc", "pr_auc_ci95", "precision", "precision_ci95", "recall",
-                                             "ece", "flagged", "tp", "fp", "fn")},
-            "comparisons": [{k: c.get(k) for k in ("model", "pr_auc", "precision", "recall", "threshold")} for c in comparisons],
+            "test": {k: shipped.get(k) for k in ("model", "pr_auc", "pr_auc_ci95", "precision", "precision_ci95",
+                                                 "recall", "recall_ci95", "ece", "flagged", "tp", "fp", "fn")},
+            "comparisons": [{k: c[k] for k in ("model", "pr_auc", "precision", "recall", "threshold", "oof_pr_auc")
+                             if k in c} for c in comparisons],
             "ablations": [{"model": a["model"], "pr_auc": a["pr_auc_mean"]} for a in ablations],
             "heldOutSources": {k: strict[k] for k in ("sign_pr_auc", "gbt_neighbourhood_pr_auc", "test_rows", "test_positives")},
             "seeds": {"pr_auc": seed_test, "mean": float(np.mean(seed_test)), "sd": float(np.std(seed_test)),
-                      "note": "test PR-AUC of the graph network trained with each seed; the shipped seed was chosen on calibration sites"},
-            "graphNetwork": {"gate": graph_gate, "precision": sign["precision"], "recall": sign["recall"], "ece": sign["ece"]},
+                      "runs": seed_runs, **({"shipped": chosen["seed"]} if chosen["kind"] == "sign" else {}),
+                      "rule": "the seeds are candidates like the others, compared by out-of-fold PR-AUC; test scores are never used",
+                      "note": "test PR-AUC of the graph network trained with each seed, in seed order"},
             "byFramework": breakdowns["framework"],
             "byCategory": breakdowns["category"],
         },
         "gate": gate,
         "defaultOn": False,  # set by npm run ml:bench once latency is measured and every condition passes
     }
+    # Values that need a threshold say "not reached" when no threshold met the rule.
+    if ship_threshold is None:
+        not_reached(manifest, ("threshold",))
+        not_reached(manifest["operatingThreshold"], ("value",))
+        not_reached(manifest["operatingThreshold"]["test"], THRESHOLD_KEYS + ("recall_ci95",))
+        not_reached(manifest["metrics"]["test"], THRESHOLD_KEYS + ("recall_ci95",))
+        not_reached(manifest["gate"]["precision"], ("value",))
+        for r in manifest["metrics"]["byFramework"] + manifest["metrics"]["byCategory"]:
+            not_reached(r, THRESHOLD_KEYS)
+    for c in manifest["metrics"]["comparisons"] + manifest["crossValidation"]["candidates"]:
+        if c.get("threshold") is None:
+            not_reached(c, THRESHOLD_KEYS)
+    # Anything else left unmeasured (for example precision when a threshold
+    # flags nothing on the test sites) says so instead of holding null.
+    for key in ("metrics", "operatingThreshold", "crossValidation"):
+        manifest[key] = fill_unmeasured(manifest[key])
+    manifest["gate"]["precision"] = fill_unmeasured(manifest["gate"]["precision"])
     (args.out / "clickables-v1.json").write_text(dump(manifest) + "\n")
-    if use_fallback:  # the graph network, ready for the benchmark and for comparison
-        graph_manifest = {**manifest, "model": "clickables-graph.onnx", "threshold": threshold,
-                          "temperature": temperature, "shipped": "graph"}
-        (artifacts / "clickables-graph.json").write_text(dump(graph_manifest) + "\n")
-    print(json.dumps({"shipped": shipped, "gate": gate, "graph_gate": graph_gate}, indent=1, default=float))
+    print(json.dumps({"chosen": chosen["name"], "shipped": shipped, "gate": gate}, indent=1, default=float))
     print("finished in", round(time.time() - t0), "s")
 
 

@@ -7,6 +7,7 @@ docs/design/direction.html
 public/ort
 ml/data
 ml/node_modules
+ml/.venv
 ml/reports/*.json
 tests/ml/fixtures
 ml/.pytest_cache

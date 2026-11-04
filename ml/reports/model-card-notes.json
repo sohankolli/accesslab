@@ -1,18 +1,21 @@
 {
-  "note": "Model card for the Tranco-derived Click-only Controls experiment. The current test error report contains 151 false positives and 68 false negatives. These errors have not yet been manually inspected. No error-pattern claims are made until that review is completed.",
+  "note": "Hand-written model card notes for the corrected-filter Tranco run. train/card.py adds them to public/models/clickables-v1.json.",
+  "summary": [
+    "The model is experimental and switched off by default. Its suggestions are advisory and never change the score, the history or the report.",
+    "Earlier results were inflated by label leakage. The earlier training filter dropped rows from pages with delegated (document-level) click listeners only when their label was 0, and kept every positive. Counting the raw crawl by page type and label showed that it kept 8,691 positives from delegated pages and only 60 from other pages, while every negative it kept came from a non-delegated page, so the page type gave the label away. The filter now drops whole delegated pages, whatever their labels, and every number on this card comes from that corrected run.",
+    "There are only 55 trustworthy positives, from 13 websites; one website (capcut.com) has 32 of them. The test websites hold 6, from 2 websites, so the 95% intervals below cover nearly the whole range from 0 to 1. This run cannot measure how good the model is.",
+    "The model and its threshold were chosen by 5-fold cross-validation grouped by website on the 115 development websites (49 positives), never on the test websites. The chosen model is element-only gradient boosting (out-of-fold PR-AUC 0.244). Its threshold, 0.111, is the lowest with at least 50% precision on the out-of-fold predictions.",
+    "On the 2,559 test elements the model makes 10 suggestions, 3 of them correct: precision 30% and recall 50% (3 of 6), each with a 95% interval from 0% to 100%. Precision is below the 90% the ship gate asks for, so that gate is not met, and the model stays off by default."
+  ],
   "failurePatterns": [
-    "Manual error review is pending. The current errors report contains 151 false positives and 68 false negatives; recurring causes have not yet been established."
+    "The errors have not been reviewed by hand. errors.json holds all 7 false positives and all 3 false negatives on the test websites at the shipped threshold. Six of the false positives are layout wrappers on one website (booking.com), and one is a page's root <div id=\"root\"> scored 0.91; the 3 misses are accordion toggles on one website (mega.co.nz), scored 0.014. With only 2 test websites holding click-only controls, these are observations, not established patterns."
   ],
   "limitations": [
-    "The Tranco top-1000 crawl produced 1407 page records. Of these, 879 pages were used, contributing candidate rows from 450 unique sites.",
-    "The retained training corpus contains 18345 rows: 8751 positive and 9594 negative. It retains direct positive labels and non-delegated negative labels; delegated negatives were filtered upstream.",
-    "All examples belong to the Tranco crawl category. This experiment does not provide a representative breakdown across site types or industries.",
-    "The split is site-disjoint: 315 training sites, 68 calibration sites and 67 test sites.",
-    "Labels are based on automated event-listener and React handler probing. Delegated event handlers and ancestor-level interactions are known sources of label noise.",
-    "The automated label audit sampled 300 candidates: 188 were judged, 112 were unsure and zero errors were found among the 188 judged. Only four positive labels were judged. This is not a completed independent manual owner review.",
-    "On the test split, the shipped SIGN model achieved PR-AUC 0.9708, precision 0.8925, recall 0.9486 and ECE 0.0883, with 151 false positives and 68 false negatives.",
-    "The best neighbourhood gradient-boosting baseline achieved PR-AUC 0.9855, higher than the shipped SIGN model. The SIGN model therefore fails the precision, baseline-comparison and calibration shipping gates.",
-    "The ONNX model is 169515 bytes. Browser benchmarking processed 2664 elements at a median of 10 ms across 10 runs, passing the 50 ms latency requirement.",
-    "The model must remain off by default until all required quality gates pass."
-  ]
+    "The test set was looked at after each of the three runs on this branch (the corrected filter, the best-F1 threshold, and cross-validation). Each change of method was made because of a problem in the method, not to raise a test score, but the test numbers are no longer fully untouched. A new held-out set is needed for a clean final estimate.",
+    "The Tranco top-1,000 crawl produced 1,407 page records; 879 pages were used. After every row from delegated pages and every landmark or page region (<main>, <nav>, <header>…) was removed, 9,367 candidate rows from 136 websites remain, and only 13 of those websites have any click-only control. Removing landmarks also removed 5 positives on <nav> and <header> elements.",
+    "The candidates scored close together out of fold (0.244, 0.240, 0.207, 0.207 and 0.156), and one website holds 32 of the 49 development positives, all in one fold, so the choice of model is not clear-cut.",
+    "All examples come from the Tranco crawl. The corpus has no Vue or Angular pages, and the results are not representative of other kinds of websites."
+  ],
+  "labelHandCheckMethod": "Method (ml/README.md, step 2): labels/sheet.mjs drew 300 random labelled elements; labels/audit.mjs re-checked each one in the live page with Chrome's DevTools Protocol, reading the element's own listeners and React handlers, its ancestors' and any document-level (delegated) listeners, and marked it correct, wrong or unsure; labels/score.mjs counted the verdicts. The check is automated: an independent manual review by the owner has not been done.",
+  "labelHandCheckReading": "This measures whether the labels are accurate, and that still holds after the filter change, because filtering removes rows but does not change any label. It does not fix the small number of positives: only 4 of the judged labels were positive, and the corrected corpus has only 60."
 }

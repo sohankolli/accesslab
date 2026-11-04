@@ -2,8 +2,8 @@
   "name": "clickables",
   "version": "1.0.0",
   "model": "clickables-v1.onnx",
-  "sha256": "77a92571e8737157541c1c8207c5291e9e2238c6525e41e43553c988ea754caa",
-  "bytes": 169515,
+  "sha256": "1836586777e9c0c2f11c00e4c892ec0d52a2acfe25695492636df289f2163f28",
+  "bytes": 281219,
   "featureVersion": "clickables-features-1",
   "input": {
     "name": "x",
@@ -12,259 +12,345 @@
   "output": {
     "name": "p"
   },
-  "threshold": 0.16432107985019684,
-  "temperature": 2.995887041091919,
-  "shipped": "graph",
-  "architecture": "SIGN-style network: 6 view encoders (92->48), head 288->48->1; 40705 parameters",
-  "trainedAt": "2026-11-03T18:59:00+00:00",
+  "threshold": 0.1106298416852951,
+  "operatingThreshold": {
+    "rule": "the lowest threshold whose precision on the out-of-fold predictions is at least 50% (with at least 5 elements flagged); if none reaches 50%, there is no threshold and no suggestions. The test websites are never used to choose it",
+    "value": 0.1106298416852951,
+    "outOfFold": {
+      "precision": 0.5,
+      "recall": 0.20408163265306123,
+      "flagged": 20
+    },
+    "test": {
+      "precision": 0.3,
+      "precision_ci95": [0, 1],
+      "recall": 0.5,
+      "recall_ci95": [0, 1],
+      "tp": 3,
+      "fp": 7,
+      "fn": 3,
+      "flagged": 10
+    }
+  },
+  "temperature": 2.7718496322631836,
+  "shipped": "gradient-boosting",
+  "selection": {
+    "rule": "the candidate with the highest out-of-fold PR-AUC in 5-fold cross-validation grouped by website on the development sites; the test sites are never used to choose",
+    "model": "Gradient boosting, element only",
+    "reason": "Highest out-of-fold PR-AUC (0.244) of the 5 candidates in 5-fold cross-validation grouped by website."
+  },
+  "crossValidation": {
+    "folds": 5,
+    "grouped_by": "website",
+    "rule": "the candidate with the highest out-of-fold PR-AUC in 5-fold cross-validation grouped by website on the development sites; the test sites are never used to choose",
+    "candidates": [
+      {
+        "model": "SIGN graph network, seed 0",
+        "oof_pr_auc": 0.2072791106608014,
+        "temperature": 1.0805031061172485,
+        "threshold": 0.5875849723815918,
+        "precision": 0.5,
+        "recall": 0.1836734693877551,
+        "flagged": 18
+      },
+      {
+        "model": "SIGN graph network, seed 1",
+        "oof_pr_auc": 0.20718922225344472,
+        "temperature": 0.4418645203113556,
+        "threshold": 0.8761142492294312,
+        "precision": 0.5294117647058824,
+        "recall": 0.1836734693877551,
+        "flagged": 17
+      },
+      {
+        "model": "SIGN graph network, seed 2",
+        "oof_pr_auc": 0.1563587591755247,
+        "temperature": 0.5199230313301086,
+        "threshold": 0.7519819140434265,
+        "precision": 0.5,
+        "recall": 0.14285714285714285,
+        "flagged": 14
+      },
+      {
+        "model": "Gradient boosting, element only",
+        "oof_pr_auc": 0.2443717128452262,
+        "temperature": 2.7718496322631836,
+        "threshold": 0.1106298416852951,
+        "precision": 0.5,
+        "recall": 0.20408163265306123,
+        "flagged": 20
+      },
+      {
+        "model": "Gradient boosting with neighbourhood",
+        "oof_pr_auc": 0.2397648336979823,
+        "temperature": 2.763184070587158,
+        "threshold": 0.1410888433456421,
+        "precision": 0.5238095238095238,
+        "recall": 0.22448979591836735,
+        "flagged": 21
+      }
+    ],
+    "chosen": "Gradient boosting, element only"
+  },
+  "architecture": "gradient-boosted trees over 92 features (300 trees, up to 15 leaves each), temperature-calibrated",
+  "trainedAt": "2026-11-05T00:30:56+00:00",
   "data": {
-    "sites": 450,
-    "sources": 450,
-    "rows": 18345,
-    "positives": 8751,
+    "sites": 136,
+    "sources": 136,
+    "rows": 9367,
+    "positives": 55,
     "frameworks": {
-      "other": 9872,
-      "react": 5322,
-      "jquery": 2358,
-      "angular": 106,
-      "vue": 687
+      "other": 8226,
+      "jquery": 706,
+      "react": 435
     },
     "categories": {
-      "tranco": 18345
+      "tranco": 9367
     },
     "splits": {
-      "train": {
-        "sites": 315,
-        "rows": 12742,
-        "positives": 6118
-      },
-      "calibration": {
-        "sites": 68,
-        "rows": 3935,
-        "positives": 1311
+      "development": {
+        "sites": 115,
+        "rows": 6808,
+        "positives": 49
       },
       "test": {
-        "sites": 67,
-        "rows": 1668,
-        "positives": 1322
+        "sites": 21,
+        "rows": 2559,
+        "positives": 6
       }
     },
-    "note": "Tranco top-1000 crawl; retained direct positive labels and non-delegated negative labels; reduced single-seed ablations",
+    "folds": [
+      {
+        "sites": 22,
+        "rows": 605,
+        "positives": 32,
+        "fold": 0
+      },
+      {
+        "sites": 24,
+        "rows": 1031,
+        "positives": 5,
+        "fold": 1
+      },
+      {
+        "sites": 23,
+        "rows": 2571,
+        "positives": 4,
+        "fold": 2
+      },
+      {
+        "sites": 23,
+        "rows": 1462,
+        "positives": 4,
+        "fold": 3
+      },
+      {
+        "sites": 23,
+        "rows": 1139,
+        "positives": 4,
+        "fold": 4
+      }
+    ],
+    "note": "Tranco top-1,000 crawl. Every row from pages with document-level (delegated) click listeners was removed, whatever its label, and landmarks and page regions are not candidates.",
     "rows_excluded_delegated": 0
   },
   "metrics": {
     "test": {
-      "model": "SIGN graph network",
-      "pr_auc": 0.9708023849364338,
-      "pr_auc_ci95": [0.9150785701911753, 0.9965975321263987],
-      "precision": 0.892526690391459,
-      "precision_ci95": [0.744399850111243, 0.9902785072193709],
-      "recall": 0.9485627836611196,
-      "ece": 0.08825516840317386,
-      "flagged": 1405,
-      "tp": 1254,
-      "fp": 151,
-      "fn": 68
+      "model": "Gradient boosting, element only",
+      "pr_auc": 0.5069605568445475,
+      "pr_auc_ci95": [0.004058031306001536, 1],
+      "precision": 0.3,
+      "precision_ci95": [0, 1],
+      "recall": 0.5,
+      "recall_ci95": [0, 1],
+      "ece": 0.007907476850002362,
+      "flagged": 10,
+      "tp": 3,
+      "fp": 7,
+      "fn": 3
     },
     "comparisons": [
       {
         "model": "Rule: pointer cursor and not native",
-        "pr_auc": 0.8330485384763293,
-        "precision": 1,
-        "recall": 0.1951588502269289,
+        "pr_auc": 0.008635019509719864,
+        "precision": 0.014925373134328358,
+        "recall": 0.5,
         "threshold": 0.5
       },
       {
+        "model": "SIGN graph network, seed 0",
+        "pr_auc": 0.5035455557878081,
+        "precision": 0.5,
+        "recall": 0.5,
+        "threshold": 0.5875849723815918,
+        "oof_pr_auc": 0.2072791106608014
+      },
+      {
+        "model": "SIGN graph network, seed 1",
+        "pr_auc": 0.5036107442376802,
+        "precision": 0.6,
+        "recall": 0.5,
+        "threshold": 0.8761142492294312,
+        "oof_pr_auc": 0.20718922225344472
+      },
+      {
+        "model": "SIGN graph network, seed 2",
+        "pr_auc": 0.503498212946692,
+        "precision": 0.14285714285714285,
+        "recall": 0.5,
+        "threshold": 0.7519819140434265,
+        "oof_pr_auc": 0.1563587591755247
+      },
+      {
         "model": "Gradient boosting, element only",
-        "pr_auc": 0.9848021616691114,
-        "precision": 0.9079229122055674,
-        "recall": 0.962178517397882,
-        "threshold": 0.1522254895565306
+        "pr_auc": 0.5069605568445475,
+        "precision": 0.3,
+        "recall": 0.5,
+        "threshold": 0.1106298416852951,
+        "oof_pr_auc": 0.2443717128452262
       },
       {
         "model": "Gradient boosting with neighbourhood",
-        "pr_auc": 0.9854701251121261,
-        "precision": 0.9045226130653267,
-        "recall": 0.9531013615733737,
-        "threshold": 0.15651649376722024
-      },
-      {
-        "model": "SIGN graph network",
-        "pr_auc": 0.9708023849364338,
-        "precision": 0.892526690391459,
-        "recall": 0.9485627836611196,
-        "threshold": 0.16432107985019684
+        "pr_auc": 0.5100478228957243,
+        "precision": 0.5,
+        "recall": 0.5,
+        "threshold": 0.1410888433456421,
+        "oof_pr_auc": 0.2397648336979823
       }
     ],
     "ablations": [
       {
         "model": "SIGN without class-name words",
-        "pr_auc": 0.968800830862206
+        "pr_auc": 0.127816930697336
       },
       {
         "model": "SIGN without neighbourhood",
-        "pr_auc": 0.9764129899724565
+        "pr_auc": 0.4608449122203474
       }
     ],
     "heldOutSources": {
-      "sign_pr_auc": 0.9108142007697771,
-      "gbt_neighbourhood_pr_auc": 0.9678368263004212,
-      "test_rows": 4707,
-      "test_positives": 1905
+      "sign_pr_auc": 0.004662707494056608,
+      "gbt_neighbourhood_pr_auc": 0.2556058900428499,
+      "test_rows": 1527,
+      "test_positives": 4
     },
     "seeds": {
-      "pr_auc": [0.9699650987007913, 0.9750098355671086, 0.9732581260132906],
-      "mean": 0.9727443534270636,
-      "sd": 0.0020913017023478017,
-      "note": "test PR-AUC of the graph network trained with each seed; the shipped seed was chosen on calibration sites"
-    },
-    "graphNetwork": {
-      "gate": {
-        "precision": {
-          "target": ">= 0.9",
-          "value": 0.892526690391459,
-          "pass": false
+      "pr_auc": [0.5035455557878081, 0.5036107442376802, 0.503498212946692],
+      "mean": 0.50355150432406,
+      "sd": 4.613286374175896e-5,
+      "runs": [
+        {
+          "seed": 0,
+          "oof_pr_auc": 0.2072791106608014,
+          "test_pr_auc": 0.5035455557878081
         },
-        "beats_best_gbt": {
-          "target": "PR-AUC > Gradient boosting with neighbourhood",
-          "value": 0.9708023849364338,
-          "baseline": 0.9854701251121261,
-          "pass": false,
-          "note": "shipped seed; mean over seeds 0.973"
+        {
+          "seed": 1,
+          "oof_pr_auc": 0.20718922225344472,
+          "test_pr_auc": 0.5036107442376802
         },
-        "ece": {
-          "target": "<= 0.05",
-          "value": 0.08825516840317386,
-          "pass": false
-        },
-        "size": {
-          "target": "<= 1000000 bytes",
-          "value": 169515,
-          "pass": true
+        {
+          "seed": 2,
+          "oof_pr_auc": 0.1563587591755247,
+          "test_pr_auc": 0.503498212946692
         }
-      },
-      "precision": 0.892526690391459,
-      "recall": 0.9485627836611196,
-      "ece": 0.08825516840317386
+      ],
+      "rule": "the seeds are candidates like the others, compared by out-of-fold PR-AUC; test scores are never used",
+      "note": "test PR-AUC of the graph network trained with each seed, in seed order"
     },
     "byFramework": [
       {
         "framework": "jquery",
-        "rows": 383,
-        "positives": 226,
-        "sites": 19,
-        "pr_auc": 0.9411354043220898,
-        "precision": 0.7344262295081967,
-        "recall": 0.9911504424778761,
-        "tp": 224,
-        "fp": 81,
-        "fn": 2,
-        "flagged": 305
+        "rows": 459,
+        "positives": 3,
+        "sites": 1,
+        "pr_auc": 0.03488372093023256,
+        "precision": "not measured",
+        "recall": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 3,
+        "flagged": 0
       },
       {
         "framework": "other",
-        "rows": 240,
-        "positives": 51,
-        "sites": 24,
-        "pr_auc": 0.8242185001992596,
-        "precision": 0.4117647058823529,
-        "recall": 0.9607843137254902,
-        "tp": 49,
-        "fp": 70,
-        "fn": 2,
-        "flagged": 119
-      },
-      {
-        "framework": "react",
-        "rows": 850,
-        "positives": 850,
-        "sites": 21,
+        "rows": 2100,
+        "positives": 3,
+        "sites": 20,
         "pr_auc": 1,
-        "precision": 1,
-        "recall": 0.9294117647058824,
-        "tp": 790,
-        "fp": 0,
-        "fn": 60,
-        "flagged": 790
-      },
-      {
-        "framework": "vue",
-        "rows": 195,
-        "positives": 195,
-        "sites": 4,
-        "pr_auc": 1,
-        "precision": 1,
-        "recall": 0.9794871794871794,
-        "tp": 191,
-        "fp": 0,
-        "fn": 4,
-        "flagged": 191
+        "precision": 0.3,
+        "recall": 1,
+        "tp": 3,
+        "fp": 7,
+        "fn": 0,
+        "flagged": 10
       }
     ],
     "byCategory": [
       {
         "category": "tranco",
-        "rows": 1668,
-        "positives": 1322,
-        "sites": 67,
-        "pr_auc": 0.9708023849364338,
-        "precision": 0.892526690391459,
-        "recall": 0.9485627836611196,
-        "tp": 1254,
-        "fp": 151,
-        "fn": 68,
-        "flagged": 1405
+        "rows": 2559,
+        "positives": 6,
+        "sites": 21,
+        "pr_auc": 0.5069605568445475,
+        "precision": 0.3,
+        "recall": 0.5,
+        "tp": 3,
+        "fp": 7,
+        "fn": 3,
+        "flagged": 10
       }
     ]
   },
   "gate": {
     "precision": {
       "target": ">= 0.9",
-      "value": 0.892526690391459,
+      "value": 0.3,
       "pass": false
     },
     "beats_best_gbt": {
-      "target": "PR-AUC > Gradient boosting with neighbourhood",
-      "value": 0.9708023849364338,
-      "baseline": 0.9854701251121261,
+      "target": "the graph network beats the best gradient-boosting baseline",
+      "value": 0.5036107442376802,
+      "baseline": 0.5100478228957243,
       "pass": false,
-      "note": "shipped seed; mean over seeds 0.973"
+      "note": "a gradient-boosting model was chosen by out-of-fold PR-AUC, so no graph network ships"
     },
     "ece": {
       "target": "<= 0.05",
-      "value": 0.08825516840317386,
-      "pass": false
+      "value": 0.007907476850002362,
+      "pass": true
     },
     "size": {
       "target": "<= 1000000 bytes",
-      "value": 169515,
+      "value": 281219,
       "pass": true
     },
     "latency": {
       "target": "<= 50 ms for 2,000 elements in the Web Worker",
-      "value": 10,
+      "value": 9,
       "pass": true,
-      "elements": 2664,
-      "runs": [10, 10, 10, 10, 10, 10, 10, 10, 11, 11],
-      "note": "median of 10 runs in the app's Web Worker; headless Chromium, 16 \u00c3\u0192\u00e2\u20ac\u201d AMD Ryzen 7 7435HS, no CPU throttling"
+      "elements": 2663,
+      "runs": [8, 8, 9, 9, 9, 9, 11, 13, 13, 15],
+      "note": "10 runs in the app's Web Worker (median reported); Google Chrome 151.0.7922.137 (/usr/bin/google-chrome), headless; CPU: 12th Gen Intel(R) Core(TM) i7-1255U, 12 logical cores; no CPU throttling"
     }
   },
   "defaultOn": false,
   "card": {
+    "summary": [
+      "The model is experimental and switched off by default. Its suggestions are advisory and never change the score, the history or the report.",
+      "Earlier results were inflated by label leakage. The earlier training filter dropped rows from pages with delegated (document-level) click listeners only when their label was 0, and kept every positive. Counting the raw crawl by page type and label showed that it kept 8,691 positives from delegated pages and only 60 from other pages, while every negative it kept came from a non-delegated page, so the page type gave the label away. The filter now drops whole delegated pages, whatever their labels, and every number on this card comes from that corrected run.",
+      "There are only 55 trustworthy positives, from 13 websites; one website (capcut.com) has 32 of them. The test websites hold 6, from 2 websites, so the 95% intervals below cover nearly the whole range from 0 to 1. This run cannot measure how good the model is.",
+      "The model and its threshold were chosen by 5-fold cross-validation grouped by website on the 115 development websites (49 positives), never on the test websites. The chosen model is element-only gradient boosting (out-of-fold PR-AUC 0.244). Its threshold, 0.111, is the lowest with at least 50% precision on the out-of-fold predictions.",
+      "On the 2,559 test elements the model makes 10 suggestions, 3 of them correct: precision 30% and recall 50% (3 of 6), each with a 95% interval from 0% to 100%. Precision is below the 90% the ship gate asks for, so that gate is not met, and the model stays off by default."
+    ],
     "failurePatterns": [
-      "Manual error review is pending. The current errors report contains 151 false positives and 68 false negatives; recurring causes have not yet been established."
+      "The errors have not been reviewed by hand. errors.json holds all 7 false positives and all 3 false negatives on the test websites at the shipped threshold. Six of the false positives are layout wrappers on one website (booking.com), and one is a page's root <div id=\"root\"> scored 0.91; the 3 misses are accordion toggles on one website (mega.co.nz), scored 0.014. With only 2 test websites holding click-only controls, these are observations, not established patterns."
     ],
     "limitations": [
-      "The Tranco top-1000 crawl produced 1407 page records. Of these, 879 pages were used, contributing candidate rows from 450 unique sites.",
-      "The retained training corpus contains 18345 rows: 8751 positive and 9594 negative. It retains direct positive labels and non-delegated negative labels; delegated negatives were filtered upstream.",
-      "All examples belong to the Tranco crawl category. This experiment does not provide a representative breakdown across site types or industries.",
-      "The split is site-disjoint: 315 training sites, 68 calibration sites and 67 test sites.",
-      "Labels are based on automated event-listener and React handler probing. Delegated event handlers and ancestor-level interactions are known sources of label noise.",
-      "The automated label audit sampled 300 candidates: 188 were judged, 112 were unsure and zero errors were found among the 188 judged. Only four positive labels were judged. This is not a completed independent manual owner review.",
-      "On the test split, the shipped SIGN model achieved PR-AUC 0.9708, precision 0.8925, recall 0.9486 and ECE 0.0883, with 151 false positives and 68 false negatives.",
-      "The best neighbourhood gradient-boosting baseline achieved PR-AUC 0.9855, higher than the shipped SIGN model. The SIGN model therefore fails the precision, baseline-comparison and calibration shipping gates.",
-      "The ONNX model is 169515 bytes. Browser benchmarking processed 2664 elements at a median of 10 ms across 10 runs, passing the 50 ms latency requirement.",
-      "The model must remain off by default until all required quality gates pass."
+      "The test set was looked at after each of the three runs on this branch (the corrected filter, the best-F1 threshold, and cross-validation). Each change of method was made because of a problem in the method, not to raise a test score, but the test numbers are no longer fully untouched. A new held-out set is needed for a clean final estimate.",
+      "The Tranco top-1,000 crawl produced 1,407 page records; 879 pages were used. After every row from delegated pages and every landmark or page region (<main>, <nav>, <header>\u2026) was removed, 9,367 candidate rows from 136 websites remain, and only 13 of those websites have any click-only control. Removing landmarks also removed 5 positives on <nav> and <header> elements.",
+      "The candidates scored close together out of fold (0.244, 0.240, 0.207, 0.207 and 0.156), and one website holds 32 of the 49 development positives, all in one fold, so the choice of model is not clear-cut.",
+      "All examples come from the Tranco crawl. The corpus has no Vue or Angular pages, and the results are not representative of other kinds of websites."
     ],
     "labelProbe": {
       "method": "Random sample of labelled candidates; each clicked once at its centre in the live page. \"responds\": the DOM, address or a dialog changed within 400 ms. Skipped as untestable: pages that change by themselves, and elements whose centre is a link or button. A response can still come from a handler on an ancestor, so disagreement is an upper bound on label noise.",
@@ -287,10 +373,9 @@
       },
       "disagreementRate": 0.13937282229965156,
       "disagreementRateUsedPages": 0.1643835616438356,
-      "testedUsedPages": 73,
-      "reading": null
+      "testedUsedPages": 73
     },
-    "automatedLabelAudit": {
+    "labelHandCheck": {
       "sampled": 300,
       "judged": 188,
       "unsure": 112,
@@ -304,7 +389,9 @@
       "label0": {
         "judged": 184,
         "wrong": 0
-      }
+      },
+      "method": "Method (ml/README.md, step 2): labels/sheet.mjs drew 300 random labelled elements; labels/audit.mjs re-checked each one in the live page with Chrome's DevTools Protocol, reading the element's own listeners and React handlers, its ancestors' and any document-level (delegated) listeners, and marked it correct, wrong or unsure; labels/score.mjs counted the verdicts. The check is automated: an independent manual review by the owner has not been done.",
+      "reading": "This measures whether the labels are accurate, and that still holds after the filter change, because filtering removes rows but does not change any label. It does not fix the small number of positives: only 4 of the judged labels were positive, and the corrected corpus has only 60."
     }
   }
 }

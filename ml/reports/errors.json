@@ -1,206 +1,68 @@
 {
- "model": "Gradient boosting with neighbourhood (fallback)",
- "threshold": 0.5143210993149099,
+ "model": "Gradient boosting, element only",
+ "threshold": 0.1106298416852951,
  "false_positives": [
   {
-   "p": 0.7868453183163606,
-   "site": "keshavgbpecdelhi_Web-Development/projects/e-commerce",
-   "category": "demo-projects",
-   "snippet": "<img src=\"https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRInh0gtP7r0sEApkjL0NQ9MuzM4sVczc6GuQ&amp;usqp=CAU\" data-al-id=\"217\">"
+   "p": 0.1146434708353014,
+   "site": "booking.com",
+   "category": "tranco",
+   "snippet": "<div class=\"e2d98352ed\" data-al-id=\"144\"><label for=\"searchbox-horizontal-destination-input\" class=\"fff1944c52 ef59685d03 d2e12d8bf8\" data-al-id=\"145\">\u091c\u0917\u0939 \u0921\u093e\u0932\u0947\u0902</label><div class=\"b99b6ef58f a10a01543"
   },
   {
-   "p": 0.7868453183163606,
-   "site": "keshavgbpecdelhi_Web-Development/projects/e-commerce",
-   "category": "demo-projects",
-   "snippet": "<img src=\"download-removebg-preview.png\" data-al-id=\"211\">"
+   "p": 0.1390277160413212,
+   "site": "booking.com",
+   "category": "tranco",
+   "snippet": "<div class=\"f5983ed53d\" data-testid=\"recently-viewed-properties-carousel\" data-al-id=\"266\"><div data-testid=\"webcore-carousel-heading-skeleton\" class=\"b3f1da6687 db5f1a8490 d366f8235b\" data-al-id=\"267"
   },
   {
-   "p": 0.7868453183163606,
-   "site": "keshavgbpecdelhi_Web-Development/projects/e-commerce",
-   "category": "demo-projects",
-   "snippet": "<img src=\"brand2.png\" data-al-id=\"213\">"
+   "p": 0.1390277160413212,
+   "site": "booking.com",
+   "category": "tranco",
+   "snippet": "<div class=\"f5983ed53d\" data-al-id=\"416\"><div data-testid=\"webcore-carousel-heading-skeleton\" class=\"b3f1da6687 db5f1a8490 d366f8235b\" data-al-id=\"417\"><span class=\"ab6126d40e a7c315cf87\" data-al-id=\""
   },
   {
-   "p": 0.7868453183163606,
-   "site": "keshavgbpecdelhi_Web-Development/projects/e-commerce",
-   "category": "demo-projects",
-   "snippet": "<img src=\"brand3.png\" data-al-id=\"215\">"
+   "p": 0.170573973198077,
+   "site": "booking.com",
+   "category": "tranco",
+   "snippet": "<div class=\"d16ab35aba\" data-al-id=\"357\"><div style=\"--bui_stack_spaced_gap--s:1\" class=\"f6e3a11b0d ae5dbab14d d8df6227ee ff07c65a27 e95943ce9b d23e337564\" data-al-id=\"358\"><div data-testid=\"promotion"
   },
   {
-   "p": 0.7868453183163606,
-   "site": "keshavgbpecdelhi_Web-Development/projects/e-commerce",
-   "category": "demo-projects",
-   "snippet": "<img src=\"bleach.png\" data-al-id=\"209\">"
+   "p": 0.909559323817093,
+   "site": "sciencedirect.com",
+   "category": "tranco",
+   "snippet": "<div id=\"root\" data-al-id=\"0\"><link rel=\"preload\" as=\"image\" href=\"https://sdfestaticassets-us-east-1.sciencedirectassets.com/shared-assets/24/images/elsevier-non-solus-new-grey.svg\" data-al-id=\"1\"><d"
+  },
+  {
+   "p": 0.1235125730351315,
+   "site": "booking.com",
+   "category": "tranco",
+   "snippet": "<div data-testid=\"promotional-banner-container\" style=\"--bui_box_spaced_padding--s:4\" class=\"c3bdfd4ac2 a0ab5da06c d46ff48a92 f728e61e72 d0acd69e66 c256f1a28a ff3113aeec a4f0f5436e fd6ed34cb5\" data-al"
+  },
+  {
+   "p": 0.1390277160413212,
+   "site": "booking.com",
+   "category": "tranco",
+   "snippet": "<div class=\"f5983ed53d\" data-al-id=\"482\"><div data-testid=\"webcore-carousel-heading-skeleton\" class=\"b3f1da6687 db5f1a8490 d366f8235b\" data-al-id=\"483\"><span class=\"ab6126d40e a7c315cf87\" data-al-id=\""
   }
  ],
  "false_negatives": [
   {
-   "p": 0.48109713421023736,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell grey\" id=\"5_1\" chess=\"w_king\" data-al-id=\"76\">\u2654</div>"
+   "p": 0.013547711045577417,
+   "site": "mega.co.nz",
+   "category": "tranco",
+   "snippet": "<div class=\"accordion-toggle\" data-al-id=\"662\"> <div class=\"heading\" data-al-id=\"663\">How can you increase productivity in the workplace with MEGA for Business?</div> <div class=\"icon-box\" data-al-id="
   },
   {
-   "p": 0.2562327484340094,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/GitHub Profile Finder",
-   "category": "demo-projects",
-   "snippet": "<div id=\"search\" onclick=\"getUser()\" data-al-id=\"3\">Search User</div>"
+   "p": 0.013547711045577417,
+   "site": "mega.co.nz",
+   "category": "tranco",
+   "snippet": "<div class=\"accordion-toggle\" data-al-id=\"671\"> <div class=\"heading\" data-al-id=\"672\">How does MEGA encourage and improve team collaboration?</div> <div class=\"icon-box\" data-al-id=\"673\"> <span class="
   },
   {
-   "p": 0.48109713421023736,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell grey\" id=\"3_1\" chess=\"w_bishop1\" data-al-id=\"74\">\u2657</div>"
-  },
-  {
-   "p": 0.48743855525648166,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell\" id=\"4_1\" chess=\"w_queen\" data-al-id=\"75\">\u2655</div>"
-  },
-  {
-   "p": 0.48109713421023736,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell grey\" id=\"7_1\" chess=\"w_knight2\" data-al-id=\"78\">\u2658</div>"
-  },
-  {
-   "p": 0.49450659849537654,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell\" id=\"8_1\" chess=\"w_rook2\" data-al-id=\"79\">\u2656</div>"
-  },
-  {
-   "p": 0.48109713421023736,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell grey\" id=\"1_5\" chess=\"null\" data-al-id=\"32\"></div>"
-  },
-  {
-   "p": 0.48743855525648166,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell\" id=\"1_2\" chess=\"w_pawn1\" data-al-id=\"62\">\u2659</div>"
-  },
-  {
-   "p": 0.29995299348427273,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/FAQ Application",
-   "category": "demo-projects",
-   "snippet": "<div class=\"faq\" data-al-id=\"26\"> <div class=\"question\" data-al-id=\"27\"> <h3 data-al-id=\"28\">5. What are the benifits of this training ?</h3> <i class=\"fas fa-chevron-down\" data-al-id=\"29\"></i> </div>"
-  },
-  {
-   "p": 0.48743855525648166,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell\" id=\"1_4\" chess=\"null\" data-al-id=\"42\"></div>"
-  },
-  {
-   "p": 0.29995299348427273,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/FAQ Application",
-   "category": "demo-projects",
-   "snippet": "<div class=\"faq\" data-al-id=\"2\"> <div class=\"question\" data-al-id=\"3\"> <h3 data-al-id=\"4\">1. What are the prerequisites for the training ?</h3> <i class=\"fas fa-chevron-down\" data-al-id=\"5\"></i> </div"
-  },
-  {
-   "p": 0.1253181331466676,
-   "site": "thinkswell_javascript-mini-projects/RockPaperScissorsGame/Rock Paper Scissor",
-   "category": "demo-projects",
-   "snippet": "<div class=\"choice\" id=\"s\" data-al-id=\"14\"> <img src=\"images/scissor.png\" alt=\"scissor\" class=\"img\" data-al-id=\"15\"> </div>"
-  },
-  {
-   "p": 0.48743855525648166,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell\" id=\"2_1\" chess=\"w_knight1\" data-al-id=\"73\">\u2658</div>"
-  },
-  {
-   "p": 0.4934894601300634,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell\" id=\"6_1\" chess=\"w_bishop2\" data-al-id=\"77\">\u2657</div>"
-  },
-  {
-   "p": 0.1701211303097739,
-   "site": "thinkswell_javascript-mini-projects/RockPaperScissorsGame/Rock Paper Scissor",
-   "category": "demo-projects",
-   "snippet": "<div class=\"choice\" id=\"p\" data-al-id=\"12\"> <img src=\"images/paper.png\" alt=\"paper\" class=\"img\" data-al-id=\"13\"> </div>"
-  },
-  {
-   "p": 0.020226254715940455,
-   "site": "keshavgbpecdelhi_Web-Development/projects/simple-todo",
-   "category": "demo-projects",
-   "snippet": "<ul id=\"list\" data-al-id=\"5\"> </ul>"
-  },
-  {
-   "p": 0.4934894601300634,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell\" id=\"1_6\" chess=\"null\" data-al-id=\"22\"></div>"
-  },
-  {
-   "p": 0.48109713421023736,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell grey\" id=\"1_3\" chess=\"null\" data-al-id=\"52\"></div>"
-  },
-  {
-   "p": 0.021018065940479416,
-   "site": "mdn_dom-examples/view-transitions/match-element",
-   "category": "reference-examples",
-   "snippet": "<main class=\"match-element-applied\" data-al-id=\"1\"> <ul data-al-id=\"2\"> <li data-al-id=\"3\"> <h2 data-al-id=\"4\"><a href=\"#\" data-al-id=\"5\">One</a></h2> <p class=\"summary\" data-al-id=\"6\"> Lorem ipsum do"
-  },
-  {
-   "p": 0.29995299348427273,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/FAQ Application",
-   "category": "demo-projects",
-   "snippet": "<div class=\"faq\" data-al-id=\"20\"> <div class=\"question\" data-al-id=\"21\"> <h3 data-al-id=\"22\">4. Will I get a hard copy of the certificate ?</h3> <i class=\"fas fa-chevron-down\" data-al-id=\"23\"></i> </d"
-  },
-  {
-   "p": 0.48109713421023736,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell grey\" id=\"1_7\" chess=\"b_pawn1\" data-al-id=\"12\">\u265f</div>"
-  },
-  {
-   "p": 0.49450659849537654,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell\" id=\"1_8\" chess=\"b_rook1\" data-al-id=\"2\">\u265c</div>"
-  },
-  {
-   "p": 0.01908081193208948,
-   "site": "thinkswell_javascript-mini-projects/NumberGuessingGame/mihinduranasinghe",
-   "category": "demo-projects",
-   "snippet": "<div id=\"game\" data-al-id=\"2\"> <p data-al-id=\"3\">Guess a number between <span class=\"min-num\" data-al-id=\"4\">1</span> and <span class=\"max-num\" data-al-id=\"5\">10</span></p> <input type=\"number\" id=\"gu"
-  },
-  {
-   "p": 0.48109713421023736,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/Chess-Game",
-   "category": "demo-projects",
-   "snippet": "<div class=\"gamecell grey\" id=\"1_1\" chess=\"w_rook1\" data-al-id=\"72\">\u2656</div>"
-  },
-  {
-   "p": 0.17552581087033595,
-   "site": "thinkswell_javascript-mini-projects/RockPaperScissorsGame/Rock Paper Scissor",
-   "category": "demo-projects",
-   "snippet": "<div class=\"choice\" id=\"r\" data-al-id=\"10\"> <img src=\"images/rock.png\" alt=\"rock\" class=\"img\" data-al-id=\"11\"> </div>"
-  },
-  {
-   "p": 0.018653168465538095,
-   "site": "w3c_aria-practices/content/patterns/feed/examples",
-   "category": "reference-examples",
-   "snippet": "<div id=\"restaurant-feed\" role=\"feed\" aria-busy=\"true\" data-al-id=\"2\"><div role=\"article\" class=\"restaurant-item\" aria-posinset=\"1\" tabindex=\"0\" aria-labelledby=\"restaurant-name-1\" aria-describedby=\"r"
-  },
-  {
-   "p": 0.29995299348427273,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/FAQ Application",
-   "category": "demo-projects",
-   "snippet": "<div class=\"faq\" data-al-id=\"8\"> <div class=\"question\" data-al-id=\"9\"> <h3 data-al-id=\"10\">2. When can I start my training ?</h3> <i class=\"fas fa-chevron-down\" data-al-id=\"11\"></i> </div> <div class="
-  },
-  {
-   "p": 0.29995299348427273,
-   "site": "Ayushparikh-code_Web-dev-mini-projects/FAQ Application",
-   "category": "demo-projects",
-   "snippet": "<div class=\"faq\" data-al-id=\"14\"> <div class=\"question\" data-al-id=\"15\"> <h3 data-al-id=\"16\">3. What will be the timings of the training ?</h3> <i class=\"fas fa-chevron-down\" data-al-id=\"17\"></i> </di"
+   "p": 0.013547711045577417,
+   "site": "mega.co.nz",
+   "category": "tranco",
+   "snippet": "<div class=\"accordion-toggle\" data-al-id=\"653\"> <div class=\"heading\" data-al-id=\"654\">How does MEGA for Business help you grow your business?</div> <div class=\"icon-box\" data-al-id=\"655\"> <span class="
   }
  ]
 }

@@ -1,4 +1,4 @@
-﻿const fs = require('node:fs');
+const fs = require('node:fs');
 const readline = require('node:readline');
 const { once } = require('node:events');
 const { finished } = require('node:stream/promises');

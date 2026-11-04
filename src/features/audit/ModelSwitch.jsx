@@ -1,6 +1,12 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router';
-import { modelSwitched, selectModelOn } from './clickablesSlice';
+import {
+  experimentalLine,
+  LOW_CONFIDENCE,
+  modelSwitched,
+  NOT_ACCURATE,
+  selectModelOn,
+} from './clickablesSlice';
 
 /** Status line under the switch: what the model is doing, in plain words. */
 function statusText(c, on) {
@@ -11,11 +17,15 @@ function statusText(c, on) {
       ? 'Off. Switch on for suggestions from a trained model.'
       : 'Off by default: the model has not passed every quality check yet.';
   }
+  if (c.model.threshold == null && c.status !== 'loading' && c.status !== 'checking' && !c.timing) {
+    return `${NOT_ACCURATE} Suggestions never change the score.`;
+  }
   if (c.status === 'loading') return 'Loading the model…';
   if (c.status === 'checking') return 'Looking for click-only controls…';
   if (c.timing) {
     const t = c.timing;
-    return `Checked ${t.elements.toLocaleString()} ${t.elements === 1 ? 'element' : 'elements'} in ${Math.round(t.modelMs)} ms. Suggestions never change the score.`;
+    const note = c.model.threshold == null ? ` ${NOT_ACCURATE}` : ` ${LOW_CONFIDENCE}`;
+    return `Checked ${t.elements.toLocaleString()} ${t.elements === 1 ? 'element' : 'elements'} in ${Math.round(t.modelMs)} ms.${note} Suggestions never change the score.`;
   }
   return 'Suggestions never change the score.';
 }
@@ -26,6 +36,7 @@ export default function ModelSwitch() {
   const c = useSelector((s) => s.clickables);
   const on = useSelector(selectModelOn);
   const unavailable = c.status === 'unavailable';
+  const line = on && !unavailable ? experimentalLine(c.model?.testResult) : null;
   return (
     <div className="model-switch">
       <label className="packs__option">
@@ -46,6 +57,7 @@ export default function ModelSwitch() {
       >
         {statusText(c, on)} <Link to="/learn/model-card">About the model</Link>
       </p>
+      {line && <p className="model-switch__status">{line}</p>}
     </div>
   );
 }

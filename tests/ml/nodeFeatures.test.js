@@ -3,6 +3,7 @@ import {
   extractRows,
   isCandidate,
   isStructuralCandidate,
+  isLandmarkMarkup,
   nodeFeatures,
   NODE_DIM,
   ROW_DIM,
@@ -19,7 +20,10 @@ const page = `
   <button type="button"><span id="inside">Send</span></button>
   <div role="button" tabindex="0">Has a role</div>
   <p hidden id="gone">Hidden</p>
-  <svg id="icon"><path d="M0 0h1"/></svg>`;
+  <svg id="icon"><path d="M0 0h1"/></svg>
+  <main id="main"><header id="hdr">Logo</header><section id="sec"><article id="card">Card</article></section></main>
+  <div role="navigation" id="rolenav"><span id="navitem">Item</span></div>
+  <footer id="ftr" onclick="go()">Footer</footer>`;
 
 describe('the 92 features', () => {
   it('has 92 values per element and 552 per row', () => {
@@ -79,6 +83,30 @@ describe('candidates', () => {
   });
 });
 
+describe('landmarks are never candidates', () => {
+  it('skips <main>, <header>, <section>, <footer>, <nav> and landmark roles, but not what is inside', () => {
+    document.body.innerHTML = page;
+    const byId = (id) => document.getElementById(id);
+    for (const el of [byId('main'), byId('hdr'), byId('sec'), byId('ftr'), byId('rolenav')]) {
+      expect(isStructuralCandidate(el)).toBe(false);
+    }
+    expect(isStructuralCandidate(document.querySelector('nav'))).toBe(false);
+    expect(isStructuralCandidate(byId('card'))).toBe(true); // a clickable card can be an <article>
+    expect(isStructuralCandidate(byId('navitem'))).toBe(true);
+    expect(extractRows(document).candidates).not.toContain(byId('main'));
+  });
+
+  it('the same rule reads stored start tags, as the training filter does', () => {
+    expect(isLandmarkMarkup('<main data-al-id="3"><div>')).toBe(true);
+    expect(isLandmarkMarkup('<NAV class="x">')).toBe(true);
+    expect(isLandmarkMarkup('<div class="a" role="navigation">')).toBe(true);
+    expect(isLandmarkMarkup("<div role='region main'>")).toBe(true);
+    expect(isLandmarkMarkup('<div role="button">')).toBe(false);
+    expect(isLandmarkMarkup('<article class="card">')).toBe(false);
+    expect(isLandmarkMarkup('<span>Mainly</span>')).toBe(false);
+  });
+});
+
 describe('feature parity with the crawler', () => {
   it('the crawler runs exactly this code: same rows from its injected copy', () => {
     document.body.innerHTML = page;
@@ -86,6 +114,9 @@ describe('feature parity with the crawler', () => {
     const app = extractRows(document);
     const crawler = injected.extractRows(document);
     expect(crawler.candidates).toEqual(app.candidates);
+    for (const el of document.body.querySelectorAll('*')) {
+      expect(injected.isStructuralCandidate(el)).toBe(isStructuralCandidate(el));
+    }
     expect(crawler.rows.map((r) => Array.from(r))).toEqual(app.rows.map((r) => Array.from(r)));
   });
 });

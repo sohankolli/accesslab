@@ -1,9 +1,9 @@
 // Web Worker: loads the click-only controls model and scores feature rows off
 // the main thread, so typing in the editor never waits for the model.
 //
-// Messages in:  {type: 'load'}  Â·  {type: 'score', id, rows: Float32Array}
-// Messages out: {type: 'ready', manifest}  Â·  {type: 'unavailable', message}
-//               {type: 'scores', id, p: Float32Array, ms}  Â·  {type: 'failed', id, message}
+// Messages in:  {type: 'load'}  ·  {type: 'score', id, rows: Float32Array}
+// Messages out: {type: 'ready', manifest}  ·  {type: 'unavailable', message}
+//               {type: 'scores', id, p: Float32Array, ms}  ·  {type: 'failed', id, message}
 import * as ort from 'onnxruntime-web/wasm';
 import { createEngine } from './engine.js';
 

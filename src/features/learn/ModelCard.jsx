@@ -1,20 +1,26 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router';
-import { MANIFEST_URL, MODEL_BASE } from '../../engine/ml/manifest';
+import { MANIFEST_URL, MODEL_BASE, NOT_REACHED } from '../../engine/ml/manifest';
 import { downloadFeedback } from '../audit/feedback';
 import './modelCard.css';
 
-/** A measured number for display; anything missing says so instead of guessing. */
+/**
+ * A measured number for display; anything missing says so instead of guessing.
+ * "not reached" marks a value that needs a threshold when no threshold reached
+ * the target precision.
+ */
+const missing = (v) => (v === NOT_REACHED ? 'not reached' : 'not measured');
 const num = (v, digits = 2) =>
-  typeof v === 'number' && Number.isFinite(v) ? v.toFixed(digits) : 'not measured';
+  typeof v === 'number' && Number.isFinite(v) ? v.toFixed(digits) : missing(v);
 const pct = (v) =>
-  typeof v === 'number' && Number.isFinite(v) ? `${(v * 100).toFixed(1)}%` : 'not measured';
+  typeof v === 'number' && Number.isFinite(v) ? `${(v * 100).toFixed(1)}%` : missing(v);
 const ci = (pair, fmt = num) =>
   Array.isArray(pair) && pair[0] != null
     ? ` (95% interval ${fmt(pair[0])} to ${fmt(pair[1])})`
     : '';
-const count = (v) => (typeof v === 'number' ? v.toLocaleString() : '–');
+const count = (v) =>
+  typeof v === 'number' ? v.toLocaleString() : v === NOT_REACHED ? 'not reached' : '–';
 
 const GATE_LABELS = {
   precision: 'Precision at the shipped threshold',
@@ -25,7 +31,7 @@ const GATE_LABELS = {
 };
 
 function gateValue(id, g) {
-  if (g.value == null) return 'not measured';
+  if (g.value == null || g.value === NOT_REACHED) return missing(g.value);
   if (id === 'precision') return pct(g.value);
   if (id === 'beats_best_gbt') return `PR-AUC ${num(g.value, 3)} vs ${num(g.baseline, 3)}`;
   if (id === 'ece') return num(g.value, 3);
@@ -34,69 +40,87 @@ function gateValue(id, g) {
   return String(g.value);
 }
 
-function GateTable({ caption, gate }) {
+/**
+ * A table that may scroll sideways on a narrow screen. The scrolling box is a
+ * named region in the tab order, so keyboard users can reach it and scroll it
+ * with the arrow keys; it is named by the table's caption.
+ */
+function TableWrap({ caption, children }) {
+  const id = useId();
   return (
-    <div className="table-wrap">
+    // A scrolling box must be focusable so it can be scrolled without a mouse
+    // (WCAG 2.1.1; axe rule scrollable-region-focusable).
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex
+    <div className="table-wrap" role="region" aria-labelledby={id} tabIndex={0}>
       <table className="card-table">
-        <caption>{caption}</caption>
-        <thead>
-          <tr>
-            <th scope="col">Condition</th>
-            <th scope="col">Target</th>
-            <th scope="col">Measured</th>
-            <th scope="col">Result</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Object.entries(gate ?? {}).map(([id, g]) => (
-            <tr key={id}>
-              <th scope="row">{GATE_LABELS[id] ?? id}</th>
-              <td>{g.target}</td>
-              <td>
-                {gateValue(id, g)}
-                {g.note && <span className="card-note">{g.note}</span>}
-              </td>
-              <td>{g.pass == null ? 'Not measured' : g.pass ? 'Pass' : 'Fail'}</td>
-            </tr>
-          ))}
-        </tbody>
+        <caption id={id}>{caption}</caption>
+        {children}
       </table>
     </div>
   );
 }
 
-function Breakdown({ title, rows, field }) {
+function GateTable({ caption, gate }) {
+  return (
+    <TableWrap caption={caption}>
+      <thead>
+        <tr>
+          <th scope="col">Condition</th>
+          <th scope="col">Target</th>
+          <th scope="col">Measured</th>
+          <th scope="col">Result</th>
+        </tr>
+      </thead>
+      <tbody>
+        {Object.entries(gate ?? {}).map(([id, g]) => (
+          <tr key={id}>
+            <th scope="row">{GATE_LABELS[id] ?? id}</th>
+            <td>{g.target}</td>
+            <td>
+              {gateValue(id, g)}
+              {g.note && <span className="card-note">{g.note}</span>}
+            </td>
+            <td>{g.pass == null ? 'Not measured' : g.pass ? 'Met' : 'Not met'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </TableWrap>
+  );
+}
+
+/**
+ * Results for one group of test websites. Without a threshold the precision and
+ * recall columns would describe an arbitrary cut-off, so they are left out.
+ */
+function Breakdown({ title, rows, field, hasThreshold }) {
   if (!rows?.length) return null;
   return (
-    <div className="table-wrap">
-      <table className="card-table">
-        <caption>{title}</caption>
-        <thead>
-          <tr>
-            <th scope="col">{field === 'framework' ? 'Framework' : 'Kind of site'}</th>
-            <th scope="col">Sites</th>
-            <th scope="col">Elements</th>
-            <th scope="col">Click-only</th>
-            <th scope="col">PR-AUC</th>
-            <th scope="col">Precision</th>
-            <th scope="col">Recall</th>
+    <TableWrap caption={title}>
+      <thead>
+        <tr>
+          <th scope="col">{field === 'framework' ? 'Framework' : 'Kind of site'}</th>
+          <th scope="col">Sites</th>
+          <th scope="col">Elements</th>
+          <th scope="col">Click-only</th>
+          <th scope="col">PR-AUC</th>
+          {hasThreshold && <th scope="col">Precision</th>}
+          {hasThreshold && <th scope="col">Recall</th>}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((r) => (
+          <tr key={r[field]}>
+            <th scope="row">{r[field]}</th>
+            <td>{count(r.sites)}</td>
+            <td>{count(r.rows)}</td>
+            <td>{count(r.positives)}</td>
+            <td>{num(r.pr_auc, 3)}</td>
+            {hasThreshold && <td>{pct(r.precision)}</td>}
+            {hasThreshold && <td>{pct(r.recall)}</td>}
           </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r[field]}>
-              <th scope="row">{r[field]}</th>
-              <td>{count(r.sites)}</td>
-              <td>{count(r.rows)}</td>
-              <td>{count(r.positives)}</td>
-              <td>{num(r.pr_auc, 3)}</td>
-              <td>{pct(r.precision)}</td>
-              <td>{pct(r.recall)}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+        ))}
+      </tbody>
+    </TableWrap>
   );
 }
 
@@ -105,13 +129,36 @@ function LabelQuality({ card }) {
   const probe = card.labelProbe;
   const hand = card.labelHandCheck;
   return (
+    <>
+      {hand ? (
+        <>
+          <p>
+            Hand-check sheet of {count(hand.sampled)} random labels, filled in by an automated
+            audit: {count(hand.judged)} judged, {count(hand.wrong)} wrong, {count(hand.unsure)}{' '}
+            unsure. That is {pct(hand.errorRate)} of the judged labels wrong (95% interval{' '}
+            {pct(hand.errorRateCi95?.[0])} to {pct(hand.errorRateCi95?.[1])}).
+          </p>
+          {hand.method && <p>{hand.method}</p>}
+          {hand.reading && <p>{hand.reading}</p>}
+        </>
+      ) : (
+        <p>
+          The hand-check of 300 random labels has not been done yet, so the label error rate is not
+          measured.
+        </p>
+      )}
+      <LabelProbe probe={probe} />
+    </>
+  );
+}
+
+/** The automatic click test: a second opinion on the labels. */
+function LabelProbe({ probe }) {
+  if (!probe) return null;
+  return (
     <p>
-      {hand
-        ? `Hand-check of ${hand.judged} random labels: ${pct(hand.errorRate)} were wrong (95% interval ${pct(hand.errorRateCi95?.[0])} to ${pct(hand.errorRateCi95?.[1])}). `
-        : 'The hand-check of 300 random labels has not been done yet, so the label error rate is not measured. '}
-      {probe &&
-        `An automatic second opinion clicked ${probe.tested} random labelled elements in the live pages: the label and the page's reaction disagreed for ${pct(probe.disagreementRate)} of them. That is an upper bound on label noise, since a click can also reach a handler on a parent. `}
-      {probe?.reading}
+      {`An automatic second opinion clicked ${probe.tested} random labelled elements in the live pages: the label and the page's reaction disagreed for ${pct(probe.disagreementRate)} of them. That is an upper bound on label noise, since a click can also reach a handler on a parent. `}
+      {probe.reading}
     </p>
   );
 }
@@ -162,6 +209,10 @@ export default function ModelCard() {
   const test = m.metrics?.test ?? {};
   const card = m.card ?? {};
   const splits = m.data?.splits ?? {};
+  const op = m.operatingThreshold;
+  const hasOp = typeof op?.value === 'number';
+  const opTest = op?.test ?? {};
+  const testPositives = splits.test?.positives;
 
   return (
     <div className="page page--narrow model-card">
@@ -180,12 +231,26 @@ export default function ModelCard() {
 
       <section aria-labelledby="mc-status">
         <h2 id="mc-status">Status</h2>
+        {card.summary?.length > 0 && (
+          <ul>
+            {card.summary.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        )}
         <p>
           {m.defaultOn
             ? 'Every quality check below passed, so suggestions are on by default.'
             : 'Not every quality check below has passed, so suggestions are off by default. You can switch them on under the rule packs on the Workbench; treat them as hints.'}{' '}
           Suggestions are advisory: they never change the score, the history or the report.
         </p>
+        {m.selection && (
+          <p>
+            Model in use: {m.selection.model}
+            {m.selection.seed != null && `, trained with seed ${m.selection.seed}`}.{' '}
+            {m.selection.reason}
+          </p>
+        )}
         <GateTable caption="Ship gate for the model in use, on test websites" gate={m.gate} />
         {m.shipped === 'fallback' && (
           <>
@@ -214,10 +279,22 @@ export default function ModelCard() {
           in use ({m.architecture}) turns those 552 numbers into a probability. It runs in a Web
           Worker in your browser; your code is never sent anywhere.
         </p>
+        {hasOp ? (
+          <p>
+            An element is suggested when its probability is at least {num(op.value, 3)}, the
+            operating threshold. Rule: {op.rule}.{' '}
+            {op.outOfFold &&
+              `On the out-of-fold predictions it gave precision ${pct(op.outOfFold.precision)} and recall ${pct(op.outOfFold.recall)}.`}
+          </p>
+        ) : (
+          <p>
+            Threshold: not reached. {op?.rule && `Rule: ${op.rule}.`} No threshold met the rule, so
+            the model is not accurate enough yet to make suggestions.
+          </p>
+        )}
         <p>
-          An element is suggested when its probability is at least {num(m.threshold, 3)}. That
-          threshold was chosen on calibration websites to keep precision at 90% or more, because a
-          noisy assistant gets ignored.
+          The ship gate separately asks for 90% precision on the test websites at the shipped
+          threshold, because a noisy assistant gets ignored.
         </p>
       </section>
 
@@ -233,72 +310,131 @@ export default function ModelCard() {
         </p>
         <LabelQuality card={card} />
         <p>
-          The data is split by website, so the model is always tested on sites it never saw:
-          training {count(splits.train?.sites)} sites, calibration{' '}
-          {count(splits.calibration?.sites)}, test {count(splits.test?.sites)}.
+          The data is split by website, so the model is always tested on sites it never saw:{' '}
+          {splits.development
+            ? `${count(splits.development.sites)} development sites (${count(splits.development.positives)} click-only controls) and ${count(splits.test?.sites)} test sites (${count(splits.test?.positives)}).`
+            : `training ${count(splits.train?.sites)} sites, calibration ${count(splits.calibration?.sites)}, test ${count(splits.test?.sites)}.`}
         </p>
       </section>
+
+      {m.crossValidation && (
+        <section aria-labelledby="mc-choice">
+          <h2 id="mc-choice">How the model was chosen</h2>
+          <p>
+            Rule, fixed before the run: {m.crossValidation.rule}. The development sites were split
+            into {m.crossValidation.folds} folds by website, so no site was in both the training and
+            the validation part of a fold. Each candidate was scored on the folds it did not see.
+            The chosen model&rsquo;s temperature scaling and threshold were set on those out-of-fold
+            predictions, and it was then retrained on all development sites.
+          </p>
+          <TableWrap caption="Candidates in cross-validation, on the development sites">
+            <thead>
+              <tr>
+                <th scope="col">Candidate</th>
+                <th scope="col">Out-of-fold PR-AUC</th>
+                <th scope="col">Threshold</th>
+                <th scope="col">Out-of-fold precision</th>
+                <th scope="col">Out-of-fold recall</th>
+              </tr>
+            </thead>
+            <tbody>
+              {m.crossValidation.candidates.map((c) => (
+                <tr key={c.model}>
+                  <th scope="row">
+                    {c.model}
+                    {c.model === m.crossValidation.chosen && ' (chosen)'}
+                  </th>
+                  <td>{num(c.oof_pr_auc, 3)}</td>
+                  <td>{num(c.threshold, 3)}</td>
+                  <td>{pct(c.precision)}</td>
+                  <td>{pct(c.recall)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </TableWrap>
+        </section>
+      )}
 
       <section aria-labelledby="mc-accuracy">
         <h2 id="mc-accuracy">How accurate it is on websites it never saw</h2>
         <p>Measured for the model in use: {test.model}.</p>
         <ul>
-          <li>
-            Precision {pct(test.precision)}
-            {ci(test.precision_ci95, pct)}: of {count(test.flagged)} suggestions on the test sites,{' '}
-            {count(test.tp)} were real click-only controls.
-          </li>
-          <li>
-            Recall {pct(test.recall)}: it found {count(test.tp)} of{' '}
-            {count((test.tp ?? 0) + (test.fn ?? 0))} click-only controls. The rest are missed, so no
-            suggestions does not mean none exist.
-          </li>
+          {hasOp ? (
+            <>
+              <li>
+                Precision at the operating threshold {pct(opTest.precision)}
+                {ci(opTest.precision_ci95, pct)}: of {count(opTest.flagged)} suggestions on the test
+                sites, {count(opTest.tp)} were click-only controls.
+              </li>
+              <li>
+                Recall at the operating threshold {pct(opTest.recall)}
+                {ci(opTest.recall_ci95, pct)}: it found {count(opTest.tp)} of{' '}
+                {count((opTest.tp ?? 0) + (opTest.fn ?? 0))} click-only controls. Missed ones are
+                possible, so no suggestions does not mean none exist.
+              </li>
+              <li>
+                These numbers rest on {count(testPositives)} click-only controls in{' '}
+                {count(splits.test?.rows)} elements, so they are weak evidence.
+              </li>
+            </>
+          ) : (
+            <li>
+              Precision and recall: not reached, because no threshold met the rule, so the model
+              makes no suggestions. The test websites hold {count(testPositives)} click-only
+              controls in {count(splits.test?.rows)} elements.
+            </li>
+          )}
           <li>
             Area under the precision-recall curve {num(test.pr_auc, 3)}
             {ci(test.pr_auc_ci95, (v) => num(v, 3))}.
           </li>
           <li>
-            Calibration error {num(test.ece, 3)}: a suggestion shown at 90% was right about 90% of
-            the time, within that margin.
+            Calibration error {num(test.ece, 3)}: how far the probabilities are from the observed
+            rates. With so few click-only controls, a low value is easy to reach and says little.
           </li>
         </ul>
-        <div className="table-wrap">
-          <table className="card-table">
-            <caption>Compared on the same test websites</caption>
-            <thead>
-              <tr>
-                <th scope="col">Model</th>
-                <th scope="col">PR-AUC</th>
-                <th scope="col">Precision</th>
-                <th scope="col">Recall</th>
+        <TableWrap caption="Compared on the same test websites, each at its own threshold chosen by the same rule">
+          <thead>
+            <tr>
+              <th scope="col">Model</th>
+              <th scope="col">PR-AUC</th>
+              <th scope="col">Precision</th>
+              <th scope="col">Recall</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(m.metrics?.comparisons ?? []).map((c) => (
+              <tr key={c.model}>
+                <th scope="row">{c.model}</th>
+                <td>{num(c.pr_auc, 3)}</td>
+                <td>{pct(c.precision)}</td>
+                <td>{pct(c.recall)}</td>
               </tr>
-            </thead>
-            <tbody>
-              {(m.metrics?.comparisons ?? []).map((c) => (
-                <tr key={c.model}>
-                  <th scope="row">{c.model}</th>
-                  <td>{num(c.pr_auc, 3)}</td>
-                  <td>{pct(c.precision)}</td>
-                  <td>{pct(c.recall)}</td>
-                </tr>
-              ))}
-              {(m.metrics?.ablations ?? []).map((a) => (
-                <tr key={a.model}>
-                  <th scope="row">{a.model}</th>
-                  <td>{num(a.pr_auc, 3)}</td>
-                  <td>–</td>
-                  <td>–</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+            {(m.metrics?.ablations ?? []).map((a) => (
+              <tr key={a.model}>
+                <th scope="row">{a.model}</th>
+                <td>{num(a.pr_auc, 3)}</td>
+                <td>–</td>
+                <td>–</td>
+              </tr>
+            ))}
+          </tbody>
+        </TableWrap>
         {m.metrics?.seeds && (
           <p>
-            The graph network is not stable on this much data: trained three times with different
-            random seeds, its PR-AUC on the test websites was{' '}
-            {m.metrics.seeds.pr_auc.map((v) => num(v, 3)).join(', ')} (mean{' '}
-            {num(m.metrics.seeds.mean, 3)}).
+            Trained three times with different random seeds, the graph network&rsquo;s PR-AUC on the
+            test websites was{' '}
+            {m.metrics.seeds.runs
+              ? m.metrics.seeds.runs
+                  .map(
+                    (r) =>
+                      `${num(r.test_pr_auc, 3)} for seed ${r.seed}${r.seed === m.metrics.seeds.shipped ? ' (shipped)' : ''}`,
+                  )
+                  .join(', ')
+              : m.metrics.seeds.pr_auc.map((v) => num(v, 3)).join(', ')}{' '}
+            (mean {num(m.metrics.seeds.mean, 3)}).
+            {m.metrics.seeds.rule && ` Seeds: ${m.metrics.seeds.rule}.`}
           </p>
         )}
         {m.metrics?.heldOutSources && (
@@ -306,7 +442,8 @@ export default function ModelCard() {
             A stricter test, with whole sources held out (no site from the same collection in
             training): PR-AUC {num(m.metrics.heldOutSources.sign_pr_auc, 3)} for this network and{' '}
             {num(m.metrics.heldOutSources.gbt_neighbourhood_pr_auc, 3)} for gradient boosting, on{' '}
-            {count(m.metrics.heldOutSources.test_rows)} elements.
+            {count(m.metrics.heldOutSources.test_rows)} elements, of which{' '}
+            {count(m.metrics.heldOutSources.test_positives)} are click-only controls.
           </p>
         )}
         <figure className="reliability">
@@ -318,15 +455,26 @@ export default function ModelCard() {
           />
           <figcaption>
             Reliability on the test websites. Points near the diagonal mean the percentages can be
-            taken at face value.
+            taken at face value, but the test websites hold only {count(splits.test?.positives)}{' '}
+            click-only controls, so each point rests on very few of them.
           </figcaption>
         </figure>
       </section>
 
       <section aria-labelledby="mc-fails">
         <h2 id="mc-fails">Where it fails</h2>
-        <Breakdown title="By framework" rows={m.metrics?.byFramework} field="framework" />
-        <Breakdown title="By kind of site" rows={m.metrics?.byCategory} field="category" />
+        <Breakdown
+          title={hasOp ? 'By framework, at the operating threshold' : 'By framework'}
+          rows={m.metrics?.byFramework}
+          field="framework"
+          hasThreshold={hasOp}
+        />
+        <Breakdown
+          title={hasOp ? 'By kind of site, at the operating threshold' : 'By kind of site'}
+          rows={m.metrics?.byCategory}
+          field="category"
+          hasThreshold={hasOp}
+        />
         {card.failurePatterns?.length > 0 && (
           <>
             <h3>Patterns in the errors</h3>
@@ -346,9 +494,9 @@ export default function ModelCard() {
             <li key={t}>{t}</li>
           ))}
           <li>
-            The labels have known noise: elements clicked through one listener on the whole document
-            (event delegation) are labelled as not clickable, so the model learns to miss some of
-            them.
+            The labels have known noise: an element clicked through a handler on one of its
+            ancestors can be labelled as not clickable. Pages that handle clicks with one listener
+            on the whole document (event delegation) were left out of training for this reason.
           </li>
           <li>
             It sees only the HTML and CSS you pasted. A page built by scripts must be pasted as its

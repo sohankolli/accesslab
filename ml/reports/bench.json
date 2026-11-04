@@ -1,21 +1,28 @@
 {
- "conditions": "headless Chromium, 16 Ã— AMD Ryzen 7 7435HS, no CPU throttling",
+ "conditions": {
+  "browser": "Google Chrome 151.0.7922.137 (/usr/bin/google-chrome)",
+  "headless": true,
+  "cpu": "12th Gen Intel(R) Core(TM) i7-1255U, 12 logical cores",
+  "runs": 10,
+  "throttling": "none"
+ },
  "elements": 2000,
  "shipped": {
-  "elements": 2664,
+  "elements": 2663,
   "runs": [
-   10,
-   10,
-   10,
-   10,
-   10,
-   10,
-   10,
-   10,
+   8,
+   8,
+   9,
+   9,
+   9,
+   9,
    11,
-   11
+   13,
+   13,
+   15
   ],
-  "median": 10
+  "median": 9,
+  "browser": "Google Chrome 151.0.7922.137 (/usr/bin/google-chrome)"
  },
  "graph": null
 }

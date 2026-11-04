@@ -29,7 +29,7 @@ Run it
    node crawler/crawl.mjs --sites data/sites.json --out data/crawl-tranco --concurrency 2
    node filter_tranco_training_data.cjs
    node filter_tranco_snippets.cjs
-   The filtering scripts create the prepared training corpus under data/crawl-tranco-train/. For this experiment, the prepared corpus retained direct positive labels and non-delegated negative labels. Delegated negative examples were removed during preparation; direct positives were retained.
+   The filtering scripts create the prepared training corpus under data/crawl-tranco-train/. The filter drops every row from pages with delegated (document-level) click listeners, whatever its label, because those labels cannot be trusted. An earlier version dropped only the delegated negatives, which made the page type a stand-in for the label; see reports/evaluation.md for the effect.
 
 The historical GitHub stand-in commands remain available for older experiments, but that corpus was not used for the current model:
 node corpus/fetch.mjs --root data/corpus

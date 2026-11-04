@@ -9,6 +9,9 @@ const { finished } = require('node:stream/promises');
   const target = `${targetDir}/rows.jsonl`;
 
   fs.mkdirSync(targetDir, { recursive: true });
+  fs.copyFileSync('data/crawl-tranco/pages.jsonl', `${targetDir}/pages.jsonl`);
+  // The training cache is rebuilt from the new rows.
+  fs.rmSync(`${targetDir}/rows.npz`, { force: true });
 
   const input = readline.createInterface({
     input: fs.createReadStream(source),
@@ -30,8 +33,10 @@ const { finished } = require('node:stream/promises');
     const row = JSON.parse(line);
     total++;
 
-    // Keep every positive; keep negatives only from non-delegated pages.
-    if (!row.delegated || Number(row.label) === 1) {
+    // Drop every row from delegated pages, whatever its label. Labels on those
+    // pages cannot be trusted, and dropping only their negatives would make
+    // "page uses delegation" a stand-in for the label.
+    if (!row.delegated) {
       if (!output.write(line + '\n')) await once(output, 'drain');
 
       kept++;

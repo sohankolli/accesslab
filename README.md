@@ -55,7 +55,13 @@ app with Redux Toolkit and React Router.
 
 - **Score and history.** A weighted 0–100 score, the change since the last run, and a report
 
-  page comparing any two of the last 20 runs.
+  page comparing any two of the last 20 runs of a page.
+
+- **History by page.** Each saved run records which page was checked: its `<title>`, otherwise
+  the opened file's name, otherwise "Untitled page". The Report's "Page" select shows one page's
+  trend, history and before-and-after at a time, and the workbench's "since the last check"
+  compares only with the same page. Runs saved before this change are kept as "Earlier checks".
+  "Clear history" asks, in the page, whether to clear this page or all pages.
 
 - **Simulate, Learn and keyboard shortcuts**: see their sections below.
 
@@ -377,6 +383,8 @@ feature parity, `python -m pytest train/tests`). CI (GitHub Actions) runs lint, 
 production build on every pull request.
 
 ## Limitations
+
+- Pages without a `<title>` or file name all share one history, under "Untitled page".
 
 - Automated checks find only part of the real accessibility problems; meaningful alt text,
 

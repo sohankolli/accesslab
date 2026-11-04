@@ -42,7 +42,7 @@ class Calibrated(nn.Module):
         return torch.sigmoid(self.net(x) / self.temperature)
 
 
-def fit_sign(X_train, y_train, X_val, y_val, *, seed: int, epochs: int = 80, patience: int = 10,
+def fit_sign(X_train, y_train, X_val, y_val, *, seed: int, epochs: int = 40, patience: int = 7,
              lr: float = 3e-3, weight_decay: float = 1e-4, batch: int = 256, score=None):
     """Train with a class-weighted loss and AdamW; keep the epoch best on the validation sites."""
     torch.manual_seed(seed)

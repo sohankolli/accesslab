@@ -4,7 +4,8 @@
 //   node labels/score.mjs
 import fs from 'node:fs';
 
-const text = fs.readFileSync('labels/review/handcheck.csv', 'utf8');
+const sheetPath = process.argv[2] ?? 'labels/review/handcheck.csv';
+const text = fs.readFileSync(sheetPath, 'utf8');
 const rows = [];
 let field = '';
 let row = [];

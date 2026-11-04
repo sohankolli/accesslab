@@ -59,7 +59,7 @@ def threshold_for_precision(y, p, target: float = 0.90, min_flagged: int = 5):
     return best
 
 
-def site_bootstrap(y, p, sites, stat, n: int = 1000, seed: int = 0):
+def site_bootstrap(y, p, sites, stat, n: int = 300, seed: int = 0):
     """95% interval for stat(y, p), resampling whole sites (rows of a site move together)."""
     rng = np.random.default_rng(seed)
     unique, inverse = np.unique(sites, return_inverse=True)

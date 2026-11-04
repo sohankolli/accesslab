@@ -1,95 +1,54 @@
-# Click-only controls: evaluation report
+Click-only controls: evaluation report
+Model version 1.0.0. This report describes the current Tranco-derived training run. Dataset counts and model metrics are from the current training outputs and model manifest; browser latency is from bench.json. The label audit is automated and must not be mistaken for an independent manual review.
+Data
+Item	Current Tranco experiment
+Source	Tranco top-1,000 crawl. The current model was not trained on the historical GitHub stand-in corpus.
+Page records	1,407 total: 879 successful pages used, 370 errors, 38 robots exclusions and 120 pages with failed scripts.
+Contributing sites	450 unique sites in the prepared training corpus.
+Candidate elements	18,345 total: 8,751 positive and 9,594 negative labels.
+Label filtering	All direct positive labels and only non-delegated negative labels were retained. Delegated negatives were filtered during preparation of the training corpus.
+Site-disjoint split	Training: 315 sites, 12,742 rows and 6,118 positives; calibration: 68 sites, 3,935 rows and 1,311 positives; test: 67 sites, 1,668 rows and 1,322 positives.
 
-Model version 1.0.0. Every number below comes from `metrics.json`, `bench.json` and
-`label-probe.json` in this folder, which `train/train.py`, `npm run ml:bench` and
-`labels/probe.mjs` wrote. Nothing was typed in by hand except the reading of the errors.
 
-## Data
+The split is by website, so a site does not appear in more than one partition. All examples in this experiment come from the Tranco crawl category; this is not a representative evaluation across industry or site types. The dataset and intermediate crawl outputs remain local and are not committed.
+Results on the held-out test websites
+Model	PR-AUC	Precision	Recall	ECE
+Gradient boosting with neighbourhood (best GBT baseline)	0.9855	0.9045	0.9531	0.0745
+Gradient boosting, element only	0.9848	0.9079	0.9622	Not reported here
+SIGN graph network (exported model, seed 1)	0.9708	0.8925	0.9486	0.0883
 
-|                                           |                                                                                                                                                                                                                     |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Source                                    | Stand-in corpus: 25 public GitHub repositories of hand-written websites, pinned commits (`corpus/sources.json`), served locally. The Tranco crawl could not run: the build machine had no access to the public web. |
-| Pages crawled                             | 1,174 (113 dropped because one of their scripts failed to load, so their handlers would be missing)                                                                                                                 |
-| Pages with document-level click listeners | Left out: 40,874 elements, 68 of them labelled positive. Their 0 labels cannot be trusted (event delegation).                                                                                                       |
-| Used                                      | 15,006 candidate elements from 752 websites in 16 sources; 640 click-only controls (4.3%)                                                                                                                           |
-| Split, by website                         | train 526 sites (457 positives) · calibration 113 sites (89) · test 113 sites (94)                                                                                                                                  |
 
-The split is stratified by "site has a positive", and among 200 seeds the one with the most even
-share of positives was kept (seed 94). The choice looked only at label counts, never at a model.
+The SIGN model's PR-AUC 95% site-bootstrap interval is 0.9151–0.9966. The selected SIGN model has 40,705 parameters. The current run also evaluated ablations: removing class-name features produced PR-AUC 0.9688, and removing neighbourhood features produced PR-AUC 0.9764. These ablations used one seed each, so they should be treated as indicative rather than a full seed comparison.
 
-## Results on the test websites
+On the stricter held-out-source evaluation, SIGN achieved PR-AUC 0.9108 and the neighbourhood GBT baseline achieved 0.9678. This indicates that performance is weaker when evaluation sources are held out.
+Ship gate
+Condition	SIGN graph network (exported model)	Result
+Precision ≥ 0.90	0.8925	Fail
+Beats best gradient boosting	0.9708 vs 0.9855 PR-AUC	Fail
+Calibration error (ECE) ≤ 0.05	0.0883	Fail
+File ≤ 1 MB	169,515 bytes	Pass
+2,000+ elements in the Web Worker ≤ 50 ms	10 ms median for 2,664 elements	Pass
 
-| Model                                           | PR-AUC | Precision | Recall |
-| ----------------------------------------------- | ------ | --------- | ------ |
-| Rule: pointer cursor and not native             | 0.542  | 0.594     | 0.904  |
-| Gradient boosting, element only                 | 0.871  | 0.755     | 0.755  |
-| Gradient boosting with neighbourhood            | 0.876  | 0.930     | 0.702  |
-| SIGN graph network                              | 0.936  | 0.759     | 0.904  |
-| SIGN without class-name words (mean of 3 seeds) | 0.906  | –         | –      |
-| SIGN without neighbourhood (mean of 3 seeds)    | 0.685  | –         | –      |
 
-Thresholds were chosen on the calibration websites for 90% precision. Each model's precision
-and recall are at its own threshold.
+The current exported ONNX model is the SIGN graph network, but it does not pass the ship gate. The manifest correctly keeps defaultOn: false. Do not enable suggestions by default or describe the model as production-ready. The neighbourhood GBT baseline performs better on PR-AUC and passes the precision threshold, but its ECE is 0.0745, which is above the 0.05 calibration requirement; it therefore does not make all gates pass either.
 
-What this says, with the caveat that the test set holds only 94 positives:
+Latency was measured by npm run ml:bench in the app's Web Worker on a 2,664-element page. The median was 10 ms across 10 runs in headless Chromium.
 
-- **Machine learning is needed.** The cursor rule finds most click-only controls, but 4 in 10 of
-  its flags are wrong.
-- **Context is what helps.** Without the neighbourhood views the network drops from 0.936 to
-  0.685. Gradient boosting barely changes, because its trees can already combine the context
-  columns.
-- **Class-name words matter less than expected.** Removing them costs about 0.03.
-- **The graph network is unstable on this much data.** Trained with three seeds, it scored
-  0.936, 0.568 and 0.547 on the test sites (mean 0.684). The shipped seed was chosen on the
-  calibration sites and happened to be the best on test, so "beats gradient boosting" holds for
-  that seed only.
-- **It does not transfer well.** On a stricter test that held out whole sources (2,578
-  elements, 295 positives), the network scored 0.727 and gradient boosting 0.876.
-
-## Ship gate
-
-| Condition                                 | Graph network                           | Gradient boosting (fallback, calibrated) |
-| ----------------------------------------- | --------------------------------------- | ---------------------------------------- |
-| Precision ≥ 0.90                          | 0.759 **fail**                          | 0.930 pass (95% interval 0.39 to 1.00)   |
-| Beats best gradient boosting              | 0.936 vs 0.876 pass (shipped seed only) | not applicable: it is the baseline       |
-| Calibration error ≤ 0.05                  | 0.110 **fail**                          | 0.041 pass                               |
-| File ≤ 1 MB                               | 166 KB pass                             | 323 KB pass                              |
-| 2,000+ elements in the Web Worker ≤ 50 ms | 28 ms median pass                       | 15 ms median pass                        |
-
-The graph network missed the gate. Following the spec's fallback, the calibrated
-gradient-boosting model ships through the same worker and interface (temperature 3.74, threshold
-0.514). The "beats gradient boosting" condition cannot hold for the baseline itself, so it is
-**switched off by default**. Users can switch it on under the rule packs.
-
-Latency was measured by `npm run ml:bench` in the app's own Web Worker on a 2,664-element page:
-the median of 10 runs, in headless Chromium on a 2-vCPU cloud VM with no CPU throttling.
-
-The ONNX file gives the same probabilities as scikit-learn to within 9 × 10⁻⁸ on every test row.
-`tests/ml/modelParity.test.js` checks onnxruntime-web against 50 of those rows.
-
-## Errors of the shipped model (read by hand)
-
-There were 5 false positives and 28 false negatives at the shipped threshold, so all of them
-were read, not 50 of each.
-
-- **False positives.** All 5 are product and brand images with a pointer cursor on one shop
-  page.
-- **Game boards.** Chess squares and similar grids of plain divs, with no cursor and no
-  button-like class, scored just under the threshold (0.48 against 0.51).
-- **Image-only cards.** The rock, paper and scissors choices have no text and no class word to
-  go on.
-- **Containers.** An FAQ wrapper, a list and a `<main>` each carry one listener for their
-  children. This is label noise of the delegation kind, at container level.
-- **A plain div with an inline `onclick`.** It had no cursor and no button-like class, and was
-  missed.
-
-## Label quality
-
-- **Hand-check.** Not done yet. `labels/sheet.mjs` draws the 300 random labels and
-  `labels/score.mjs` scores them. This is the owner's task.
-- **Automatic probe** (`labels/probe.mjs`). 287 random labelled elements were clicked in the
-  live pages, and label and reaction disagreed for 13.9% (16.4% on the 73 from pages used for
-  training).
-- **Reading the probe's disagreements.** On the pages used for training there were 12: hover
-  effects, ticking timers, a list item whose content is a button, and 2 unclear cases. None was
-  clearly a missed click-only control, so 16% is a loose upper bound, not the error rate.
+The ONNX reference and ONNX Runtime outputs differed by at most 1.788139 × 10⁻⁷ in the parity check. tests/ml/modelParity.test.js checks browser-runtime parity against the stored 50-row fixture.
+Errors of the current exported model
+At the reported operating threshold, the SIGN model produced 151 false positives and 68 false negatives on the test split. The review samples are available locally at:
+- data/tranco-run-output/reports/false-positives-review.csv
+- data/tranco-run-output/reports/false-negatives-review.csv
+These error samples have not yet been manually reviewed. No conclusions about recurring false-positive or false-negative patterns should be drawn until that review is completed.
+Label quality and remaining checks
+- Automated label audit: 300 labels were sampled. The automated audit judged 188 and marked 112 unsure; it found zero wrong labels among the 188 judged. Only 4 positive labels were judged (184 negatives), so this result is not enough to establish positive-label quality.
+- Manual owner review: An independent human review of the sampled labels has not been completed. Do not describe the automated audit as a manual hand-check.
+- Error review: Manually inspect up to 50 false positives and 50 false negatives, record the recurring failure patterns, and update the model-card limitations.
+- Label noise: Labels come from automated event-listener and React-handler probing. Delegated event handlers and ancestor-level interactions can still create label noise. Filtering delegated negatives during corpus preparation reduces one known source but does not prove all remaining labels are correct.
+Limitations and reproducibility
+- The current experiment contains 450 contributing sites, but its examples are all from the Tranco crawl category. Broader site-type and framework coverage has not been established.
+- The crawl recorded 370 errors, 38 robots exclusions and 120 failed-script pages. The results describe the prepared usable corpus, not every site in the original Tranco list.
+- The dataset and raw crawl outputs are not committed. Follow ml/README.md to rebuild the crawl, prepare the filtered training corpus and retrain.
+- The optional GraphSAGE comparison was not implemented.
+- The custom GBT ONNX export path is retained for baseline evaluation; numerical parity should continue to be covered by the model tests.
+- The model remains advisory and switched off by default until all ship gates pass and the outstanding manual label and error reviews are completed.

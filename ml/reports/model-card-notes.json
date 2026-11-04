@@ -1,17 +1,18 @@
 {
- "note": "Written by hand after reading every error the shipped model made on the test sites (reports/errors.json: 5 false positives, 28 false negatives at the shipped threshold; fewer than the 50 + 50 planned because the test set has only 94 positives). Merged into the manifest by train/card.py.",
- "failurePatterns": [
-  "Images in a product or brand grid with a pointer cursor are flagged although nothing handles their clicks (all 5 false positives were product images on one shop page).",
-  "Game boards are missed: chess squares and similar grids of plain divs with no pointer cursor and no button-like class names scored just under the threshold (0.48 against 0.51).",
-  "Cards whose only content is an image, like the rock, paper and scissors choices, are missed: there is no text or class word to go on.",
-  "Some misses are not really controls: the crawler labels a container as clickable when it carries one listener for its children (an FAQ wrapper, a list, a <main>). These are label noise of the delegation kind, at container level.",
-  "A div with an inline onclick but no pointer cursor and no button-like class (\"Search User\") was missed: the model leans on the cursor and on class words."
- ],
- "limitations": [
-  "It was trained on a stand-in corpus of hobby and teaching projects from GitHub, not on the planned Tranco crawl of popular sites. Treat it as a demonstration until it is retrained on the Tranco crawl.",
-  "React, Vue and Angular pages are almost absent from the training data (a handful of pages), so it has not been measured on framework-built sites.",
-  "The test websites hold 94 click-only controls, most of them on a few sites, so every percentage on this page has a wide margin; the 95% intervals are shown where they were measured.",
-  "The model in use is the gradient-boosting baseline: the graph network missed the ship gate. Its scores still come from the same 552 cues and the same calibration."
- ],
- "labelProbeReading": "Read by hand: the 12 disagreements on pages used for training are 5 hover-effect squares (moving the mouse to click recolours them), 4 countdown timers that tick every second, 1 list item whose content is a button, and 2 unclear (a 'Blog' paragraph and an icon image). None is clearly a click-only control the labeller missed, so the probe's rate is a loose upper bound."
+  "note": "Model card for the Tranco-derived Click-only Controls experiment. The current test error report contains 151 false positives and 68 false negatives. These errors have not yet been manually inspected. No error-pattern claims are made until that review is completed.",
+  "failurePatterns": [
+    "Manual error review is pending. The current errors report contains 151 false positives and 68 false negatives; recurring causes have not yet been established."
+  ],
+  "limitations": [
+    "The Tranco top-1000 crawl produced 1407 page records. Of these, 879 pages were used, contributing candidate rows from 450 unique sites.",
+    "The retained training corpus contains 18345 rows: 8751 positive and 9594 negative. It retains direct positive labels and non-delegated negative labels; delegated negatives were filtered upstream.",
+    "All examples belong to the Tranco crawl category. This experiment does not provide a representative breakdown across site types or industries.",
+    "The split is site-disjoint: 315 training sites, 68 calibration sites and 67 test sites.",
+    "Labels are based on automated event-listener and React handler probing. Delegated event handlers and ancestor-level interactions are known sources of label noise.",
+    "The automated label audit sampled 300 candidates: 188 were judged, 112 were unsure and zero errors were found among the 188 judged. Only four positive labels were judged. This is not a completed independent manual owner review.",
+    "On the test split, the shipped SIGN model achieved PR-AUC 0.9708, precision 0.8925, recall 0.9486 and ECE 0.0883, with 151 false positives and 68 false negatives.",
+    "The best neighbourhood gradient-boosting baseline achieved PR-AUC 0.9855, higher than the shipped SIGN model. The SIGN model therefore fails the precision, baseline-comparison and calibration shipping gates.",
+    "The ONNX model is 169515 bytes. Browser benchmarking processed 2664 elements at a median of 10 ms across 10 runs, passing the 50 ms latency requirement.",
+    "The model must remain off by default until all required quality gates pass."
+  ]
 }

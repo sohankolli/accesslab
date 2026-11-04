@@ -47,7 +47,7 @@ const html = `<!doctype html><html lang="en"><head><title>Bench</title></head><b
 
 /** Serve dist/, paste the page, and read the worker's timing from the status line RUNS times. */
 async function measure() {
-  const preview = spawn('npx', ['vite', 'preview', '--port', String(port), '--strictPort'], {
+  const preview = spawn(process.execPath, [path.join(root, 'node_modules/vite/bin/vite.js'), 'preview', '--port', String(port), '--strictPort'], {
     cwd: root,
     stdio: 'ignore',
   });
@@ -115,7 +115,7 @@ async function measure() {
 }
 
 const cpus = os.cpus();
-const conditions = `headless Chromium, ${cpus.length} × ${cpus[0]?.model?.trim() ?? 'CPU'}, no CPU throttling`;
+const conditions = `headless Chromium, ${cpus.length} Ã— ${cpus[0]?.model?.trim() ?? 'CPU'}, no CPU throttling`;
 const latency = (r) => ({
   target: '<= 50 ms for 2,000 elements in the Web Worker',
   value: r.median,

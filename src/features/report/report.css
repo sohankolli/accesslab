@@ -1,3 +1,14 @@
+/* The page whose runs the report shows. */
+.report__page {
+  margin-bottom: var(--space-6);
+}
+.report__page .field {
+  max-width: 32rem;
+}
+.report__page select {
+  width: 100%;
+}
+
 /* Trend: one line, no fill. */
 .trend {
   margin: 0;
@@ -145,5 +156,27 @@
   display: flex;
   flex-wrap: wrap;
   align-items: center;
+  gap: var(--space-2);
+}
+
+/* "Clear history?": asked in the page, under the header's buttons. */
+.clear-confirm {
+  display: grid;
+  gap: var(--space-3);
+  max-width: 40rem;
+  margin-bottom: var(--space-6);
+  padding: var(--space-4);
+  color: var(--ink);
+  background: var(--chart);
+  border: 1px solid var(--rule-strong);
+  border-left: 4px solid var(--critical);
+  border-radius: var(--radius-sm);
+}
+.clear-confirm__title {
+  font-size: var(--text-md);
+}
+.clear-confirm__actions {
+  display: flex;
+  flex-wrap: wrap;
   gap: var(--space-2);
 }

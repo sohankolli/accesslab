@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router';
 import { historyCleared } from './historySlice';
@@ -9,10 +9,19 @@ import { SEVERITIES, SEVERITY_LABEL } from '../../components/severityLabels';
 import './report.css';
 import { downloadRunJSON, downloadRunCSV } from './reportExport';
 import PrintableReport from './PrintableReport';
+import { groupByPage, pageKeyOf } from './pages';
+import ClearHistoryConfirm from './ClearHistoryConfirm';
 
 const formatTime = (ms) =>
   new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(ms);
 const formatShort = (ms) => new Intl.DateTimeFormat(undefined, { timeStyle: 'medium' }).format(ms);
+const plural = (n, word) => `${n} ${n === 1 ? word : `${word}s`}`;
+
+/** The default "before": the run just before `afterId` (the next newer one if it is the oldest). */
+function runBefore(runs, afterId) {
+  const i = runs.findIndex((r) => r.id === afterId);
+  return (runs[i + 1] ?? runs[i - 1] ?? runs[i])?.id;
+}
 
 /** /report and /report/:runId. Keyed by runId so a new link resets the comparison. */
 export default function Report() {
@@ -33,17 +42,40 @@ function ReportView({ runId }) {
     </div>
   );
 
-  // Default comparison: the latest run (or the one named in /report/:runId) as
-  // "after", and the run just before it as "before" (the next newer one if it is the oldest).
-  const [afterId, setAfterId] = useState(() =>
-    runs.some((r) => r.id === runId) ? runId : runs[0]?.id,
-  );
-  const [beforeId, setBeforeId] = useState(() => {
-    const i = runs.findIndex((r) => r.id === afterId);
-    return (runs[i + 1] ?? runs[i - 1] ?? runs[i])?.id;
-  });
-  const after = runs.find((r) => r.id === afterId) ?? runs[0];
-  const before = runs.find((r) => r.id === beforeId) ?? runs[1] ?? runs[0];
+  // Everything below shows one page's runs, so a check is never compared with a
+  // different page. The default page is the one checked most recently, or the
+  // page of the run named in /report/:runId.
+  const groups = useMemo(() => groupByPage(runs), [runs]);
+  const linked = runs.find((r) => r.id === runId);
+  const [pageKey, setPageKey] = useState(() => (linked ? pageKeyOf(linked) : groups[0]?.key));
+  const group = groups.find((g) => g.key === pageKey) ?? groups[0];
+  const pageRuns = group?.runs ?? [];
+
+  // Default comparison: the page's latest run (or the linked one) as "after",
+  // and the run just before it as "before".
+  const [afterId, setAfterId] = useState(() => linked?.id ?? pageRuns[0]?.id);
+  const [beforeId, setBeforeId] = useState(() => runBefore(pageRuns, afterId));
+  const after = pageRuns.find((r) => r.id === afterId) ?? pageRuns[0];
+  const before = pageRuns.find((r) => r.id === beforeId) ?? pageRuns[1] ?? pageRuns[0];
+
+  // Read out by screen readers when the page changes (the select itself is quiet about it).
+  const [announcement, setAnnouncement] = useState('');
+
+  // "Clear history" opens a question in the page; focus comes back to the button.
+  const [confirming, setConfirming] = useState(false);
+  const clearButtonRef = useRef(null);
+  // After "clear all" the button is gone: focus the empty state's heading instead.
+  const focusEmptyRef = useRef(false);
+
+  /** Show another page: its latest run against the one before it. */
+  function showPage(key, message = '') {
+    const next = groups.find((g) => g.key === key);
+    if (!next) return;
+    setPageKey(key);
+    setAfterId(next.runs[0].id);
+    setBeforeId(runBefore(next.runs, next.runs[0].id));
+    setAnnouncement(`${message}Showing ${plural(next.runs.length, 'run')} of ${next.name}.`);
+  }
 
   if (runs.length === 0) {
     return (
@@ -54,7 +86,18 @@ function ReportView({ runId }) {
         </div>
         {saveNotice}
         <div className="empty-state">
-          <h2 className="empty-state__title">No checks yet</h2>
+          <h2
+            className="empty-state__title"
+            tabIndex={-1}
+            ref={(el) => {
+              if (el && focusEmptyRef.current) {
+                focusEmptyRef.current = false;
+                el.focus();
+              }
+            }}
+          >
+            No checks yet
+          </h2>
           <p>Every check the workbench runs is recorded here, with its score and findings.</p>
           <Link to="/audit" className="btn btn--primary">
             Open the workbench
@@ -63,6 +106,23 @@ function ReportView({ runId }) {
       </div>
     );
   }
+
+  const closeConfirm = () => {
+    setConfirming(false);
+    clearButtonRef.current?.focus();
+  };
+  const clearAll = () => {
+    focusEmptyRef.current = true;
+    setConfirming(false);
+    dispatch(historyCleared());
+  };
+  const clearPage = () => {
+    const next = groups.find((g) => g.key !== group.key);
+    if (!next) return clearAll(); // the only page: nothing would be left
+    dispatch(historyCleared(group.key));
+    showPage(next.key, `Cleared the history of ${group.name}. `);
+    closeConfirm();
+  };
 
   const diff = compareRuns(before, after);
   const runLabel = (run) => `${formatTime(run.ranAt)}, score ${run.score}`;
@@ -75,7 +135,8 @@ function ReportView({ runId }) {
         <div>
           <h1 className="page__title">Report</h1>
           <p className="page__lead">
-            Your last {runs.length} {runs.length === 1 ? 'check' : 'checks'}, saved in this browser.
+            Your last {plural(runs.length, 'check')} of {plural(groups.length, 'page')}, saved in
+            this browser.
           </p>
         </div>
 
@@ -95,96 +156,131 @@ function ReportView({ runId }) {
           <button
             type="button"
             className="btn"
-            onClick={() => {
-              if (window.confirm('Delete all saved checks?')) {
-                dispatch(historyCleared());
-              }
-            }}
+            ref={clearButtonRef}
+            aria-expanded={confirming}
+            aria-controls={confirming ? 'clear-confirm' : undefined}
+            onClick={() => (confirming ? closeConfirm() : setConfirming(true))}
           >
             Clear history
           </button>
         </div>
       </div>
 
+      {confirming && (
+        <ClearHistoryConfirm
+          id="clear-confirm"
+          pageName={group.name}
+          pageRuns={pageRuns.length}
+          allRuns={runs.length}
+          onClearPage={clearPage}
+          onClearAll={clearAll}
+          onCancel={closeConfirm}
+        />
+      )}
+
       {saveNotice}
+
+      <div className="report__page">
+        <label className="field">
+          <span className="field__label">Page</span>
+          <select value={group.key} onChange={(e) => showPage(e.target.value)}>
+            {groups.map((g) => (
+              <option key={g.key} value={g.key}>
+                {g.name} ({plural(g.runs.length, 'run')})
+              </option>
+            ))}
+          </select>
+        </label>
+        <p className="sr-only" aria-live="polite">
+          {announcement}
+        </p>
+      </div>
 
       <section className="section" aria-labelledby="trend-heading">
         <h2 id="trend-heading" className="section__title">
           Score trend
         </h2>
-        <TrendChart runs={runs} />
+        <TrendChart runs={pageRuns} />
       </section>
 
       <section className="section" aria-labelledby="compare-heading">
         <h2 id="compare-heading" className="section__title">
           Before and after
         </h2>
-        <div className="compare-pickers">
-          <label className="field">
-            <span className="field__label">Before</span>
-            <select value={before.id} onChange={(e) => setBeforeId(e.target.value)}>
-              {runs.map((run) => (
-                <option key={run.id} value={run.id}>
-                  {runLabel(run)}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label className="field">
-            <span className="field__label">After</span>
-            <select value={after.id} onChange={(e) => setAfterId(e.target.value)}>
-              {runs.map((run) => (
-                <option key={run.id} value={run.id}>
-                  {runLabel(run)}
-                </option>
-              ))}
-            </select>
-          </label>
-        </div>
+        {pageRuns.length < 2 ? (
+          <p className="section__note">Check this page again to compare.</p>
+        ) : (
+          <>
+            <div className="compare-pickers">
+              <label className="field">
+                <span className="field__label">Before</span>
+                <select value={before.id} onChange={(e) => setBeforeId(e.target.value)}>
+                  {pageRuns.map((run) => (
+                    <option key={run.id} value={run.id}>
+                      {runLabel(run)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="field">
+                <span className="field__label">After</span>
+                <select value={after.id} onChange={(e) => setAfterId(e.target.value)}>
+                  {pageRuns.map((run) => (
+                    <option key={run.id} value={run.id}>
+                      {runLabel(run)}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
 
-        <div className="compare">
-          <p className="compare__scores">
-            <span className="compare__score">
-              <span className="compare__caption">Before</span>{' '}
-              <span className="compare__value">{diff.score.before}</span>
-            </span>
-            <span className="compare__arrow" aria-hidden="true">
-              →
-            </span>
-            <span className="compare__score">
-              <span className="compare__caption">After</span>{' '}
-              <span className="compare__value">{diff.score.after}</span>
-            </span>
-            <span className="compare__change">Score {describeScoreChange(diff.score.change)}</span>
-          </p>
-          <table className="data-table compare-table">
-            <caption className="sr-only">Issues by severity, before and after</caption>
-            <thead>
-              <tr>
-                <th scope="col">Severity</th>
-                <th scope="col" className="num">
-                  Before
-                </th>
-                <th scope="col" className="num">
-                  After
-                </th>
-                <th scope="col">Change</th>
-              </tr>
-            </thead>
-            <tbody>
-              {diff.counts.map((c) => (
-                <tr key={c.severity}>
-                  <th scope="row">
-                    <Severity level={c.severity} />
-                  </th>
-                  <td className="num">{c.before}</td>
-                  <td className="num">{c.after}</td>
-                  <td>{describeCountChange(c.change)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            <div className="compare">
+              <p className="compare__scores">
+                <span className="compare__score">
+                  <span className="compare__caption">Before</span>{' '}
+                  <span className="compare__value">{diff.score.before}</span>
+                </span>
+                <span className="compare__arrow" aria-hidden="true">
+                  →
+                </span>
+                <span className="compare__score">
+                  <span className="compare__caption">After</span>{' '}
+                  <span className="compare__value">{diff.score.after}</span>
+                </span>
+                <span className="compare__change">
+                  Score {describeScoreChange(diff.score.change)}
+                </span>
+              </p>
+              <table className="data-table compare-table">
+                <caption className="sr-only">Issues by severity, before and after</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Severity</th>
+                    <th scope="col" className="num">
+                      Before
+                    </th>
+                    <th scope="col" className="num">
+                      After
+                    </th>
+                    <th scope="col">Change</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {diff.counts.map((c) => (
+                    <tr key={c.severity}>
+                      <th scope="row">
+                        <Severity level={c.severity} />
+                      </th>
+                      <td className="num">{c.before}</td>
+                      <td className="num">{c.after}</td>
+                      <td>{describeCountChange(c.change)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
       </section>
 
       <section className="section" aria-labelledby="history-heading">
@@ -192,7 +288,9 @@ function ReportView({ runId }) {
           History
         </h2>
         <table className="data-table history-table">
-          <caption>Newest first. Counts leave out items to check by hand.</caption>
+          <caption>
+            Checks of {group.name}, newest first. Counts leave out items to check by hand.
+          </caption>
           <thead>
             <tr>
               <th scope="col">Run</th>
@@ -213,7 +311,7 @@ function ReportView({ runId }) {
             </tr>
           </thead>
           <tbody>
-            {runs.map((run) => (
+            {pageRuns.map((run) => (
               <tr key={run.id} className={run.id === after.id ? 'is-current' : undefined}>
                 <th scope="row">
                   <span className="wide-only">{formatTime(run.ranAt)}</span>
@@ -238,7 +336,7 @@ function ReportView({ runId }) {
       </section>
 
       {/* Printable PDF report */}
-      <PrintableReport run={after} beforeRun={before} />
+      <PrintableReport run={after} beforeRun={pageRuns.length > 1 ? before : null} />
     </div>
   );
 }

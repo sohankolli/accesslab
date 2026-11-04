@@ -5,7 +5,6 @@ const initialState = {
   result: null, // AuditResult: plain, serialisable data only
   checked: null, // { html, css }: the code `result` belongs to (the same strings as the editor's)
   error: null, // why the last audit failed (a message), while status is 'failed'
-  previousScore: null, // for the before/after delta
   selectedIssueId: null,
   simulation: 'none', // 'none' | 'protanopia' | 'deuteranopia' | 'tritanopia' | 'low-vision' | 'zoom-200'
 };
@@ -21,7 +20,6 @@ const auditSlice = createSlice({
     /** auditCompleted(result, {html, css}): the result and the code that was checked. */
     auditCompleted: {
       reducer(state, action) {
-        state.previousScore = state.result?.score ?? null;
         state.result = action.payload;
         state.checked = action.meta ?? null;
         state.status = 'done';

@@ -19,6 +19,17 @@ function write(data) {
   }
 }
 
+// Runs saved before pages were recorded have no page: they are kept, and the
+// Report shows them as "Earlier checks". A page, when present, must be well formed.
+const isPage = (page) =>
+  page === undefined ||
+  (Boolean(page) &&
+    typeof page === 'object' &&
+    typeof page.key === 'string' &&
+    page.key.startsWith('page:') &&
+    typeof page.name === 'string' &&
+    page.name.length > 0);
+
 const isRun = (run) =>
   Boolean(run) &&
   typeof run.id === 'string' &&
@@ -27,6 +38,7 @@ const isRun = (run) =>
   Boolean(run.counts) &&
   typeof run.counts === 'object' &&
   !Array.isArray(run.counts) &&
+  isPage(run.page) &&
   // Older saved runs do not have issues, so keep them compatible.
   (run.issues === undefined ||
     (Array.isArray(run.issues) &&

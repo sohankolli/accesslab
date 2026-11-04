@@ -2,6 +2,23 @@ import { createSlice, createSelector } from '@reduxjs/toolkit';
 import { readPref } from '../../services/storage';
 import { selectSortedIssues } from './auditSlice';
 
+/** How every model suggestion is labelled while the model is experimental. */
+export const LOW_CONFIDENCE = 'Low confidence: the model is experimental.';
+
+/** Shown instead of suggestions when no threshold reached the precision the pipeline asks for. */
+export const NOT_ACCURATE = 'The model is not accurate enough yet to make suggestions.';
+
+/**
+ * One plain line on how the model did on held-out test websites, from the manifest.
+ * @param {{correct: number, suggestions: number}|null|undefined} r
+ * @returns {string|null}
+ */
+export function experimentalLine(r) {
+  if (!r || r.suggestions === 0) return null;
+  const noun = r.suggestions === 1 ? 'suggestion was' : 'suggestions were';
+  return `Experimental: on held-out test sites, ${r.correct} of ${r.suggestions} ${noun} correct.`;
+}
+
 /** Most "Not an issue" records kept in this browser; the oldest go first. */
 export const MAX_DISMISSED = 200;
 
@@ -18,7 +35,7 @@ const clickablesSlice = createSlice({
     enabled: typeof saved().enabled === 'boolean' ? saved().enabled : null, // null: follow the model's default
     status: 'idle', // 'idle' | 'loading' | 'checking' | 'ready' | 'unavailable'
     message: null, // why suggestions are unavailable
-    model: null, // {version, threshold, defaultOn} from the manifest
+    model: null, // {version, threshold, defaultOn, testResult} from the manifest; threshold: where suggestions start, or null
     findings: [],
     timing: null, // {elements, featuresMs, modelMs}
     checks: 0, // finished checks, so a new result can be told from an identical old one

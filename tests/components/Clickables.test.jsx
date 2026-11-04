@@ -4,15 +4,21 @@ import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router';
 import { useRef } from 'react';
 import FindingsPane from '../../src/features/audit/FindingsPane';
+import ModelSwitch from '../../src/features/audit/ModelSwitch';
+import { testResult } from '../../src/engine/ml/manifest';
+import fs from 'node:fs';
+import path from 'node:path';
 import { SettingsProvider } from '../../src/context/SettingsContext';
 import { auditCompleted } from '../../src/features/audit/auditSlice';
 import {
   checkCompleted,
+  experimentalLine,
   manifestLoaded,
+  modelSwitched,
   modelUnavailable,
   selectMarkedFindings,
 } from '../../src/features/audit/clickablesSlice';
-import { useClickables } from '../../src/features/audit/useClickables';
+import { findClickOnly, useClickables } from '../../src/features/audit/useClickables';
 import { modelClient, resetModelClient } from '../../src/engine/ml/client';
 import { makeStore } from '../helpers/store';
 
@@ -89,6 +95,19 @@ describe('model suggestions in the findings pane', () => {
     ]);
   });
 
+  it('labels the suggestions as low confidence, and as never changing the score', () => {
+    const store = setup();
+    act(() => store.dispatch(modelSwitched(true)));
+    const note = document.querySelector('.group--advisory .group__note');
+    expect(note.querySelector('strong').textContent).toBe(
+      'Low confidence: the model is experimental.',
+    );
+    expect(note.textContent).toMatch(/Suggestions never change the score\./);
+    expect(
+      screen.getByText(/Checked 10 elements in 2 ms\. Low confidence: the model is experimental\./),
+    ).toBeTruthy();
+  });
+
   it('opens with the cues, the fix and the actions, all as buttons', () => {
     const store = setup();
     act(() => store.dispatch({ type: 'audit/issueSelected', payload: suggestion.id }));
@@ -123,6 +142,42 @@ describe('model suggestions in the findings pane', () => {
     expect(screen.queryByText('Possibly click-only')).toBeNull();
     expect(screen.getByText('The image has no text alternative')).toBeTruthy();
     expect(store.getState().clickables.enabled).toBe(false);
+  });
+
+  it('says the model is not accurate enough yet before and after a check without a threshold', () => {
+    const store = makeStore();
+    store.dispatch(manifestLoaded({ version: '1.0.0', threshold: null, defaultOn: false }));
+    store.dispatch(modelSwitched(true));
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <ModelSwitch />
+        </MemoryRouter>
+      </Provider>,
+    );
+    expect(
+      screen.getByText(
+        /^The model is not accurate enough yet to make suggestions\. Suggestions never/,
+      ),
+    ).toBeTruthy();
+  });
+
+  it('says the model is not accurate enough yet when it has no threshold, and suggests nothing', () => {
+    const store = setup();
+    act(() => {
+      store.dispatch(manifestLoaded({ version: '1.0.0', threshold: null, defaultOn: false }));
+      store.dispatch(modelSwitched(true));
+      store.dispatch(
+        checkCompleted({ findings: [], timing: { elements: 10, featuresMs: 1, modelMs: 2 } }),
+      );
+    });
+    expect(
+      screen.getByText(
+        /Checked 10 elements in 2 ms\. The model is not accurate enough yet to make suggestions\./,
+      ),
+    ).toBeTruthy();
+    expect(screen.queryByText('Possibly click-only')).toBeNull();
+    expect(store.getState().audit.result.score).toBe(77);
   });
 
   it('says plainly when the model is unavailable, and the rules carry on', () => {
@@ -193,5 +248,84 @@ describe('model worker client', () => {
       },
     };
     await expect(modelClient(() => worker).ready).rejects.toThrow('No model');
+  });
+});
+
+describe('scoring a page', () => {
+  const doc = () => {
+    document.body.innerHTML = '<div class="btn" style="cursor:pointer">Buy</div><span>Hi</span>';
+    return document;
+  };
+  // Every element gets a probability of 0.99.
+  const client = {
+    score: vi.fn(async (rows) => ({ p: new Float32Array(rows.length / 552).fill(0.99), ms: 1 })),
+  };
+
+  it('suggests elements at or above the threshold', async () => {
+    const { findings } = await findClickOnly(doc(), client, 0.5);
+    expect(findings.length).toBeGreaterThan(0);
+  });
+
+  it('runs the model but suggests nothing when no threshold was reached', async () => {
+    client.score.mockClear();
+    const { findings, timing } = await findClickOnly(doc(), client, null);
+    expect(findings).toEqual([]);
+    expect(client.score).toHaveBeenCalledTimes(1);
+    expect(timing.elements).toBeGreaterThan(0);
+  });
+});
+
+describe('the experimental line under the switch', () => {
+  const shipped = JSON.parse(
+    fs.readFileSync(path.resolve(import.meta.dirname, '../../public/models/clickables-v1.json')),
+  );
+
+  function renderSwitch(result, on = true) {
+    const store = makeStore();
+    store.dispatch(
+      manifestLoaded({ version: '1.0.0', threshold: 0.2, defaultOn: false, testResult: result }),
+    );
+    store.dispatch(modelSwitched(on));
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <ModelSwitch />
+        </MemoryRouter>
+      </Provider>,
+    );
+  }
+
+  it('is built from the shipped manifest test numbers', () => {
+    const r = testResult(shipped);
+    expect(r).toEqual({
+      correct: shipped.operatingThreshold.test.tp,
+      suggestions: shipped.operatingThreshold.test.flagged,
+    });
+    renderSwitch(r);
+    expect(
+      screen.getByText(
+        `Experimental: on held-out test sites, ${r.correct} of ${r.suggestions} suggestions were correct.`,
+      ),
+    ).toBeTruthy();
+  });
+
+  it('follows the numbers it is given, and says "suggestion was" for one', () => {
+    expect(experimentalLine({ correct: 7, suggestions: 12 })).toBe(
+      'Experimental: on held-out test sites, 7 of 12 suggestions were correct.',
+    );
+    expect(experimentalLine({ correct: 1, suggestions: 1 })).toBe(
+      'Experimental: on held-out test sites, 1 of 1 suggestion was correct.',
+    );
+  });
+
+  it('is not shown when the switch is off or the manifest has no test numbers', () => {
+    renderSwitch({ correct: 3, suggestions: 10 }, false);
+    expect(screen.queryByText(/^Experimental:/)).toBeNull();
+    cleanup();
+    renderSwitch(null);
+    expect(screen.queryByText(/^Experimental:/)).toBeNull();
+    expect(testResult({ operatingThreshold: { test: { tp: 'not reached', flagged: 4 } } })).toBe(
+      null,
+    );
   });
 });

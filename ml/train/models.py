@@ -44,13 +44,17 @@ class Calibrated(nn.Module):
 
 def fit_sign(X_train, y_train, X_val, y_val, *, seed: int, epochs: int = 40, patience: int = 7,
              lr: float = 3e-3, weight_decay: float = 1e-4, batch: int = 256, score=None):
-    """Train with a class-weighted loss and AdamW; keep the epoch best on the validation sites."""
+    """Train with a class-weighted loss and AdamW; keep the epoch best on the validation sites.
+
+    With X_val None, train exactly `epochs` epochs and keep the last (used to
+    retrain on every development site for the epoch count found in cross-validation).
+    """
     torch.manual_seed(seed)
     np.random.seed(seed)
     net = SignNet()
     Xt = torch.from_numpy(X_train)
     yt = torch.from_numpy(y_train.astype(np.float32))
-    Xv = torch.from_numpy(X_val)
+    Xv = None if X_val is None else torch.from_numpy(X_val)
     pos = float(yt.sum())
     pos_weight = torch.tensor((len(yt) - pos) / max(pos, 1.0))
     loss_fn = nn.BCEWithLogitsLoss(pos_weight=pos_weight)
@@ -65,6 +69,9 @@ def fit_sign(X_train, y_train, X_val, y_val, *, seed: int, epochs: int = 40, pat
             loss_fn(net(Xt[idx]), yt[idx]).backward()
             opt.step()
         net.eval()
+        if Xv is None:
+            history.append(0.0)
+            continue
         with torch.no_grad():
             pv = torch.sigmoid(net(Xv)).numpy()
         s = score(y_val, pv)
@@ -76,6 +83,8 @@ def fit_sign(X_train, y_train, X_val, y_val, *, seed: int, epochs: int = 40, pat
             since += 1
             if since >= patience:
                 break
+    if Xv is None:
+        return net, {"best_val": None, "epochs_run": len(history), "best_epoch": len(history)}
     net.load_state_dict(best_state)
     net.eval()
     return net, {"best_val": best, "epochs_run": len(history), "best_epoch": int(np.argmax(history)) + 1}

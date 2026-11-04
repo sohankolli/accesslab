@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import historyReducer, { runAdded, historyCleared } from '../../src/features/report/historySlice';
+import historyReducer, {
+  runAdded,
+  historyCleared,
+  selectPreviousScore,
+} from '../../src/features/report/historySlice';
 import auditReducer, {
   auditStarted,
   auditCompleted,
@@ -61,23 +65,67 @@ describe('historySlice', () => {
     const state = historyReducer(undefined, runAdded(audit(1, 50)));
     expect(historyReducer(state, historyCleared())).toEqual({ runs: [], saveFailed: false });
   });
+
+  const onPage = (ranAt, score, name) => ({
+    ...audit(ranAt, score),
+    page: { key: `page:${name.toLowerCase()}`, name },
+  });
+
+  it('saves the page with each run', () => {
+    const state = historyReducer(undefined, runAdded(onPage(1, 50, 'Menu')));
+    expect(state.runs[0].page).toEqual({ key: 'page:menu', name: 'Menu' });
+    expect(historyReducer(state, runAdded(audit(2, 60))).runs[0]).not.toHaveProperty('page');
+  });
+
+  it('keeps 20 runs per page, so one busy page never pushes out another', () => {
+    let state = historyReducer(undefined, runAdded(onPage(1, 50, 'Other')));
+    for (let i = 2; i <= 30; i++) state = historyReducer(state, runAdded(onPage(i, i, 'Busy')));
+    const busy = state.runs.filter((r) => r.page.key === 'page:busy');
+    expect(busy).toHaveLength(20);
+    expect(busy.at(-1).ranAt).toBe(11); // the oldest ones went
+    expect(state.runs.at(-1).page.name).toBe('Other');
+  });
+
+  it('clears one page, leaving the others and the earlier checks', () => {
+    let state = historyReducer(undefined, runAdded(audit(1, 40))); // an earlier check
+    state = historyReducer(state, runAdded(onPage(2, 50, 'A')));
+    state = historyReducer(state, runAdded(onPage(3, 60, 'B')));
+    state = historyReducer(state, runAdded(onPage(4, 70, 'A')));
+    state = historyReducer(state, historyCleared('page:a'));
+    expect(state.runs.map((r) => r.ranAt)).toEqual([3, 1]);
+    state = historyReducer(state, historyCleared('earlier'));
+    expect(state.runs.map((r) => r.ranAt)).toEqual([3]);
+  });
 });
 
 describe('auditSlice', () => {
-  it('has no previousScore after the first audit', () => {
+  it('records a finished audit', () => {
     let state = auditReducer(undefined, auditStarted());
     expect(state.status).toBe('running');
     state = auditReducer(state, auditCompleted(audit(1, 67)));
-    expect(state).toMatchObject({ status: 'done', previousScore: null });
+    expect(state.status).toBe('done');
     expect(state.result.score).toBe(67);
   });
 
-  it('remembers the previous score for the before/after delta', () => {
-    let state = auditReducer(undefined, auditCompleted(audit(1, 67)));
-    state = auditReducer(state, auditCompleted(audit(2, 86)));
-    expect(state.previousScore).toBe(67);
-    state = auditReducer(state, auditCompleted(audit(3, 100)));
-    expect(state.previousScore).toBe(86);
+  it('compares the score only with the last run of the same page', () => {
+    const page = (name) => ({ key: `page:${name}`, name });
+    const check = (root, ranAt, score, name) => {
+      const result = { ...audit(ranAt, score), page: page(name) };
+      return {
+        audit: auditReducer(root.audit, auditCompleted(result)),
+        history: historyReducer(root.history, runAdded(result)),
+      };
+    };
+    let root = { audit: undefined, history: undefined };
+    root = check(root, 1, 67, 'cafe');
+    expect(selectPreviousScore(root)).toBeNull(); // the first check of the café page
+    root = check(root, 2, 40, 'other');
+    expect(selectPreviousScore(root)).toBeNull(); // not compared with the café page
+    root = check(root, 3, 86, 'cafe');
+    expect(selectPreviousScore(root)).toBe(67); // the café's last run, not "other"
+    // Runs saved before pages were recorded never count as the same page.
+    root = { ...root, audit: auditReducer(root.audit, auditCompleted(audit(4, 90))) };
+    expect(selectPreviousScore(root)).toBeNull();
   });
 
   it('stops running and keeps the last result when an audit fails', () => {

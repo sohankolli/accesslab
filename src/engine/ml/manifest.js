@@ -10,7 +10,43 @@ import { ROW_DIM } from './nodeFeatures.js';
 export const FEATURE_VERSION = 'clickables-features-1';
 
 export const MODEL_BASE = '/models/';
+
+/**
+ * What the manifest holds instead of a threshold (and the numbers that need
+ * one) when no threshold reached the target precision on the calibration
+ * websites. Suggestions then start at the manifest's operating threshold, if
+ * it has one; otherwise the model runs but suggests nothing.
+ */
+export const NOT_REACHED = 'not reached';
 export const MANIFEST_URL = `${MODEL_BASE}clickables-v1.json`;
+
+const usableThreshold = (t) => typeof t === 'number' && t > 0 && t < 1;
+
+/**
+ * The probability at which the app makes a suggestion: the manifest's
+ * operating threshold (chosen by a fixed rule in cross-validation), or, for
+ * older manifests without one, the target-precision threshold.
+ * @param {object} m  a valid manifest
+ * @returns {number|null} null when the manifest has neither, so nothing is suggested
+ */
+export function suggestionThreshold(m) {
+  if (m.operatingThreshold?.value === NOT_REACHED) return null;
+  if (usableThreshold(m.operatingThreshold?.value)) return m.operatingThreshold.value;
+  return usableThreshold(m.threshold) ? m.threshold : null;
+}
+
+const isCount = (v) => Number.isInteger(v) && v >= 0;
+
+/**
+ * How the shipped model did on the held-out test websites at its threshold.
+ * @param {object} m  a valid manifest
+ * @returns {{correct: number, suggestions: number}|null} null when the manifest does not say
+ */
+export function testResult(m) {
+  const t = m.operatingThreshold?.test;
+  if (!t || !isCount(t.tp) || !isCount(t.flagged) || t.tp > t.flagged) return null;
+  return { correct: t.tp, suggestions: t.flagged };
+}
 
 /**
  * Check a manifest before its model is used.
@@ -31,8 +67,12 @@ export function validateManifest(m) {
   if (typeof m.model !== 'string' || !/^[\w.-]+\.onnx$/.test(m.model)) {
     throw new Error('The model manifest does not name an .onnx file.');
   }
-  if (typeof m.threshold !== 'number' || m.threshold <= 0 || m.threshold >= 1) {
+  if (!usableThreshold(m.threshold) && m.threshold !== NOT_REACHED) {
     throw new Error('The model manifest has no usable threshold.');
+  }
+  const op = m.operatingThreshold;
+  if (op != null && !usableThreshold(op.value) && op.value !== NOT_REACHED) {
+    throw new Error('The model manifest has no usable operating threshold.');
   }
   return m;
 }

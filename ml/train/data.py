@@ -94,6 +94,32 @@ def split_by_site(sites: np.ndarray, y: np.ndarray | None = None, seed: int = 35
     return tuple(np.flatnonzero(np.isin(sites, p)) for p in parts)
 
 
+def grouped_folds(sites: np.ndarray, y: np.ndarray, k: int = 5, seed: int = 359):
+    """k cross-validation folds grouped by website: no site is in two folds.
+
+    Sites with click-only controls are dealt out first, largest first, each to
+    the fold with the fewest positives so far, so every fold gets its share;
+    the other sites are shuffled and dealt round-robin. Only label counts are
+    looked at, never any model's results. Returns [(train_idx, val_idx)] * k.
+    """
+    rng = np.random.default_rng(seed)
+    unique = np.unique(sites)
+    pos = {s: int(y[sites == s].sum()) for s in unique}
+    positive_sites = [s for s in unique if pos[s] > 0]
+    rng.shuffle(positive_sites)
+    positive_sites.sort(key=lambda s: -pos[s])  # stable: ties keep the shuffled order
+    other = [s for s in unique if pos[s] == 0]
+    rng.shuffle(other)
+    fold_of, load = {}, [0] * k
+    for s in positive_sites:
+        f = min(range(k), key=lambda i: (load[i], i))
+        fold_of[s], load[f] = f, load[f] + pos[s]
+    for i, s in enumerate(other):
+        fold_of[s] = i % k
+    folds = np.array([fold_of[s] for s in sites])
+    return [(np.flatnonzero(folds != f), np.flatnonzero(folds == f)) for f in range(k)]
+
+
 def balanced_split(sites: np.ndarray, y: np.ndarray, tries: int = 200, fractions=(0.70, 0.15, 0.15)):
     """The stratified site split whose share of positives is closest to `fractions`.
 

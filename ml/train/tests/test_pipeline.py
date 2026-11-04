@@ -89,3 +89,47 @@ def test_temperature_scaling_softens_overconfident_logits():
     y = rng.integers(0, 2, 4000)
     z = np.where(y == 1, 1.0, -1.0) * 6 + rng.normal(0, 6, 4000)  # far too confident
     assert fit_temperature(z.astype(np.float32), y) > 2
+
+
+def test_missing_threshold_values_are_marked_not_reached():
+    import train as T
+
+    entry = {"threshold": None, "precision": float("nan"), "recall": None, "pr_auc": 0.5, "tp": 3}
+    T.not_reached(entry, T.THRESHOLD_KEYS)
+    assert entry["threshold"] == entry["precision"] == entry["recall"] == T.NOT_REACHED
+    assert entry["flagged"] == T.NOT_REACHED  # missing keys are marked too
+    assert entry["pr_auc"] == 0.5 and entry["tp"] == 3  # measured values are kept
+    assert "null" not in T.dump(entry) and "NaN" not in T.dump(entry)
+
+
+def test_grouped_folds_keep_each_site_in_one_fold_and_spread_positives():
+    sites, y = toy_sites()
+    folds = D.grouped_folds(sites, y, k=5)
+    assert len(folds) == 5
+    seen = np.zeros(len(y), int)
+    for tr, va in folds:
+        assert not set(sites[tr]) & set(sites[va])
+        assert y[va].sum() > 0  # every fold has click-only controls to validate on
+        seen[va] += 1
+    assert (seen == 1).all()  # every row is validated exactly once
+    counts = [y[va].sum() for _, va in folds]
+    assert max(counts) - min(counts) <= 3
+
+
+def test_fill_unmeasured_leaves_no_null():
+    import train as T
+
+    out = T.fill_unmeasured({"a": None, "b": [float("nan"), 1.0], "c": {"d": None, "e": "x"}})
+    assert out == {"a": "not measured", "b": ["not measured", 1.0], "c": {"d": "not measured", "e": "x"}}
+
+
+def test_threshold_is_the_lowest_with_half_precision_or_none():
+    import train as T
+
+    y = np.array([1, 1, 0, 1, 0, 0, 1, 0, 0, 0])
+    p = np.linspace(0.9, 0.1, 10)
+    t, at = T.choose_threshold(y, p)
+    # Flagging the top 7 gives 4 of 7 (57%); the top 8 gives 4 of 8 (50%), the lowest reaching 50%.
+    assert t == p[7] and at["precision"] == 0.5 and at["flagged"] == 8
+    t, at = T.choose_threshold(np.array([0, 0, 0, 0, 0, 1]), p[:6])
+    assert t is None and at["precision"] == T.NOT_REACHED

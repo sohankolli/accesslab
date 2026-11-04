@@ -123,6 +123,55 @@ const SKIP_TAGS = new Set([
   'CANVAS',
 ]);
 
+/**
+ * Landmarks and other page regions. They hold controls but are never a
+ * click-only control themselves; a click listener on one handles clicks for
+ * the elements inside it.
+ */
+export const LANDMARK_TAGS = new Set([
+  'MAIN',
+  'HEADER',
+  'FOOTER',
+  'NAV',
+  'ASIDE',
+  'FORM',
+  'SEARCH',
+  'SECTION',
+]);
+export const LANDMARK_ROLES = new Set([
+  'main',
+  'navigation',
+  'banner',
+  'contentinfo',
+  'complementary',
+  'search',
+  'form',
+  'region',
+]);
+
+/**
+ * True for a landmark or page region, by tag or by its first role.
+ * @param {string} tag  tag name, any case
+ * @param {string|null} role  the role attribute
+ */
+export function isLandmark(tag, role) {
+  const first = (role || '').trim().split(/\s+/)[0].toLowerCase();
+  return LANDMARK_TAGS.has(tag.toUpperCase()) || LANDMARK_ROLES.has(first);
+}
+
+/**
+ * The same rule for stored markup that starts with an element's start tag
+ * (the crawl's snippets), so the training data can be filtered exactly as the
+ * app picks candidates. A role cut off by a truncated snippet is not seen.
+ * @param {string} html
+ */
+export function isLandmarkMarkup(html) {
+  const m = /^<([a-zA-Z][\w-]*)([^>]*)/.exec(html || '');
+  if (!m) return false;
+  const role = /\srole\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/i.exec(m[2]);
+  return isLandmark(m[1], role ? (role[1] ?? role[2] ?? role[3]) : null);
+}
+
 const upperTag = (el) => el.tagName.toUpperCase();
 
 /** True when the element is a native control or has a control role. */
@@ -132,11 +181,13 @@ export function isControl(el) {
 
 /**
  * Structural candidacy, which does not depend on styles: the element is not a
- * control, not inside one, not a skipped tag and not a part of an SVG drawing.
+ * control, not inside one, not a skipped tag, not a landmark or page region,
+ * and not a part of an SVG drawing.
  * The crawler labels exactly these elements in the live page.
  */
 export function isStructuralCandidate(el) {
   if (SKIP_TAGS.has(upperTag(el))) return false;
+  if (isLandmark(el.tagName, el.getAttribute('role'))) return false;
   if (el.ownerSVGElement) return false; // <path>, <g>…: the <svg> itself is the candidate
   if (isControl(el)) return false;
   if (el.parentElement?.closest(CONTROL_SELECTOR)) return false;

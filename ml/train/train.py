@@ -395,7 +395,7 @@ def main():
         "data": {k: report["data"][k] for k in ("sites", "sources", "rows", "positives", "frameworks", "categories",
                                                   "splits", "note", "rows_excluded_delegated")},
         "metrics": {
-            "test": {k: shipped[k] for k in ("model", "pr_auc", "pr_auc_ci95", "precision", "precision_ci95", "recall",
+            "test": {k: shipped.get(k) for k in ("model", "pr_auc", "pr_auc_ci95", "precision", "precision_ci95", "recall",
                                              "ece", "flagged", "tp", "fp", "fn")},
             "comparisons": [{k: c.get(k) for k in ("model", "pr_auc", "precision", "recall", "threshold")} for c in comparisons],
             "ablations": [{"model": a["model"], "pr_auc": a["pr_auc_mean"]} for a in ablations],

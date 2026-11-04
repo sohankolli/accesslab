@@ -217,19 +217,15 @@ Policy allows `'wasm-unsafe-eval'` and `worker-src 'self'`. If the model cannot 
 
 says "Model suggestions are unavailable" and everything else works as before.
 
-Try it with [`docs/click-only-demo.html`](docs/click-only-demo.html). The rules score that page
+Try it with [`docs/click-only-demo.html`](docs/click-only-demo.html). The rules score that page 100. The current
+model scores its elements but makes no suggestions, because it has no operating threshold (see below).
 
-100, and the model finds its four click-only controls.
+**Status.** The model is experimental and switched off by default. Its suggestions are advisory and never change the score.
 
-**Status.** The current model is the Tranco-trained SIGN graph network and remains switched off by default.
-On the site-disjoint test split (67 sites, 1,668 candidate rows), it achieved PR-AUC 0.9708,
-precision 0.8925, recall 0.9486 and ECE 0.0883. The neighbourhood GBT baseline achieved
-PR-AUC 0.9855, so SIGN did not outperform the baseline. SIGN also misses the precision
-(`0.90`) and calibration (ECE `≤ 0.05`) ship gates. Its ONNX model is 169,515 bytes,
-and the browser benchmark measured a 10 ms median for 2,664 elements; the size and latency
-gates pass. Because not all ship gates pass, the model correctly remains off by default.
-The Tranco-derived training corpus contains 18,345 candidate rows from 450 contributing sites
-(8,751 positive and 9,594 negative labels); 879 of 1,407 crawled page records were usable.
+- **Earlier results were inflated by label leakage.** The earlier training filter dropped rows from pages with delegated (document-level) click listeners only when their label was 0. Counting the raw crawl by page type and label showed that it kept 8,691 positives from delegated pages and only 60 from other pages, while every negative it kept came from a non-delegated page, so the page type gave the label away. The filter now drops whole delegated pages, and every number here comes from that corrected run.
+- **Too few positives to measure the model.** The corrected corpus has 9,654 candidate rows from 136 sites, but only 60 trustworthy positives from 13 sites. The test split has 6 positives from 2 sites, so the 95% intervals cover nearly 0 to 1 and this run cannot measure how good the model is. The shipped SIGN graph network scored PR-AUC 0.176 (0.003–0.793) on the test sites, against 0.525 for the best gradient-boosting baseline.
+- **No operating threshold.** No threshold reached 90% precision on the calibration sites, so the precision gate shows as not met ("not reached"). The baseline-comparison and calibration (ECE 0.062) gates are not met either. Size (169,515 bytes) and latency (8 ms median for 2,664 elements) are met.
+
 The metrics and gate results are in [`ml/reports/evaluation.md`](ml/reports/evaluation.md).
 The pipeline, dataset rebuild instructions and retraining steps are in
 [`ml/README.md`](ml/README.md). Feature owner: Manasvi (branch `feature/ml-clickables`).
@@ -398,13 +394,13 @@ production build on every pull request.
 
 - Live websites cannot be audited by URL: browsers block reading other sites (CORS).
 
-- Model suggestions use a Tranco-derived corpus from 450 contributing sites.
-    Labels have known noise, including delegated click handlers that the static label probe may
-    not attribute to individual elements. An automated 300-label audit judged 188 examples and
-    marked 112 unsure; it found no wrong labels among the judged examples, but only four judged
-    examples were positive. This is not an independent manual owner review. The current test
-    errors (151 false positives and 68 false negatives) still need manual review. The model ships
-    switched off because it misses three of the five ship gates; see `ml/reports/evaluation.md`.
+- Model suggestions are experimental and off by default. The corrected Tranco corpus has only
+  60 trustworthy positives from 13 sites (6 in the test split, from 2 sites), too few to measure
+  how good the model is, and no threshold reaches 90% precision. Labels can still be wrong when a
+  handler sits on an ancestor. An automated 300-label audit judged 188 examples and marked 112
+  unsure; it found no wrong labels among the judged examples, but only four judged examples were
+  positive. This is not an independent manual owner review. The model ships switched off because
+  it misses three of the five ship gates; see `ml/reports/evaluation.md`.
 
 ## Status
 

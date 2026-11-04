@@ -1,20 +1,26 @@
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router';
-import { MANIFEST_URL, MODEL_BASE } from '../../engine/ml/manifest';
+import { MANIFEST_URL, MODEL_BASE, NOT_REACHED } from '../../engine/ml/manifest';
 import { downloadFeedback } from '../audit/feedback';
 import './modelCard.css';
 
-/** A measured number for display; anything missing says so instead of guessing. */
+/**
+ * A measured number for display; anything missing says so instead of guessing.
+ * "not reached" marks a value that needs a threshold when no threshold reached
+ * the target precision.
+ */
+const missing = (v) => (v === NOT_REACHED ? 'not reached' : 'not measured');
 const num = (v, digits = 2) =>
-  typeof v === 'number' && Number.isFinite(v) ? v.toFixed(digits) : 'not measured';
+  typeof v === 'number' && Number.isFinite(v) ? v.toFixed(digits) : missing(v);
 const pct = (v) =>
-  typeof v === 'number' && Number.isFinite(v) ? `${(v * 100).toFixed(1)}%` : 'not measured';
+  typeof v === 'number' && Number.isFinite(v) ? `${(v * 100).toFixed(1)}%` : missing(v);
 const ci = (pair, fmt = num) =>
   Array.isArray(pair) && pair[0] != null
     ? ` (95% interval ${fmt(pair[0])} to ${fmt(pair[1])})`
     : '';
-const count = (v) => (typeof v === 'number' ? v.toLocaleString() : '–');
+const count = (v) =>
+  typeof v === 'number' ? v.toLocaleString() : v === NOT_REACHED ? 'not reached' : '–';
 
 const GATE_LABELS = {
   precision: 'Precision at the shipped threshold',
@@ -25,7 +31,7 @@ const GATE_LABELS = {
 };
 
 function gateValue(id, g) {
-  if (g.value == null) return 'not measured';
+  if (g.value == null || g.value === NOT_REACHED) return missing(g.value);
   if (id === 'precision') return pct(g.value);
   if (id === 'beats_best_gbt') return `PR-AUC ${num(g.value, 3)} vs ${num(g.baseline, 3)}`;
   if (id === 'ece') return num(g.value, 3);
@@ -56,7 +62,7 @@ function GateTable({ caption, gate }) {
                 {gateValue(id, g)}
                 {g.note && <span className="card-note">{g.note}</span>}
               </td>
-              <td>{g.pass == null ? 'Not measured' : g.pass ? 'Pass' : 'Fail'}</td>
+              <td>{g.pass == null ? 'Not measured' : g.pass ? 'Met' : 'Not met'}</td>
             </tr>
           ))}
         </tbody>
@@ -65,7 +71,11 @@ function GateTable({ caption, gate }) {
   );
 }
 
-function Breakdown({ title, rows, field }) {
+/**
+ * Results for one group of test websites. Without a threshold the precision and
+ * recall columns would describe an arbitrary cut-off, so they are left out.
+ */
+function Breakdown({ title, rows, field, hasThreshold }) {
   if (!rows?.length) return null;
   return (
     <div className="table-wrap">
@@ -78,8 +88,8 @@ function Breakdown({ title, rows, field }) {
             <th scope="col">Elements</th>
             <th scope="col">Click-only</th>
             <th scope="col">PR-AUC</th>
-            <th scope="col">Precision</th>
-            <th scope="col">Recall</th>
+            {hasThreshold && <th scope="col">Precision</th>}
+            {hasThreshold && <th scope="col">Recall</th>}
           </tr>
         </thead>
         <tbody>
@@ -90,8 +100,8 @@ function Breakdown({ title, rows, field }) {
               <td>{count(r.rows)}</td>
               <td>{count(r.positives)}</td>
               <td>{num(r.pr_auc, 3)}</td>
-              <td>{pct(r.precision)}</td>
-              <td>{pct(r.recall)}</td>
+              {hasThreshold && <td>{pct(r.precision)}</td>}
+              {hasThreshold && <td>{pct(r.recall)}</td>}
             </tr>
           ))}
         </tbody>
@@ -162,6 +172,7 @@ export default function ModelCard() {
   const test = m.metrics?.test ?? {};
   const card = m.card ?? {};
   const splits = m.data?.splits ?? {};
+  const hasThreshold = typeof m.threshold === 'number';
 
   return (
     <div className="page page--narrow model-card">
@@ -180,6 +191,13 @@ export default function ModelCard() {
 
       <section aria-labelledby="mc-status">
         <h2 id="mc-status">Status</h2>
+        {card.summary?.length > 0 && (
+          <ul>
+            {card.summary.map((t) => (
+              <li key={t}>{t}</li>
+            ))}
+          </ul>
+        )}
         <p>
           {m.defaultOn
             ? 'Every quality check below passed, so suggestions are on by default.'
@@ -214,11 +232,19 @@ export default function ModelCard() {
           in use ({m.architecture}) turns those 552 numbers into a probability. It runs in a Web
           Worker in your browser; your code is never sent anywhere.
         </p>
-        <p>
-          An element is suggested when its probability is at least {num(m.threshold, 3)}. That
-          threshold was chosen on calibration websites to keep precision at 90% or more, because a
-          noisy assistant gets ignored.
-        </p>
+        {hasThreshold ? (
+          <p>
+            An element is suggested when its probability is at least {num(m.threshold, 3)}. That
+            threshold was chosen on calibration websites to keep precision at 90% or more, because a
+            noisy assistant gets ignored.
+          </p>
+        ) : (
+          <p>
+            Threshold: not reached. A threshold is chosen on calibration websites to keep precision
+            at 90% or more, because a noisy assistant gets ignored. No threshold reached that, so
+            the model in use scores every element but suggests none.
+          </p>
+        )}
       </section>
 
       <section aria-labelledby="mc-data">
@@ -243,23 +269,34 @@ export default function ModelCard() {
         <h2 id="mc-accuracy">How accurate it is on websites it never saw</h2>
         <p>Measured for the model in use: {test.model}.</p>
         <ul>
-          <li>
-            Precision {pct(test.precision)}
-            {ci(test.precision_ci95, pct)}: of {count(test.flagged)} suggestions on the test sites,{' '}
-            {count(test.tp)} were real click-only controls.
-          </li>
-          <li>
-            Recall {pct(test.recall)}: it found {count(test.tp)} of{' '}
-            {count((test.tp ?? 0) + (test.fn ?? 0))} click-only controls. The rest are missed, so no
-            suggestions does not mean none exist.
-          </li>
+          {hasThreshold ? (
+            <>
+              <li>
+                Precision {pct(test.precision)}
+                {ci(test.precision_ci95, pct)}: of {count(test.flagged)} suggestions on the test
+                sites, {count(test.tp)} were real click-only controls.
+              </li>
+              <li>
+                Recall {pct(test.recall)}: it found {count(test.tp)} of{' '}
+                {count((test.tp ?? 0) + (test.fn ?? 0))} click-only controls. The rest are missed,
+                so no suggestions does not mean none exist.
+              </li>
+            </>
+          ) : (
+            <li>
+              Precision and recall: not reached. They are measured at the threshold, and no
+              threshold reached 90% precision. The test websites hold{' '}
+              {count(splits.test?.positives)} click-only controls in {count(splits.test?.rows)}{' '}
+              elements.
+            </li>
+          )}
           <li>
             Area under the precision-recall curve {num(test.pr_auc, 3)}
             {ci(test.pr_auc_ci95, (v) => num(v, 3))}.
           </li>
           <li>
-            Calibration error {num(test.ece, 3)}: a suggestion shown at 90% was right about 90% of
-            the time, within that margin.
+            Calibration error {num(test.ece, 3)}: how far the probabilities are from the observed
+            rates. With so few click-only controls, a low value is easy to reach and says little.
           </li>
         </ul>
         <div className="table-wrap">
@@ -306,7 +343,8 @@ export default function ModelCard() {
             A stricter test, with whole sources held out (no site from the same collection in
             training): PR-AUC {num(m.metrics.heldOutSources.sign_pr_auc, 3)} for this network and{' '}
             {num(m.metrics.heldOutSources.gbt_neighbourhood_pr_auc, 3)} for gradient boosting, on{' '}
-            {count(m.metrics.heldOutSources.test_rows)} elements.
+            {count(m.metrics.heldOutSources.test_rows)} elements, of which{' '}
+            {count(m.metrics.heldOutSources.test_positives)} are click-only controls.
           </p>
         )}
         <figure className="reliability">
@@ -318,15 +356,26 @@ export default function ModelCard() {
           />
           <figcaption>
             Reliability on the test websites. Points near the diagonal mean the percentages can be
-            taken at face value.
+            taken at face value, but the test websites hold only {count(splits.test?.positives)}{' '}
+            click-only controls, so each point rests on very few of them.
           </figcaption>
         </figure>
       </section>
 
       <section aria-labelledby="mc-fails">
         <h2 id="mc-fails">Where it fails</h2>
-        <Breakdown title="By framework" rows={m.metrics?.byFramework} field="framework" />
-        <Breakdown title="By kind of site" rows={m.metrics?.byCategory} field="category" />
+        <Breakdown
+          title="By framework"
+          rows={m.metrics?.byFramework}
+          field="framework"
+          hasThreshold={hasThreshold}
+        />
+        <Breakdown
+          title="By kind of site"
+          rows={m.metrics?.byCategory}
+          field="category"
+          hasThreshold={hasThreshold}
+        />
         {card.failurePatterns?.length > 0 && (
           <>
             <h3>Patterns in the errors</h3>
@@ -346,9 +395,9 @@ export default function ModelCard() {
             <li key={t}>{t}</li>
           ))}
           <li>
-            The labels have known noise: elements clicked through one listener on the whole document
-            (event delegation) are labelled as not clickable, so the model learns to miss some of
-            them.
+            The labels have known noise: an element clicked through a handler on one of its
+            ancestors can be labelled as not clickable. Pages that handle clicks with one listener
+            on the whole document (event delegation) were left out of training for this reason.
           </li>
           <li>
             It sees only the HTML and CSS you pasted. A page built by scripts must be pasted as its

@@ -1,18 +1,17 @@
 {
-  "note": "Model card for the Tranco-derived Click-only Controls experiment. The current test error report contains 151 false positives and 68 false negatives. These errors have not yet been manually inspected. No error-pattern claims are made until that review is completed.",
+  "note": "Hand-written model card notes for the corrected-filter Tranco run. train/card.py adds them to public/models/clickables-v1.json.",
+  "summary": [
+    "The model is experimental and switched off by default. Its suggestions are advisory and never change the score, the history or the report.",
+    "Earlier results were inflated by label leakage. The earlier training filter dropped rows from pages with delegated (document-level) click listeners only when their label was 0, and kept every positive. Counting the raw crawl by page type and label showed that it kept 8,691 positives from delegated pages and only 60 from other pages, while every negative it kept came from a non-delegated page, so the page type gave the label away. The filter now drops whole delegated pages, whatever their labels, and every number on this card comes from that corrected run.",
+    "There are only 60 trustworthy positives, from 13 websites. The test split has 6 of them, from 2 websites, so the 95% intervals below cover nearly the whole range from 0 to 1. This run cannot measure how good the model is.",
+    "No threshold reached 90% precision on the calibration websites, so the precision gate is not met (\"not reached\"). The model in use has no operating threshold: it scores elements but makes no suggestions."
+  ],
   "failurePatterns": [
-    "Manual error review is pending. The current errors report contains 151 false positives and 68 false negatives; recurring causes have not yet been established."
+    "The errors have not been reviewed by hand. Because no threshold was reached, the error samples were taken at a probability of 0.5: 50 of the 90 false positives and all 3 false negatives on the test websites. No recurring causes are claimed."
   ],
   "limitations": [
-    "The Tranco top-1000 crawl produced 1407 page records. Of these, 879 pages were used, contributing candidate rows from 450 unique sites.",
-    "The retained training corpus contains 18345 rows: 8751 positive and 9594 negative. It retains direct positive labels and non-delegated negative labels; delegated negatives were filtered upstream.",
-    "All examples belong to the Tranco crawl category. This experiment does not provide a representative breakdown across site types or industries.",
-    "The split is site-disjoint: 315 training sites, 68 calibration sites and 67 test sites.",
-    "Labels are based on automated event-listener and React handler probing. Delegated event handlers and ancestor-level interactions are known sources of label noise.",
-    "The automated label audit sampled 300 candidates: 188 were judged, 112 were unsure and zero errors were found among the 188 judged. Only four positive labels were judged. This is not a completed independent manual owner review.",
-    "On the test split, the shipped SIGN model achieved PR-AUC 0.9708, precision 0.8925, recall 0.9486 and ECE 0.0883, with 151 false positives and 68 false negatives.",
-    "The best neighbourhood gradient-boosting baseline achieved PR-AUC 0.9855, higher than the shipped SIGN model. The SIGN model therefore fails the precision, baseline-comparison and calibration shipping gates.",
-    "The ONNX model is 169515 bytes. Browser benchmarking processed 2664 elements at a median of 10 ms across 10 runs, passing the 50 ms latency requirement.",
-    "The model must remain off by default until all required quality gates pass."
+    "The Tranco top-1,000 crawl produced 1,407 page records; 879 pages were used. After every row from delegated pages was removed, 9,654 candidate rows from 136 websites remain, and only 13 of those websites have any click-only control. One website (capcut.com) has 32 of the 60.",
+    "All examples come from the Tranco crawl. The corpus has no Vue or Angular pages, and the results are not representative of other kinds of websites.",
+    "The automated label audit sampled 300 candidates: 188 were judged, 112 were unsure and none of the 188 judged was wrong. Only four judged labels were positive. This is not a completed independent manual owner review."
   ]
 }

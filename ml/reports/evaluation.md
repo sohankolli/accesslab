@@ -16,7 +16,7 @@ On a delegated page a single document-level listener handles clicks for many ele
 | Delegated pages     |    8,691 |  290,172 |
 | Non-delegated pages |       60 |    9,594 |
 
-After the old filter, 8,691 of the 8,751 positives (99%) came from delegated pages and all 9,594 negatives came from non-delegated pages. A model could score well just by recognising the kind of page an element sits on, without learning whether the element itself is a click-only control. **The old metrics therefore overstate how well the model works and should not be cited.** The corrected filter keeps or drops a page as a whole, so the label can no longer be read off the page type. This matches what `train/train.py` does by default without `--keep-delegated`.
+The old filter therefore kept 8,691 positives from delegated pages and only 60 from other pages, while every negative it kept came from a non-delegated page. A model could score well just by recognising the kind of page an element sits on, without learning whether the element itself is a click-only control. **The old metrics therefore overstate how well the model works and should not be cited.** The corrected filter keeps or drops a page as a whole, so the label can no longer be read off the page type. This matches what `train/train.py` does by default without `--keep-delegated`.
 
 ## Data
 
@@ -41,9 +41,9 @@ PR-AUC values are shown with their 95% site-bootstrap interval. In the new test 
 | Model                                | Old PR-AUC           | New PR-AUC           | Old precision / recall | New precision / recall | Old ECE | New ECE |
 | ------------------------------------ | -------------------- | -------------------- | ---------------------- | ---------------------- | ------- | ------- |
 | Rule: pointer cursor and not native  | 0.8330 (0.675–0.948) | 0.0086 (0.001–0.250) | 1.0000 / 0.1952        | 0.0149 / 0.5000        | —       | —       |
-| Gradient boosting, element only      | 0.9848 (0.957–0.998) | 0.5246 (0.014–1.000) | 0.9079 / 0.9622        | no threshold¹          | —       | —       |
-| Gradient boosting with neighbourhood | 0.9855 (0.955–0.999) | 0.5032 (0.002–1.000) | 0.9045 / 0.9531        | no threshold¹          | 0.0745  | 0.0024² |
-| SIGN graph network (exported)        | 0.9708 (0.915–0.997) | 0.1761 (0.003–0.793) | 0.8925 / 0.9486        | no threshold¹          | 0.0883  | 0.0624  |
+| Gradient boosting, element only      | 0.9848 (0.957–0.998) | 0.5246 (0.014–1.000) | 0.9079 / 0.9622        | not reached¹           | —       | —       |
+| Gradient boosting with neighbourhood | 0.9855 (0.955–0.999) | 0.5032 (0.002–1.000) | 0.9045 / 0.9531        | not reached¹           | 0.0745  | 0.0024² |
+| SIGN graph network (exported)        | 0.9708 (0.915–0.997) | 0.1761 (0.003–0.793) | 0.8925 / 0.9486        | not reached¹           | 0.0883  | 0.0624  |
 
 ¹ No threshold reached the 0.90 precision target on the calibration sites, which hold only 6 positives. Precision and recall at an operating threshold are therefore not reported.
 ² A low ECE is expected when almost every label is 0, and says little about how well the model ranks positives.
@@ -63,15 +63,15 @@ The shipped seed (seed 0 in the new run) was chosen on the calibration sites. It
 
 ## Ship gate
 
-| Condition                                 | Old (SIGN)                             | New (SIGN)                                   |
-| ----------------------------------------- | -------------------------------------- | -------------------------------------------- |
-| Precision ≥ 0.90                          | 0.8925 — Fail                          | no threshold found — Fail                    |
-| Beats best gradient boosting              | 0.9708 vs 0.9855 — Fail                | 0.1761 vs 0.5246 — Fail                      |
-| Calibration error (ECE) ≤ 0.05            | 0.0883 — Fail                          | 0.0624 — Fail                                |
-| File ≤ 1 MB                               | 169,515 bytes — Pass                   | 169,515 bytes — Pass                         |
-| 2,000+ elements in the Web Worker ≤ 50 ms | 10 ms median for 2,664 elements — Pass | not re-measured (same architecture and size) |
+| Condition                                 | Old (SIGN)                             | New (SIGN)                            |
+| ----------------------------------------- | -------------------------------------- | ------------------------------------- |
+| Precision ≥ 0.90                          | 0.8925 — Fail                          | not reached — Not met                 |
+| Beats best gradient boosting              | 0.9708 vs 0.9855 — Fail                | 0.1761 vs 0.5246 — Not met            |
+| Calibration error (ECE) ≤ 0.05            | 0.0883 — Fail                          | 0.0624 — Not met                      |
+| File ≤ 1 MB                               | 169,515 bytes — Pass                   | 169,515 bytes — Pass                  |
+| 2,000+ elements in the Web Worker ≤ 50 ms | 10 ms median for 2,664 elements — Pass | 8 ms median for 2,664 elements — Pass |
 
-Both runs fail the ship gate. The neighbourhood gradient-boosting fallback also fails, because it has no threshold that meets the precision target. `defaultOn` must stay `false`. The new run's model was **not** copied into `public/models/`.
+Both runs fail the ship gate. The neighbourhood gradient-boosting fallback also fails, because it has no threshold that meets the precision target. `defaultOn` must stay `false`. The new run's model, as selected by `train.py` on the calibration split, is the one now shipped in `public/models/`.
 
 ## Errors of the new model
 

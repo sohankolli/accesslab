@@ -62,11 +62,16 @@ node labels/score.mjs
 node labels/probe.mjs
 Important audit distinction: the current reports/label-handcheck.json values describe an automated Playwright/CDP audit, not a completed independent manual owner review. The automated audit sampled 300 labels: 188 were judged, 112 were unsure, and none of the 188 judged labels was marked wrong. Only four judged examples were positive, so this does not establish the positive-label error rate. The independent manual review is still pending. 3. Train, evaluate and export
 The current run was performed from the ml/ directory using the prepared Tranco corpus:
-python .\train\train.py `  --data .\data\crawl-tranco-train`
---out .\data\tranco-run-output\models `  --reports .\data\tranco-run-output\reports`
---fixtures .\data\tranco-run-output\fixtures `  --corpus-note "Tranco top-1000 crawl; retained direct positive labels and non-delegated negative labels; reduced single-seed ablations"`
---keep-delegated
-The training command writes its run-specific model artifacts, reports and parity fixtures under data/tranco-run-output/. The generated model/report artifacts are then used to update the committed app artifacts under ../public/models/ and the model-card notes. Do not commit the crawl data, snippets, virtual environment or run cache.
+
+```
+python train/train.py --data data/crawl-tranco-train \
+  --out data/tranco-run-output-fixed/models \
+  --reports data/tranco-run-output-fixed/reports \
+  --fixtures data/tranco-run-output-fixed/fixtures \
+  --corpus-note "Tranco top-1,000 crawl. Every row from pages with document-level (delegated) click listeners was removed, whatever its label."
+```
+
+The training command writes its run-specific model artifacts, reports and parity fixtures under data/tranco-run-output-fixed/. The model, manifest and parity fixture train.py selected are then copied to ../public/models/ and ../tests/ml/fixtures/, `python train/card.py --out ../public/models --reports reports` adds the model-card notes, and `npm run ml:bench` measures latency. Do not commit the crawl data, snippets, virtual environment or run cache.
 
 The training pipeline includes:
 
@@ -87,35 +92,54 @@ The training pipeline includes:
    npm run lint
    npm run build
    npm run ml:bench
-   The current browser benchmark measured the shipped model at 10 ms median over 10 runs for 2,664 elements.
-   Current Tranco experiment: results and limitations
-   Dataset and split
+   The current browser benchmark measured the shipped model at 8 ms median over 10 runs for 2,664 elements.
+
+## Current Tranco experiment: results and limitations
+
+**Read this first.** The model is experimental and switched off by default. Its suggestions are advisory and never change the score.
+
+### Earlier results were inflated by label leakage
+
+An earlier version of `filter_tranco_training_data.cjs` dropped rows from delegated pages only when their label was 0, and kept every positive. Counting the raw crawl by page type and label showed what that did: it kept 8,691 positives from delegated pages and only 60 from other pages, while every negative it kept came from a non-delegated page. The page type almost gave the label away, so the earlier scores measured that shortcut, not the model. The filter now drops whole delegated pages, whatever their labels, and every number below comes from that corrected run. The earlier numbers appear only in the "old" column of [`reports/evaluation.md`](reports/evaluation.md).
+
+### Dataset and split
 
 - The top-1,000 Tranco crawl produced 1,407 page records: 879 pages were used, 370 errored, 38 were excluded by robots rules and 120 had failed scripts.
-- The prepared corpus contains 18,345 candidate rows from 450 unique sites: 8,751 positives and 9,594 negatives.
-- The site-disjoint split contains 315 training sites, 68 calibration sites and 67 test sites. The corresponding row counts are 12,742, 3,935 and 1,668.
-- The evaluation is based on the Tranco crawl category. It should not be treated as representative performance across all industries, frameworks or types of websites.
-- Labels come from automated event-listener and React-handler probing. Delegated listeners and ancestor-level interactions remain possible sources of label noise.
-  Test metrics
-  Model / result PR-AUC Precision Recall ECE
-  Shipped SIGN model 0.9708 0.8925 0.9486 0.0883
-  Neighbourhood GBT baseline 0.9855 0.9045 0.9531 0.0745
+- The prepared corpus contains 9,654 candidate rows from 136 sites. Only **60 are positives, from 13 sites**; one site (capcut.com) has 32 of them.
+- The site-disjoint split has 95 training sites (5,853 rows, 48 positives), 20 calibration sites (1,193 rows, 6 positives from 2 sites) and 21 test sites (2,608 rows, **6 positives from 2 sites**).
+- All examples come from the Tranco crawl category. They are not representative of all industries, frameworks or types of websites.
+- Labels come from automated event-listener and React-handler probing. Handlers on ancestors remain a possible source of label noise.
 
-On the stricter held-out-source evaluation, SIGN achieved PR-AUC 0.9108, compared with 0.9678 for the neighbourhood GBT baseline.
+### Test metrics
 
-The shipped SIGN test produced 1,254 true positives, 151 false positives and 68 false negatives. The false-positive and false-negative samples have been generated for review, but the requested manual inspection of up to 50 examples of each type has not been completed.
-Shipping gates
-The current SIGN artifact passes two of the five stated gates and fails three:
+With 6 test positives from 2 sites, the 95% site-bootstrap intervals cover nearly the whole range from 0 to 1. **This run cannot measure how good the model is.**
 
-- Pass — model size: 169,515 bytes, below the 1 MB limit.
-- Pass — browser latency: 10 ms median for 2,664 elements, below the 50 ms limit.
-- Fail — precision: 0.8925, below the 0.90 requirement.
-- Fail — baseline comparison: SIGN PR-AUC 0.9708 is below the neighbourhood GBT baseline at 0.9855.
-- Fail — calibration: ECE 0.0883 is above the 0.05 requirement.
-  Therefore, defaultOn must remain false. The model is advisory and must not be described as having passed the production ship gates. The committed manifest currently contains the SIGN model; the fact that its artifact is present does not mean it is approved to be enabled by default.
-  Label audit and remaining work
+| Model                                | PR-AUC (95% interval) | Precision   | Recall      | ECE   |
+| ------------------------------------ | --------------------- | ----------- | ----------- | ----- |
+| Shipped SIGN graph network           | 0.176 (0.003–0.793)   | not reached | not reached | 0.062 |
+| Gradient boosting, element only      | 0.525 (0.014–1.000)   | not reached | not reached | –     |
+| Gradient boosting with neighbourhood | 0.503 (0.002–1.000)   | not reached | not reached | –     |
+| Rule: pointer cursor and not native  | 0.009 (0.001–0.250)   | 1.5%        | 50.0%       | –     |
+
+No threshold reached 90% precision on the 6 calibration positives, so there is no operating threshold. Precision and recall are therefore "not reached", and the model in the app scores elements but makes no suggestions. The SIGN network's test PR-AUC was 0.176, 0.503 and 0.504 for seeds 0, 1 and 2; seed 0 was chosen on the calibration sites. On the stricter held-out-source evaluation (1,598 rows, 6 positives), SIGN scored PR-AUC 0.374 and the neighbourhood baseline 0.503.
+
+### Shipping gates
+
+The shipped SIGN artifact passes two of the five gates:
+
+- Not met: precision ≥ 0.90. No threshold reached it ("not reached").
+- Not met: beats the best gradient-boosting baseline (0.176 vs 0.525 PR-AUC).
+- Not met: calibration error ≤ 0.05 (0.062).
+- Met: model size, 169,515 bytes, below the 1 MB limit.
+- Met: browser latency, 8 ms median for 2,664 elements, below the 50 ms limit.
+
+`defaultOn` therefore stays false. The fallback baseline was not shipped, because it also has no threshold that reaches the precision target.
+
+### Label audit and remaining work
+
 - The automated 300-label audit judged 188 samples, left 112 unsure and marked zero of the judged samples wrong. Only four judged samples were positive. This is not a manual owner hand-check and is not sufficient to claim that labels have been independently validated.
-- Manually inspect the false-positive and false-negative samples (up to 50 of each) and record the findings.
+- Collect more trustworthy positives. This is the main blocker: 99% of the positives found in the crawl are on delegated pages.
+- Manually inspect the false-positive and false-negative samples in data/tranco-run-output-fixed/reports/errors.json, taken at a probability of 0.5, and record the findings.
 - Evaluate additional site types and sources before making claims about broader generalisation.
 - The optional GraphSAGE comparison was not implemented.
 - The dataset and raw snippets are not committed or published as a release. Rebuild them using the crawl and preparation steps above.
@@ -127,6 +151,6 @@ The current SIGN artifact passes two of the five stated gates and fails three:
   The app refuses a manifest whose featureVersion or input size differs from its own feature code. Change FEATURE_VERSION in both train/train.py and src/engine/ml/manifest.js whenever a feature changes.
   Historical implementation notes
 - The GitHub stand-in corpus was used in an earlier experiment only. It is not the source of the current Tranco-trained results.
-- Delegated negative labels were filtered during preparation of the current training corpus. Do not reuse the old 40,874-element exclusion figure from the historical stand-in experiment as a statistic for the Tranco dataset.
+- Every row from delegated pages is removed during preparation of the current training corpus. Do not reuse the old 40,874-element exclusion figure from the historical stand-in experiment as a statistic for the Tranco dataset.
 - The current model results are not a completed manual label audit or a production approval. Keep model suggestions switched off by default until all ship gates and the remaining manual checks are satisfied.
 - The custom GBT ONNX export path is retained because the installed skl2onnx version did not directly support the project's scikit-learn gradient-boosting export. Its numerical parity should continue to be covered by the model tests.

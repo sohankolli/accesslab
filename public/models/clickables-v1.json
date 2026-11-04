@@ -234,8 +234,63 @@
       "pass": true,
       "elements": 2664,
       "runs": [7, 7, 7, 8, 8, 8, 8, 12, 12, 12],
-      "note": "median of 10 runs in the app's Web Worker; headless Chromium, 12 Ã— 12th Gen Intel(R) Core(TM) i7-1255U, no CPU throttling"
+      "note": "median of 10 runs in the app's Web Worker; headless Chromium, 12 \u00c3\u2014 12th Gen Intel(R) Core(TM) i7-1255U, no CPU throttling"
     }
   },
-  "defaultOn": false
+  "defaultOn": false,
+  "card": {
+    "summary": [
+      "The model is experimental and switched off by default. Its suggestions are advisory and never change the score, the history or the report.",
+      "Earlier results were inflated by label leakage. The earlier training filter dropped rows from pages with delegated (document-level) click listeners only when their label was 0, and kept every positive. Counting the raw crawl by page type and label showed that it kept 8,691 positives from delegated pages and only 60 from other pages, while every negative it kept came from a non-delegated page, so the page type gave the label away. The filter now drops whole delegated pages, whatever their labels, and every number on this card comes from that corrected run.",
+      "There are only 60 trustworthy positives, from 13 websites. The test split has 6 of them, from 2 websites, so the 95% intervals below cover nearly the whole range from 0 to 1. This run cannot measure how good the model is.",
+      "No threshold reached 90% precision on the calibration websites, so the precision gate is not met (\"not reached\"). The model in use has no operating threshold: it scores elements but makes no suggestions."
+    ],
+    "failurePatterns": [
+      "The errors have not been reviewed by hand. Because no threshold was reached, the error samples were taken at a probability of 0.5: 50 of the 90 false positives and all 3 false negatives on the test websites. No recurring causes are claimed."
+    ],
+    "limitations": [
+      "The Tranco top-1,000 crawl produced 1,407 page records; 879 pages were used. After every row from delegated pages was removed, 9,654 candidate rows from 136 websites remain, and only 13 of those websites have any click-only control. One website (capcut.com) has 32 of the 60.",
+      "All examples come from the Tranco crawl. The corpus has no Vue or Angular pages, and the results are not representative of other kinds of websites.",
+      "The automated label audit sampled 300 candidates: 188 were judged, 112 were unsure and none of the 188 judged was wrong. Only four judged labels were positive. This is not a completed independent manual owner review."
+    ],
+    "labelProbe": {
+      "method": "Random sample of labelled candidates; each clicked once at its centre in the live page. \"responds\": the DOM, address or a dialog changed within 400 ms. Skipped as untestable: pages that change by themselves, and elements whose centre is a link or button. A response can still come from a handler on an ancestor, so disagreement is an upper bound on label noise.",
+      "sampled": 300,
+      "tested": 287,
+      "untestable": {
+        "element-not-found": 0,
+        "changes-by-itself": 5,
+        "click-lands-on-a-control": 7,
+        "not-clickable": 1,
+        "error": 0
+      },
+      "label1": {
+        "responds": 6,
+        "noResponse": 0
+      },
+      "label0": {
+        "responds": 40,
+        "noResponse": 241
+      },
+      "disagreementRate": 0.13937282229965156,
+      "disagreementRateUsedPages": 0.1643835616438356,
+      "testedUsedPages": 73
+    },
+    "automatedLabelAudit": {
+      "sampled": 300,
+      "judged": 188,
+      "unsure": 112,
+      "wrong": 0,
+      "errorRate": 0,
+      "errorRateCi95": [1.734723475976807e-18, 0.020024853837749476],
+      "label1": {
+        "judged": 4,
+        "wrong": 0
+      },
+      "label0": {
+        "judged": 184,
+        "wrong": 0
+      }
+    }
+  }
 }

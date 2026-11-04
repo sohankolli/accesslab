@@ -47,10 +47,20 @@ const html = `<!doctype html><html lang="en"><head><title>Bench</title></head><b
 
 /** Serve dist/, paste the page, and read the worker's timing from the status line RUNS times. */
 async function measure() {
-  const preview = spawn(process.execPath, [path.join(root, 'node_modules/vite/bin/vite.js'), 'preview', '--port', String(port), '--strictPort'], {
-    cwd: root,
-    stdio: 'ignore',
-  });
+  const preview = spawn(
+    process.execPath,
+    [
+      path.join(root, 'node_modules/vite/bin/vite.js'),
+      'preview',
+      '--port',
+      String(port),
+      '--strictPort',
+    ],
+    {
+      cwd: root,
+      stdio: 'ignore',
+    },
+  );
   for (let i = 0; i < 60; i++) {
     if (
       await fetch(`${base}/audit`).then(

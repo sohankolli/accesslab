@@ -50,17 +50,19 @@ function parseCsv(text) {
   for (let i = 0; i < text.length; i++) {
     const c = text[i];
     if (quoted) {
-      if (c === '"' && text[i + 1] === '"') (field += '"'), i++;
+      if (c === '"' && text[i + 1] === '"') ((field += '"'), i++);
       else if (c === '"') quoted = false;
       else field += c;
     } else if (c === '"') quoted = true;
-    else if (c === ',') row.push(field), (field = '');
-    else if (c === '\n') row.push(field), rows.push(row), (row = []), (field = '');
+    else if (c === ',') (row.push(field), (field = ''));
+    else if (c === '\n') (row.push(field), rows.push(row), (row = []), (field = ''));
     else if (c !== '\r') field += c;
   }
-  if (field || row.length) row.push(field), rows.push(row);
+  if (field || row.length) (row.push(field), rows.push(row));
   const [header, ...data] = rows;
-  return data.filter((r) => r.length > 1).map((r) => Object.fromEntries(header.map((h, i) => [h, r[i] ?? ''])));
+  return data
+    .filter((r) => r.length > 1)
+    .map((r) => Object.fromEntries(header.map((h, i) => [h, r[i] ?? ''])));
 }
 const csvLine = (values) => values.map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`).join(',');
 
@@ -116,7 +118,8 @@ async function inspect(page, row) {
       };
       // Ancestors up to (not including) <body>, nearest first.
       const ancestors = [];
-      for (let a = el.parentElement; a && a !== document.body; a = a.parentElement) ancestors.push(a);
+      for (let a = el.parentElement; a && a !== document.body; a = a.parentElement)
+        ancestors.push(a);
       window.__alAudit = { el, ancestors };
       // jQuery delegated handlers: handlers bound on an ancestor or the document
       // with a selector that matches this element.
@@ -195,9 +198,12 @@ async function inspect(page, row) {
 function verdictFor(row, ev, loadProblem) {
   const label = Number(row.label);
   if (loadProblem) return ['unsure', loadProblem];
-  if (ev.how === 'missing') return ['unsure', 'element not on the page any more (page changed since the crawl)'];
-  if (ev.how === 'ambiguous') return ['unsure', 'page changed; several elements match the snippet, cannot tell which one'];
-  if (!ev.candidate) return ['unsure', 'element is no longer a candidate (now a control or inside one)'];
+  if (ev.how === 'missing')
+    return ['unsure', 'element not on the page any more (page changed since the crawl)'];
+  if (ev.how === 'ambiguous')
+    return ['unsure', 'page changed; several elements match the snippet, cannot tell which one'];
+  if (!ev.candidate)
+    return ['unsure', 'element is no longer a candidate (now a control or inside one)'];
   const own = ev.ownHandler || ev.reactOwn.length > 0;
   const evidence = [
     ev.ownHandler && `own listener (${ev.ownTypes.filter((t) => TYPES.includes(t)).join(', ')})`,
@@ -206,7 +212,8 @@ function verdictFor(row, ev, loadProblem) {
     .filter(Boolean)
     .join('; ');
   const delegatedBits = [
-    ev.ancestorListener >= 0 && `ancestor ${ev.ancestorListener + 1} level(s) up has a click-type listener`,
+    ev.ancestorListener >= 0 &&
+      `ancestor ${ev.ancestorListener + 1} level(s) up has a click-type listener`,
     ev.reactAncestor >= 0 && `React handler on ancestor ${ev.reactAncestor + 1} level(s) up`,
     ev.jqDelegated.length && `jQuery delegated ${ev.jqDelegated.join(', ')}`,
     ev.docLevel.length && `document-level listeners (${ev.docLevel.join(', ')})`,
@@ -215,13 +222,18 @@ function verdictFor(row, ev, loadProblem) {
   if (label === 1) {
     return own
       ? ['correct', `label 1 confirmed: ${evidence}.${via}`]
-      : ['wrong', `label 1 but no own click/mousedown/pointerdown/keydown listener and no React handler on the element.${delegatedBits.length ? ` Only: ${delegatedBits.join('; ')}.` : ''}${via}`];
+      : [
+          'wrong',
+          `label 1 but no own click/mousedown/pointerdown/keydown listener and no React handler on the element.${delegatedBits.length ? ` Only: ${delegatedBits.join('; ')}.` : ''}${via}`,
+        ];
   }
   if (own) return ['wrong', `label 0 but the element has ${evidence}.${via}`];
   return [
     'correct',
     `label 0 confirmed: no own listener or React handler.${
-      delegatedBits.length ? ` May still be clickable through delegation: ${delegatedBits.join('; ')} (known label noise under the rule).` : ''
+      delegatedBits.length
+        ? ` May still be clickable through delegation: ${delegatedBits.join('; ')} (known label noise under the rule).`
+        : ''
     }${via}`,
   ];
 }
@@ -238,7 +250,8 @@ for (const row of sheet) {
   else if (/^https?:/.test(row.url)) {
     const origin = new URL(url).origin;
     if (!robotsCache.has(origin)) robotsCache.set(origin, await robotsFor(origin));
-    if (!allowed(robotsCache.get(origin), new URL(url).pathname)) loadProblem = 'robots.txt disallows this page now';
+    if (!allowed(robotsCache.get(origin), new URL(url).pathname))
+      loadProblem = 'robots.txt disallows this page now';
   }
   if (!loadProblem) {
     const context = await browser.newContext({ viewport: { width: 1280, height: 800 } });
@@ -269,26 +282,58 @@ const headerIn = Object.keys(sheet[0]);
 const completedHeader = [...headerIn.filter((h) => h !== 'verdict'), 'verdict', 'reason'];
 fs.writeFileSync(
   path.join(outDir, 'handcheck.completed.csv'),
-  [completedHeader.join(','), ...results.map(({ row, verdict, reason }) =>
-    csvLine([...headerIn.filter((h) => h !== 'verdict').map((h) => row[h]), verdict, reason]),
-  )].join('\n') + '\n',
+  [
+    completedHeader.join(','),
+    ...results.map(({ row, verdict, reason }) =>
+      csvLine([...headerIn.filter((h) => h !== 'verdict').map((h) => row[h]), verdict, reason]),
+    ),
+  ].join('\n') + '\n',
 );
 const notesHeader = [
-  'n', 'site', 'url', 'label', 'verdict', 'found_by', 'candidate_now', 'own_listener_types',
-  'react_own_handlers', 'ancestor_listener_levels_up', 'react_ancestor_levels_up', 'jquery_delegated',
-  'document_level_listeners', 'cursor_recorded_not_used', 'crawl_framework', 'crawl_delegated', 'problem',
+  'n',
+  'site',
+  'url',
+  'label',
+  'verdict',
+  'found_by',
+  'candidate_now',
+  'own_listener_types',
+  'react_own_handlers',
+  'ancestor_listener_levels_up',
+  'react_ancestor_levels_up',
+  'jquery_delegated',
+  'document_level_listeners',
+  'cursor_recorded_not_used',
+  'crawl_framework',
+  'crawl_delegated',
+  'problem',
 ];
 fs.writeFileSync(
   path.join(outDir, 'audit_notes.csv'),
-  [notesHeader.join(','), ...results.map(({ row, ev, verdict, loadProblem, meta: m }) =>
-    csvLine([
-      row.n, row.site, row.url, row.label, verdict, ev.how ?? '', ev.candidate ?? '',
-      (ev.ownTypes ?? []).join(' '), (ev.reactOwn ?? []).join(' '),
-      ev.ancestorListener >= 0 ? ev.ancestorListener + 1 : '', ev.reactAncestor >= 0 ? ev.reactAncestor + 1 : '',
-      (ev.jqDelegated ?? []).join(' | '), (ev.docLevel ?? []).join(' '), ev.cursor ?? '',
-      m.framework ?? '', m.delegated ?? '', loadProblem ?? '',
-    ]),
-  )].join('\n') + '\n',
+  [
+    notesHeader.join(','),
+    ...results.map(({ row, ev, verdict, loadProblem, meta: m }) =>
+      csvLine([
+        row.n,
+        row.site,
+        row.url,
+        row.label,
+        verdict,
+        ev.how ?? '',
+        ev.candidate ?? '',
+        (ev.ownTypes ?? []).join(' '),
+        (ev.reactOwn ?? []).join(' '),
+        ev.ancestorListener >= 0 ? ev.ancestorListener + 1 : '',
+        ev.reactAncestor >= 0 ? ev.reactAncestor + 1 : '',
+        (ev.jqDelegated ?? []).join(' | '),
+        (ev.docLevel ?? []).join(' '),
+        ev.cursor ?? '',
+        m.framework ?? '',
+        m.delegated ?? '',
+        loadProblem ?? '',
+      ]),
+    ),
+  ].join('\n') + '\n',
 );
 
 const verified = results.filter((r) => r.verdict !== 'unsure');
@@ -312,8 +357,13 @@ const delegatedOnly = verified.filter(
   (r) => r.verdict === 'correct' && Number(r.row.label) === 0 && /delegation/.test(r.reason),
 );
 const unsure = results.filter((r) => r.verdict === 'unsure');
-const unsureReasons = unsure.reduce((m, r) => ((m[r.reason.split(':')[0]] = (m[r.reason.split(':')[0]] ?? 0) + 1), m), {});
-const inaccessible = [...new Set(unsure.filter((r) => r.loadProblem).map((r) => `${r.row.site} (${r.loadProblem})`))];
+const unsureReasons = unsure.reduce(
+  (m, r) => ((m[r.reason.split(':')[0]] = (m[r.reason.split(':')[0]] ?? 0) + 1), m),
+  {},
+);
+const inaccessible = [
+  ...new Set(unsure.filter((r) => r.loadProblem).map((r) => `${r.row.site} (${r.loadProblem})`)),
+];
 const ci = wilson(wrong.length, verified.length);
 
 const md = `# Label audit: hand-check of ${results.length} labels
@@ -355,7 +405,11 @@ ${wrong.length ? wrong.map((r) => `- Row ${r.row.n}, ${r.row.site}: ${r.reason}`
 
 ## Rows that could not be verified
 
-${Object.entries(unsureReasons).map(([k, v]) => `- ${k}: ${v}`).join('\n') || 'None.'}
+${
+  Object.entries(unsureReasons)
+    .map(([k, v]) => `- ${k}: ${v}`)
+    .join('\n') || 'None.'
+}
 
 ### Inaccessible pages
 
@@ -368,4 +422,6 @@ ${inaccessible.length ? inaccessible.map((s) => `- ${s}`).join('\n') : 'None.'}
 - The verdict checks the label against the rule. Whether the rule itself is a good definition of "click-only control" is a separate question: see the delegation section above.
 `;
 fs.writeFileSync(path.join(outDir, 'label-audit-summary.md'), md);
-console.log(`\n${verified.length} verified, ${wrong.length} wrong, ${unsure.length} unsure. Files written to ${outDir}/`);
+console.log(
+  `\n${verified.length} verified, ${wrong.length} wrong, ${unsure.length} unsure. Files written to ${outDir}/`,
+);

@@ -390,12 +390,12 @@ production build on every pull request.
 - Live websites cannot be audited by URL: browsers block reading other sites (CORS).
 
 - Model suggestions use a Tranco-derived corpus from 450 contributing sites.
-  Labels have known noise, including delegated click handlers that the static label probe may
-  not attribute to individual elements. An automated 300-label audit judged 188 examples and
-  marked 112 unsure; it found no wrong labels among the judged examples, but only four judged
-  examples were positive. This is not an independent manual owner review. The current test
-  errors (151 false positives and 68 false negatives) still need manual review. The model ships
-  switched off because it misses three of the five ship gates; see `ml/reports/evaluation.md`.
+    Labels have known noise, including delegated click handlers that the static label probe may
+    not attribute to individual elements. An automated 300-label audit judged 188 examples and
+    marked 112 unsure; it found no wrong labels among the judged examples, but only four judged
+    examples were positive. This is not an independent manual owner review. The current test
+    errors (151 false positives and 68 false negatives) still need manual review. The model ships
+    switched off because it misses three of the five ship gates; see `ml/reports/evaluation.md`.
 
 ## Status
 

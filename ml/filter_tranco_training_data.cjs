@@ -1,24 +1,27 @@
-﻿const fs = require("node:fs");
-const readline = require("node:readline");
-const { once } = require("node:events");
-const { finished } = require("node:stream/promises");
+﻿const fs = require('node:fs');
+const readline = require('node:readline');
+const { once } = require('node:events');
+const { finished } = require('node:stream/promises');
 
 (async () => {
-  const source = "data/crawl-tranco/rows.jsonl";
-  const targetDir = "data/crawl-tranco-train";
+  const source = 'data/crawl-tranco/rows.jsonl';
+  const targetDir = 'data/crawl-tranco-train';
   const target = `${targetDir}/rows.jsonl`;
 
   fs.mkdirSync(targetDir, { recursive: true });
 
   const input = readline.createInterface({
     input: fs.createReadStream(source),
-    crlfDelay: Infinity
+    crlfDelay: Infinity,
   });
 
   const output = fs.createWriteStream(target);
   const writeFinished = finished(output);
 
-  let total = 0, kept = 0, positive = 0, negative = 0;
+  let total = 0,
+    kept = 0,
+    positive = 0,
+    negative = 0;
   const sites = new Set();
 
   for await (const line of input) {
@@ -29,7 +32,7 @@ const { finished } = require("node:stream/promises");
 
     // Keep every positive; keep negatives only from non-delegated pages.
     if (!row.delegated || Number(row.label) === 1) {
-      if (!output.write(line + "\n")) await once(output, "drain");
+      if (!output.write(line + '\n')) await once(output, 'drain');
 
       kept++;
       if (Number(row.label) === 1) positive++;
@@ -47,9 +50,9 @@ const { finished } = require("node:stream/promises");
     keptRows: kept,
     positiveRows: positive,
     negativeRows: negative,
-    uniqueSites: sites.size
+    uniqueSites: sites.size,
   });
-})().catch(error => {
+})().catch((error) => {
   console.error(error);
   process.exit(1);
 });

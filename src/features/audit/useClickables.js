@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { extractRows, ROW_DIM } from '../../engine/ml/nodeFeatures';
 import { occludedRows, topCues, CUE_GROUPS } from '../../engine/ml/explain';
-import { MANIFEST_URL, validateManifest } from '../../engine/ml/manifest';
+import { MANIFEST_URL, NOT_REACHED, validateManifest } from '../../engine/ml/manifest';
 import { modelClient } from '../../engine/ml/client';
 import { cssPath } from '../../engine/dom/cssPath';
 import { writePref } from '../../services/storage';
@@ -37,7 +37,8 @@ const sourceRef = (el) => ({
  * Score one document with the model. Pure enough to test: pass a client.
  * @param {Document} doc
  * @param {{score: (rows: Float32Array) => Promise<{p: Float32Array, ms: number}>}} client
- * @param {number} threshold  from the manifest
+ * @param {number|null} threshold  from the manifest; null when none reached the target
+ *   precision, so nothing is suggested
  */
 export async function findClickOnly(doc, client, threshold) {
   const t0 = performance.now();
@@ -48,7 +49,7 @@ export async function findClickOnly(doc, client, threshold) {
   const { p, ms } = await client.score(flat);
 
   const flagged = [...p.keys()]
-    .filter((i) => p[i] >= threshold)
+    .filter((i) => typeof threshold === 'number' && p[i] >= threshold)
     .sort((a, b) => p[b] - p[a])
     .slice(0, MAX_FINDINGS);
 
@@ -125,7 +126,7 @@ export function useClickables(docRef) {
           dispatch(
             manifestLoaded({
               version: valid.version,
-              threshold: valid.threshold,
+              threshold: valid.threshold === NOT_REACHED ? null : valid.threshold,
               defaultOn: valid.defaultOn === true,
             }),
           );

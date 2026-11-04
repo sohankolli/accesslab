@@ -1,21 +1,21 @@
 {
- "conditions": "headless Chromium, 16 Ã— AMD Ryzen 7 7435HS, no CPU throttling",
+ "conditions": "headless Chromium, 12 Ã— 12th Gen Intel(R) Core(TM) i7-1255U, no CPU throttling",
  "elements": 2000,
  "shipped": {
   "elements": 2664,
   "runs": [
-   10,
-   10,
-   10,
-   10,
-   10,
-   10,
-   10,
-   10,
-   11,
-   11
+   7,
+   7,
+   7,
+   8,
+   8,
+   8,
+   8,
+   12,
+   12,
+   12
   ],
-  "median": 10
+  "median": 8
  },
  "graph": null
 }

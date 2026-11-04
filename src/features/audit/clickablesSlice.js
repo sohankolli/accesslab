@@ -18,7 +18,7 @@ const clickablesSlice = createSlice({
     enabled: typeof saved().enabled === 'boolean' ? saved().enabled : null, // null: follow the model's default
     status: 'idle', // 'idle' | 'loading' | 'checking' | 'ready' | 'unavailable'
     message: null, // why suggestions are unavailable
-    model: null, // {version, threshold, defaultOn} from the manifest
+    model: null, // {version, threshold, defaultOn} from the manifest; threshold null when none was reached
     findings: [],
     timing: null, // {elements, featuresMs, modelMs}
     checks: 0, // finished checks, so a new result can be told from an identical old one

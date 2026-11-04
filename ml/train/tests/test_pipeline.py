@@ -89,3 +89,14 @@ def test_temperature_scaling_softens_overconfident_logits():
     y = rng.integers(0, 2, 4000)
     z = np.where(y == 1, 1.0, -1.0) * 6 + rng.normal(0, 6, 4000)  # far too confident
     assert fit_temperature(z.astype(np.float32), y) > 2
+
+
+def test_missing_threshold_values_are_marked_not_reached():
+    import train as T
+
+    entry = {"threshold": None, "precision": float("nan"), "recall": None, "pr_auc": 0.5, "tp": 3}
+    T.not_reached(entry, T.THRESHOLD_KEYS)
+    assert entry["threshold"] == entry["precision"] == entry["recall"] == T.NOT_REACHED
+    assert entry["flagged"] == T.NOT_REACHED  # missing keys are marked too
+    assert entry["pr_auc"] == 0.5 and entry["tp"] == 3  # measured values are kept
+    assert "null" not in T.dump(entry) and "NaN" not in T.dump(entry)

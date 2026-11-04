@@ -15,7 +15,11 @@ function statusText(c, on) {
   if (c.status === 'checking') return 'Looking for click-only controls…';
   if (c.timing) {
     const t = c.timing;
-    return `Checked ${t.elements.toLocaleString()} ${t.elements === 1 ? 'element' : 'elements'} in ${Math.round(t.modelMs)} ms. Suggestions never change the score.`;
+    const none =
+      c.model.threshold == null
+        ? ' No threshold reached 90% precision, so the model makes no suggestions.'
+        : '';
+    return `Checked ${t.elements.toLocaleString()} ${t.elements === 1 ? 'element' : 'elements'} in ${Math.round(t.modelMs)} ms.${none} Suggestions never change the score.`;
   }
   return 'Suggestions never change the score.';
 }

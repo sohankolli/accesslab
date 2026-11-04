@@ -43,6 +43,23 @@ def parse_args():
     return ap.parse_args()
 
 
+NOT_REACHED = "not reached"
+
+
+def not_reached(entry: dict, keys) -> dict:
+    """Mark values that need an operating threshold as "not reached" when no
+    threshold met the target precision on the calibration sites, so the
+    manifest says why they are missing instead of holding null."""
+    for k in keys:
+        v = entry.get(k)
+        if v is None or (isinstance(v, (float, np.floating)) and not np.isfinite(v)):
+            entry[k] = NOT_REACHED
+    return entry
+
+
+THRESHOLD_KEYS = ("threshold", "precision", "precision_ci95", "recall", "flagged", "tp", "fp", "fn")
+
+
 def finite(obj):
     """JSON has no NaN or infinity: anything not measured is written as null."""
     if isinstance(obj, dict):
@@ -409,9 +426,22 @@ def main():
         "gate": gate,
         "defaultOn": False,  # set by npm run ml:bench once latency is measured and every condition passes
     }
+    # A model with no threshold that reaches the target precision has no
+    # operating point: say so in every value that depends on one.
+    if ship_threshold is None:
+        not_reached(manifest, ("threshold",))
+        not_reached(manifest["metrics"]["test"], THRESHOLD_KEYS)
+        not_reached(manifest["gate"]["precision"], ("value",))
+    for c in manifest["metrics"]["comparisons"]:
+        if c.get("threshold") is None:
+            not_reached(c, THRESHOLD_KEYS)
+    if threshold is None:
+        not_reached(manifest["metrics"]["graphNetwork"], ("precision", "recall"))
+        not_reached(manifest["metrics"]["graphNetwork"]["gate"]["precision"], ("value",))
     (args.out / "clickables-v1.json").write_text(dump(manifest) + "\n")
     if use_fallback:  # the graph network, ready for the benchmark and for comparison
-        graph_manifest = {**manifest, "model": "clickables-graph.onnx", "threshold": threshold,
+        graph_manifest = {**manifest, "model": "clickables-graph.onnx",
+                          "threshold": NOT_REACHED if threshold is None else threshold,
                           "temperature": temperature, "shipped": "graph"}
         (artifacts / "clickables-graph.json").write_text(dump(graph_manifest) + "\n")
     print(json.dumps({"shipped": shipped, "gate": gate, "graph_gate": graph_gate}, indent=1, default=float))

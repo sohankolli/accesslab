@@ -9,10 +9,11 @@ import { auditCompleted } from '../../src/features/audit/auditSlice';
 import {
   checkCompleted,
   manifestLoaded,
+  modelSwitched,
   modelUnavailable,
   selectMarkedFindings,
 } from '../../src/features/audit/clickablesSlice';
-import { useClickables } from '../../src/features/audit/useClickables';
+import { findClickOnly, useClickables } from '../../src/features/audit/useClickables';
 import { modelClient, resetModelClient } from '../../src/engine/ml/client';
 import { makeStore } from '../helpers/store';
 
@@ -125,6 +126,22 @@ describe('model suggestions in the findings pane', () => {
     expect(store.getState().clickables.enabled).toBe(false);
   });
 
+  it('says why there are no suggestions when no threshold was reached', () => {
+    const store = setup();
+    act(() => {
+      store.dispatch(manifestLoaded({ version: '1.0.0', threshold: null, defaultOn: false }));
+      store.dispatch(modelSwitched(true));
+      store.dispatch(
+        checkCompleted({ findings: [], timing: { elements: 10, featuresMs: 1, modelMs: 2 } }),
+      );
+    });
+    expect(
+      screen.getByText(/Checked 10 elements in 2 ms\. No threshold reached 90% precision/),
+    ).toBeTruthy();
+    expect(screen.queryByText('Possibly click-only')).toBeNull();
+    expect(store.getState().audit.result.score).toBe(77);
+  });
+
   it('says plainly when the model is unavailable, and the rules carry on', () => {
     const store = setup();
     act(() => store.dispatch(modelUnavailable('The model file could not be loaded (HTTP 404).')));
@@ -193,5 +210,29 @@ describe('model worker client', () => {
       },
     };
     await expect(modelClient(() => worker).ready).rejects.toThrow('No model');
+  });
+});
+
+describe('scoring a page', () => {
+  const doc = () => {
+    document.body.innerHTML = '<div class="btn" style="cursor:pointer">Buy</div><span>Hi</span>';
+    return document;
+  };
+  // Every element gets a probability of 0.99.
+  const client = {
+    score: vi.fn(async (rows) => ({ p: new Float32Array(rows.length / 552).fill(0.99), ms: 1 })),
+  };
+
+  it('suggests elements at or above the threshold', async () => {
+    const { findings } = await findClickOnly(doc(), client, 0.5);
+    expect(findings.length).toBeGreaterThan(0);
+  });
+
+  it('runs the model but suggests nothing when no threshold was reached', async () => {
+    client.score.mockClear();
+    const { findings, timing } = await findClickOnly(doc(), client, null);
+    expect(findings).toEqual([]);
+    expect(client.score).toHaveBeenCalledTimes(1);
+    expect(timing.elements).toBeGreaterThan(0);
   });
 });

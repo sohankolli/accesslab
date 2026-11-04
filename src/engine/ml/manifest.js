@@ -10,6 +10,14 @@ import { ROW_DIM } from './nodeFeatures.js';
 export const FEATURE_VERSION = 'clickables-features-1';
 
 export const MODEL_BASE = '/models/';
+
+/**
+ * What the manifest holds instead of a threshold (and the numbers that need
+ * one) when no threshold reached the target precision on the calibration
+ * websites. The model still runs, but it has no operating point, so it
+ * suggests nothing.
+ */
+export const NOT_REACHED = 'not reached';
 export const MANIFEST_URL = `${MODEL_BASE}clickables-v1.json`;
 
 /**
@@ -31,7 +39,8 @@ export function validateManifest(m) {
   if (typeof m.model !== 'string' || !/^[\w.-]+\.onnx$/.test(m.model)) {
     throw new Error('The model manifest does not name an .onnx file.');
   }
-  if (typeof m.threshold !== 'number' || m.threshold <= 0 || m.threshold >= 1) {
+  const usable = typeof m.threshold === 'number' && m.threshold > 0 && m.threshold < 1;
+  if (!usable && m.threshold !== NOT_REACHED) {
     throw new Error('The model manifest has no usable threshold.');
   }
   return m;

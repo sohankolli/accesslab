@@ -1,230 +1,214 @@
 {
- "generated": "2026-11-02T12:44:28+00:00",
+ "generated": "2026-11-04T23:31:16+00:00",
  "feature_version": "clickables-features-1",
  "data": {
-  "pages_crawled": 1174,
-  "pages_used": 1061,
+  "pages_crawled": 1407,
+  "pages_used": 879,
   "pages_dropped": {
-   "failed-scripts": 113
+   "error": 370,
+   "robots": 38,
+   "failed-scripts": 120
   },
-  "sites": 752,
-  "sources": 16,
-  "rows": 15006,
-  "positives": 640,
+  "sites": 136,
+  "sources": 136,
+  "rows": 9654,
+  "positives": 60,
   "frameworks": {
-   "other": 14712,
-   "jquery": 265,
-   "react": 14,
-   "vue": 6,
-   "angular": 9
+   "other": 8462,
+   "jquery": 744,
+   "react": 448
   },
   "categories": {
-   "demo-projects": 10141,
-   "landing-pages": 499,
-   "framework-apps": 316,
-   "reference-examples": 3162,
-   "admin-templates": 888
+   "tranco": 9654
   },
   "delegated_pages_excluded": true,
-  "rows_excluded_delegated": 40874,
-  "positives_excluded_delegated": 68,
-  "note": "Stand-in corpus: real, hand-written websites from 25 public GitHub repositories (pinned commits, listed in ml/corpus/sources.json), served locally and crawled with the same two-pass labeller as the Tranco plan, because the public web was not reachable from the build machine. Mostly small vanilla-JavaScript projects and reference examples; React and admin-template sites are rare. Pages with document-level click listeners were left out because their labels cannot be trusted. Retrain on the Tranco crawl before trusting it on production sites.",
+  "rows_excluded_delegated": 0,
+  "positives_excluded_delegated": 0,
+  "note": "Tranco top-1,000 crawl. Every row from pages with document-level (delegated) click listeners was removed, whatever its label.",
   "splits": {
    "train": {
-    "sites": 526,
-    "rows": 11222,
-    "positives": 457
+    "sites": 95,
+    "rows": 5853,
+    "positives": 48
    },
    "calibration": {
-    "sites": 113,
-    "rows": 1884,
-    "positives": 89
+    "sites": 20,
+    "rows": 1193,
+    "positives": 6
    },
    "test": {
-    "sites": 113,
-    "rows": 1900,
-    "positives": 94
+    "sites": 21,
+    "rows": 2608,
+    "positives": 6
    }
   },
-  "split_seed": 94
+  "split_seed": 25
  },
  "comparisons": [
   {
    "model": "Rule: pointer cursor and not native",
-   "pr_auc": 0.542231262578407,
+   "pr_auc": 0.008612993315630436,
    "pr_auc_ci95": [
-    0.05801484046826612,
-    0.8793285013276121
+    0.001062457436950867,
+    0.25
    ],
    "threshold": 0.5,
-   "precision": 0.5944055944055944,
-   "recall": 0.9042553191489362,
-   "tp": 85,
-   "fp": 58,
-   "fn": 9,
-   "flagged": 143,
+   "precision": 0.014925373134328358,
+   "recall": 0.5,
+   "tp": 3,
+   "fp": 198,
+   "fn": 3,
+   "flagged": 201,
    "precision_ci95": [
-    0.10521778584392014,
-    0.9367134693375937
+    0.0,
+    0.25
    ]
   },
   {
    "model": "Gradient boosting, element only",
-   "pr_auc": 0.8709751684473442,
+   "pr_auc": 0.5245901639344263,
    "pr_auc_ci95": [
-    0.09269710572585314,
-    0.9801640532947824
-   ],
-   "threshold": 0.868277626081421,
-   "precision": 0.7553191489361702,
-   "recall": 0.7553191489361702,
-   "tp": 71,
-   "fp": 23,
-   "fn": 23,
-   "flagged": 94,
-   "precision_ci95": [
-    0.027307461792028767,
+    0.014048476907959384,
     1.0
    ],
+   "threshold": null,
+   "precision": null,
+   "recall": null,
    "params": {
     "learning_rate": 0.1,
     "max_leaf_nodes": 15,
-    "max_iter": 200
+    "max_iter": 300
    }
   },
   {
    "model": "Gradient boosting with neighbourhood",
-   "pr_auc": 0.8757542373383495,
+   "pr_auc": 0.5032435231154855,
    "pr_auc_ci95": [
-    0.40250569390661245,
-    0.9873514193960328
-   ],
-   "threshold": 0.5534049093008068,
-   "precision": 0.9295774647887324,
-   "recall": 0.7021276595744681,
-   "tp": 66,
-   "fp": 5,
-   "fn": 28,
-   "flagged": 71,
-   "precision_ci95": [
-    0.3898628048780488,
+    0.0017891654909620936,
     1.0
    ],
+   "threshold": null,
+   "precision": null,
+   "recall": null,
    "params": {
     "learning_rate": 0.1,
     "max_leaf_nodes": 31,
-    "max_iter": 200
+    "max_iter": 300
    }
   },
   {
    "model": "SIGN graph network",
-   "pr_auc": 0.9361013076433593,
+   "pr_auc": 0.1760919970556091,
    "pr_auc_ci95": [
-    0.3380638064888144,
-    0.986803576592263
+    0.0030686274733185757,
+    0.7931612318840578
    ],
-   "threshold": 0.9094589948654175,
-   "precision": 0.7589285714285714,
-   "recall": 0.9042553191489362,
-   "tp": 85,
-   "fp": 27,
-   "fn": 9,
-   "flagged": 112,
-   "precision_ci95": [
-    0.1555128205128205,
-    1.0
-   ],
+   "threshold": null,
+   "precision": null,
+   "recall": null,
    "seed": 2,
-   "temperature": 1.0099319219589233,
-   "best_val": 0.5110006996891794,
-   "epochs_run": 12,
+   "temperature": 0.4899311363697052,
+   "best_val": 0.003897340669307196,
+   "epochs_run": 9,
    "best_epoch": 2,
    "pr_auc_all_seeds": [
-    0.9361013076433593,
-    0.567736197182938,
-    0.5471689663401766
+    0.1760919970556091,
+    0.5028205758832605,
+    0.5041732000233716
    ],
-   "ece": 0.10976021417311418,
-   "ece_uncalibrated": 0.1090299148084504,
+   "ece": 0.0624451743350278,
+   "ece_uncalibrated": 0.1317281522314947,
    "params": 40705
   }
  ],
  "ablations": [
   {
    "model": "SIGN without class-name words",
-   "pr_auc_mean": 0.905618820317116,
+   "pr_auc_mean": 0.10767641437414761,
    "pr_auc_all_seeds": [
-    0.8735993488337207,
-    0.9426836543988054,
-    0.9005734577188222
+    0.10767641437414761
    ]
   },
   {
    "model": "SIGN without neighbourhood",
-   "pr_auc_mean": 0.685184011555939,
+   "pr_auc_mean": 0.46961488950868907,
    "pr_auc_all_seeds": [
-    0.5521548189710995,
-    0.7454043450006929,
-    0.757992870696025
+    0.46961488950868907
    ]
   }
  ],
  "held_out_sources": {
   "held_out_sources": [
-   "puikinsh/Adminator-admin-dashboard",
-   "puikinsh/Bootstrap-Admin-Template",
-   "thinkswell/javascript-mini-projects"
+   "0xrpc.io",
+   "adnxs.com",
+   "astrumu.io",
+   "auth0.com",
+   "comcast.net",
+   "dns.google",
+   "duckdns.org",
+   "ebay.com",
+   "eeroup.com",
+   "fda.gov",
+   "hm.com",
+   "homedepot.com",
+   "juicyscore.com",
+   "lg.com",
+   "mega.co.nz",
+   "onetag-sys.com",
+   "people.com",
+   "researchgate.net",
+   "run.app",
+   "salesforce.com",
+   "scorecardresearch.com",
+   "service-now.com",
+   "skyhigh.cloud",
+   "unsplash.com",
+   "wikimedia.org",
+   "www.gov.uk",
+   "xiaomi.com"
   ],
-  "test_rows": 2578,
-  "test_positives": 295,
-  "sign_pr_auc": 0.7270098204133429,
-  "gbt_neighbourhood_pr_auc": 0.8761956290886932
+  "test_rows": 1598,
+  "test_positives": 6,
+  "sign_pr_auc": 0.37413586925945475,
+  "gbt_neighbourhood_pr_auc": 0.5029296179749683
  },
  "fallback": {
   "model": "Gradient boosting with neighbourhood, temperature-calibrated",
-  "threshold": 0.5143210993149099,
-  "precision": 0.9295774647887324,
-  "recall": 0.7021276595744681,
-  "ece": 0.04072134900198504,
-  "pr_auc": 0.8757542373383495,
-  "passes_precision_and_calibration": true
+  "threshold": null,
+  "precision": null,
+  "recall": null,
+  "ece": 0.0023511185703895834,
+  "pr_auc": 0.5032435231154855,
+  "passes_precision_and_calibration": false
  },
  "shipped": {
-  "model": "Gradient boosting with neighbourhood (fallback)",
-  "pr_auc": 0.8757542373383495,
+  "model": "SIGN graph network",
+  "pr_auc": 0.1760919970556091,
   "pr_auc_ci95": [
-   0.40250569390661245,
-   0.9873514193960328
+   0.0030686274733185757,
+   0.7931612318840578
   ],
-  "threshold": 0.5143210993149099,
-  "precision": 0.9295774647887324,
-  "recall": 0.7021276595744681,
-  "tp": 66,
-  "fp": 5,
-  "fn": 28,
-  "flagged": 71,
-  "precision_ci95": [
-   0.3898628048780488,
-   1.0
-  ],
-  "ece": 0.04072134900198504
+  "threshold": null,
+  "precision": null,
+  "recall": null,
+  "ece": 0.0624451743350278
  },
  "graph_network_gate": {
   "precision": {
    "target": ">= 0.9",
-   "value": 0.7589285714285714,
+   "value": null,
    "pass": false
   },
   "beats_best_gbt": {
-   "target": "PR-AUC > Gradient boosting with neighbourhood",
-   "value": 0.9361013076433593,
-   "baseline": 0.8757542373383495,
-   "pass": true,
-   "note": "shipped seed; mean over seeds 0.684"
+   "target": "PR-AUC > Gradient boosting, element only",
+   "value": 0.1760919970556091,
+   "baseline": 0.5245901639344263,
+   "pass": false,
+   "note": "shipped seed; mean over seeds 0.394"
   },
   "ece": {
    "target": "<= 0.05",
-   "value": 0.10976021417311418,
+   "value": 0.0624451743350278,
    "pass": false
   },
   "size": {
@@ -236,24 +220,24 @@
  "gate": {
   "precision": {
    "target": ">= 0.9",
-   "value": 0.9295774647887324,
-   "pass": true
+   "value": null,
+   "pass": false
   },
   "beats_best_gbt": {
-   "target": "the graph network beats the best gradient-boosting baseline and passes the gate",
-   "value": 0.9361013076433593,
-   "baseline": 0.8757542373383495,
+   "target": "PR-AUC > Gradient boosting, element only",
+   "value": 0.1760919970556091,
+   "baseline": 0.5245901639344263,
    "pass": false,
-   "note": "the graph network missed the gate, so the baseline itself is shipped as the spec's fallback"
+   "note": "shipped seed; mean over seeds 0.394"
   },
   "ece": {
    "target": "<= 0.05",
-   "value": 0.04072134900198504,
-   "pass": true
+   "value": 0.0624451743350278,
+   "pass": false
   },
   "size": {
    "target": "<= 1000000 bytes",
-   "value": 330456,
+   "value": 169515,
    "pass": true
   },
   "latency": {
@@ -267,90 +251,51 @@
   "framework": [
    {
     "framework": "jquery",
-    "rows": 91,
-    "positives": 64,
-    "sites": 3,
-    "pr_auc": 1.0,
-    "precision": 1.0,
-    "recall": 0.765625,
-    "tp": 49,
-    "fp": 0,
-    "fn": 15,
-    "flagged": 49
+    "rows": 483,
+    "positives": 3,
+    "sites": 1,
+    "pr_auc": 0.01032557885986072,
+    "precision": 0.0,
+    "recall": 0.0,
+    "tp": 0,
+    "fp": 5,
+    "fn": 3,
+    "flagged": 5
    },
    {
     "framework": "other",
-    "rows": 1802,
-    "positives": 29,
-    "sites": 109,
-    "pr_auc": 0.7476983875256766,
-    "precision": 0.7619047619047619,
-    "recall": 0.5517241379310345,
-    "tp": 16,
-    "fp": 5,
-    "fn": 13,
-    "flagged": 21
+    "rows": 2125,
+    "positives": 3,
+    "sites": 20,
+    "pr_auc": 0.7575757575757576,
+    "precision": 0.03409090909090909,
+    "recall": 1.0,
+    "tp": 3,
+    "fp": 85,
+    "fn": 0,
+    "flagged": 88
    }
   ],
   "category": [
    {
-    "category": "demo-projects",
-    "rows": 1369,
-    "positives": 91,
-    "sites": 76,
-    "pr_auc": 0.8929511535700816,
-    "precision": 0.9285714285714286,
-    "recall": 0.7142857142857143,
-    "tp": 65,
-    "fp": 5,
-    "fn": 26,
-    "flagged": 70
-   },
-   {
-    "category": "framework-apps",
-    "rows": 34,
-    "positives": 1,
-    "sites": 6,
-    "pr_auc": 1.0,
-    "precision": 1.0,
-    "recall": 1.0,
-    "tp": 1,
-    "fp": 0,
-    "fn": 0,
-    "flagged": 1
-   },
-   {
-    "category": "landing-pages",
-    "rows": 40,
-    "positives": 0,
-    "sites": 2,
-    "pr_auc": null,
-    "precision": null,
-    "recall": null,
-    "tp": 0,
-    "fp": 0,
-    "fn": 0,
-    "flagged": 0
-   },
-   {
-    "category": "reference-examples",
-    "rows": 457,
-    "positives": 2,
-    "sites": 29,
-    "pr_auc": 0.007102105979855845,
-    "precision": null,
-    "recall": 0.0,
-    "tp": 0,
-    "fp": 0,
-    "fn": 2,
-    "flagged": 0
+    "category": "tranco",
+    "rows": 2608,
+    "positives": 6,
+    "sites": 21,
+    "pr_auc": 0.1760919970556091,
+    "precision": 0.03225806451612903,
+    "recall": 0.5,
+    "tp": 3,
+    "fp": 90,
+    "fn": 3,
+    "flagged": 93
    }
   ]
  },
  "onnx": {
-  "bytes": 330456,
-  "sha256": "b195b1d50f46960ab4b383e24627082be5d21e66f1a34710822fe57a11d9edef",
-  "max_abs_diff_reference_vs_onnxruntime": 8.940696716308594e-08
+  "bytes": 169515,
+  "sha256": "efbe7562bd527803b3054b3f5d89cc1f745300d0be53748af4dd1a2276fea702",
+  "max_abs_diff_reference_vs_onnxruntime": 1.4901161193847656e-07
  },
- "seconds": 199
+ "seconds": 191
 }

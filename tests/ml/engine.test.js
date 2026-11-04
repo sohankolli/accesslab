@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import * as ort from 'onnxruntime-web';
 import { createEngine } from '../../src/engine/ml/engine';
-import { FEATURE_VERSION } from '../../src/engine/ml/manifest';
+import { FEATURE_VERSION, NOT_REACHED, validateManifest } from '../../src/engine/ml/manifest';
 import { ROW_DIM } from '../../src/engine/ml/nodeFeatures';
 
 const PUBLIC = path.resolve(import.meta.dirname, '../../public');
@@ -55,5 +55,20 @@ describe('model engine', () => {
     const engine = createEngine({ ort, fetchFn: fakeFetch() });
     await engine.load();
     await expect(engine.score(new Float32Array(ROW_DIM + 1))).rejects.toThrow(/multiple of 552/);
+  });
+});
+
+describe('model manifest', () => {
+  it('accepts "not reached" for a threshold no value reached, and nothing else that is not a number', () => {
+    expect(validateManifest({ ...manifest(), threshold: NOT_REACHED }).threshold).toBe(NOT_REACHED);
+    expect(validateManifest({ ...manifest(), threshold: 0.4 }).threshold).toBe(0.4);
+    for (const threshold of [null, undefined, Number.NaN, 0, 1, 'none']) {
+      expect(() => validateManifest({ ...manifest(), threshold })).toThrow(/no usable threshold/);
+    }
+  });
+
+  it('the shipped manifest holds no null, NaN or undefined values', () => {
+    const text = fs.readFileSync(path.join(PUBLIC, 'models/clickables-v1.json'), 'utf8');
+    expect(text).not.toMatch(/\bnull\b|\bNaN\b|\bundefined\b/);
   });
 });

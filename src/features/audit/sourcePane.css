@@ -8,6 +8,110 @@
 .pane--source > .notice {
   margin: var(--space-3) var(--space-4);
 }
+/* The header: what is loaded, and the share and file buttons. */
+.src-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--rule);
+}
+.src-head__name {
+  min-width: 0;
+  overflow: hidden;
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.src-head__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  margin-left: auto;
+}
+.src-head__status {
+  font-size: var(--text-sm);
+  color: var(--graphite);
+}
+.src-help {
+  flex-basis: 100%;
+  font-size: var(--text-sm);
+  color: var(--graphite);
+}
+.src-help summary {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: var(--target);
+  width: fit-content;
+  cursor: pointer;
+}
+/* The marker as a turning triangle, since the summary is a flex row. */
+.src-help summary::before {
+  content: '▸';
+}
+.src-help[open] summary::before {
+  content: '▾';
+}
+.src-help summary::-webkit-details-marker {
+  display: none;
+}
+.src-help p {
+  max-width: 40rem;
+  padding-bottom: var(--space-2);
+  color: var(--ink);
+}
+.btn--sm {
+  padding: 0 var(--space-3);
+  font-size: var(--text-sm);
+}
+/* While a file is dragged over the pane: the whole pane is the drop target. */
+.pane--source {
+  position: relative;
+}
+.drop-target {
+  position: absolute;
+  inset: var(--space-2);
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  padding: var(--space-4);
+  font-weight: 700;
+  text-align: center;
+  color: var(--ink);
+  background: var(--lens-tint);
+  border: 2px dashed var(--lens);
+  border-radius: var(--radius-md);
+  pointer-events: none;
+}
+
+/* Share-link and file messages, between the header and the tabs. */
+.pane--source > .src-notice > .notice,
+.pane--source > .notice--stack {
+  margin: var(--space-3) var(--space-4) 0;
+}
+.notice--info {
+  border-color: var(--lens);
+}
+.notice--stack {
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.notice__field {
+  width: 100%;
+  min-height: var(--target);
+  padding: 0 var(--space-2);
+  font-family: var(--mono);
+  font-size: var(--text-sm);
+  background: var(--chart);
+  border: 1px solid var(--rule-strong);
+  border-radius: var(--radius-sm);
+}
+
 .tabs-bar {
   display: flex;
   align-items: flex-end;

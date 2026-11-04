@@ -66,7 +66,7 @@ function setup({ selected = null, props = {} } = {}) {
   );
   if (selected) audit = auditReducer(audit, issueSelected(selected));
   const store = makeStore({
-    editor: { html: '', css: 'p { color: #999 }', source: 'paste', sourceUrl: null },
+    editor: { html: '', css: 'p { color: #999 }', source: 'paste', fileName: null },
     audit,
   });
   render(

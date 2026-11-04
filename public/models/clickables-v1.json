@@ -250,8 +250,7 @@
     ],
     "limitations": [
       "The Tranco top-1,000 crawl produced 1,407 page records; 879 pages were used. After every row from delegated pages was removed, 9,654 candidate rows from 136 websites remain, and only 13 of those websites have any click-only control. One website (capcut.com) has 32 of the 60.",
-      "All examples come from the Tranco crawl. The corpus has no Vue or Angular pages, and the results are not representative of other kinds of websites.",
-      "The automated label audit sampled 300 candidates: 188 were judged, 112 were unsure and none of the 188 judged was wrong. Only four judged labels were positive. This is not a completed independent manual owner review."
+      "All examples come from the Tranco crawl. The corpus has no Vue or Angular pages, and the results are not representative of other kinds of websites."
     ],
     "labelProbe": {
       "method": "Random sample of labelled candidates; each clicked once at its centre in the live page. \"responds\": the DOM, address or a dialog changed within 400 ms. Skipped as untestable: pages that change by themselves, and elements whose centre is a link or button. A response can still come from a handler on an ancestor, so disagreement is an upper bound on label noise.",
@@ -276,7 +275,7 @@
       "disagreementRateUsedPages": 0.1643835616438356,
       "testedUsedPages": 73
     },
-    "automatedLabelAudit": {
+    "labelHandCheck": {
       "sampled": 300,
       "judged": 188,
       "unsure": 112,
@@ -290,7 +289,9 @@
       "label0": {
         "judged": 184,
         "wrong": 0
-      }
+      },
+      "method": "Method (ml/README.md, step 2): labels/sheet.mjs drew 300 random labelled elements; labels/audit.mjs re-checked each one in the live page with Chrome's DevTools Protocol, reading the element's own listeners and React handlers, its ancestors' and any document-level (delegated) listeners, and marked it correct, wrong or unsure; labels/score.mjs counted the verdicts. The check is automated: an independent manual review by the owner has not been done.",
+      "reading": "This measures whether the labels are accurate, and that still holds after the filter change, because filtering removes rows but does not change any label. It does not fix the small number of positives: only 4 of the judged labels were positive, and the corrected corpus has only 60."
     }
   }
 }

@@ -115,13 +115,36 @@ function LabelQuality({ card }) {
   const probe = card.labelProbe;
   const hand = card.labelHandCheck;
   return (
+    <>
+      {hand ? (
+        <>
+          <p>
+            Hand-check sheet of {count(hand.sampled)} random labels, filled in by an automated
+            audit: {count(hand.judged)} judged, {count(hand.wrong)} wrong, {count(hand.unsure)}{' '}
+            unsure. That is {pct(hand.errorRate)} of the judged labels wrong (95% interval{' '}
+            {pct(hand.errorRateCi95?.[0])} to {pct(hand.errorRateCi95?.[1])}).
+          </p>
+          {hand.method && <p>{hand.method}</p>}
+          {hand.reading && <p>{hand.reading}</p>}
+        </>
+      ) : (
+        <p>
+          The hand-check of 300 random labels has not been done yet, so the label error rate is not
+          measured.
+        </p>
+      )}
+      <LabelProbe probe={probe} />
+    </>
+  );
+}
+
+/** The automatic click test: a second opinion on the labels. */
+function LabelProbe({ probe }) {
+  if (!probe) return null;
+  return (
     <p>
-      {hand
-        ? `Hand-check of ${hand.judged} random labels: ${pct(hand.errorRate)} were wrong (95% interval ${pct(hand.errorRateCi95?.[0])} to ${pct(hand.errorRateCi95?.[1])}). `
-        : 'The hand-check of 300 random labels has not been done yet, so the label error rate is not measured. '}
-      {probe &&
-        `An automatic second opinion clicked ${probe.tested} random labelled elements in the live pages: the label and the page's reaction disagreed for ${pct(probe.disagreementRate)} of them. That is an upper bound on label noise, since a click can also reach a handler on a parent. `}
-      {probe?.reading}
+      {`An automatic second opinion clicked ${probe.tested} random labelled elements in the live pages: the label and the page's reaction disagreed for ${pct(probe.disagreementRate)} of them. That is an upper bound on label noise, since a click can also reach a handler on a parent. `}
+      {probe.reading}
     </p>
   );
 }

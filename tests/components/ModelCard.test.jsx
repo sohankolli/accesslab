@@ -42,6 +42,14 @@ describe('model card', () => {
     expect(within(status).getAllByText(/never change the score/).length).toBeGreaterThan(0);
   });
 
+  it('shows the hand-check result, its method, and what it does not fix', async () => {
+    await renderCard();
+    const data = screen.getByRole('region', { name: 'What it was trained on' });
+    expect(within(data).getByText(/188 judged, 0 wrong, 112 unsure/)).toBeTruthy();
+    expect(within(data).getByText(/labels\/audit\.mjs/)).toBeTruthy();
+    expect(within(data).getByText(/does not fix the small number of positives/)).toBeTruthy();
+  });
+
   it('shows a precision gate with no threshold as "not reached" and not met', async () => {
     await renderCard({
       ...shipped,

@@ -60,8 +60,10 @@ The crawler is designed to keep collection limited:
 
 node labels/score.mjs
 node labels/probe.mjs
-Important audit distinction: the current reports/label-handcheck.json values describe an automated Playwright/CDP audit, not a completed independent manual owner review. The automated audit sampled 300 labels: 188 were judged, 112 were unsure, and none of the 188 judged labels was marked wrong. Only four judged examples were positive, so this does not establish the positive-label error rate. The independent manual review is still pending. 3. Train, evaluate and export
-The current run was performed from the ml/ directory using the prepared Tranco corpus:
+Important audit distinction: the current reports/label-handcheck.json values describe an automated Playwright/CDP audit, not a completed independent manual owner review. The sheet from `node labels/sheet.mjs` (300 random labels) was filled in by `node labels/audit.mjs`, which re-checks each element in the live page through the DevTools Protocol (its own listeners and React handlers, its ancestors' and any document-level listeners) and marks it correct, wrong or unsure; `node labels/score.mjs` then counted the verdicts. The automated audit sampled 300 labels: 188 were judged, 112 were unsure, and none of the 188 judged labels was marked wrong. Only four judged examples were positive, so this does not establish the positive-label error rate. The result is about label accuracy, so it still holds after the filter change (filtering removes rows, it does not change labels), but it does not fix the small number of positives. The independent manual review is still pending.
+
+3. Train, evaluate and export
+   The current run was performed from the ml/ directory using the prepared Tranco corpus:
 
 ```
 python train/train.py --data data/crawl-tranco-train \

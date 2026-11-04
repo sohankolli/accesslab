@@ -1,5 +1,5 @@
 {
- "conditions": "headless Chromium, 12 Ã— 12th Gen Intel(R) Core(TM) i7-1255U, no CPU throttling",
+ "conditions": "headless Chromium, 12 × 12th Gen Intel(R) Core(TM) i7-1255U, no CPU throttling",
  "elements": 2000,
  "shipped": {
   "elements": 2664,

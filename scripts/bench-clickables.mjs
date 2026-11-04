@@ -125,7 +125,7 @@ async function measure() {
 }
 
 const cpus = os.cpus();
-const conditions = `headless Chromium, ${cpus.length} Ã— ${cpus[0]?.model?.trim() ?? 'CPU'}, no CPU throttling`;
+const conditions = `headless Chromium, ${cpus.length} × ${cpus[0]?.model?.trim() ?? 'CPU'}, no CPU throttling`;
 const latency = (r) => ({
   target: '<= 50 ms for 2,000 elements in the Web Worker',
   value: r.median,

@@ -234,7 +234,7 @@
       "pass": true,
       "elements": 2664,
       "runs": [7, 7, 7, 8, 8, 8, 8, 12, 12, 12],
-      "note": "median of 10 runs in the app's Web Worker; headless Chromium, 12 \u00c3\u2014 12th Gen Intel(R) Core(TM) i7-1255U, no CPU throttling"
+      "note": "median of 10 runs in the app's Web Worker; headless Chromium, 12 \u00d7 12th Gen Intel(R) Core(TM) i7-1255U, no CPU throttling"
     }
   },
   "defaultOn": false,

@@ -21,8 +21,8 @@ probe = args.reports / "label-probe.json"
 if probe.exists():
     manifest["card"]["labelProbe"] = json.loads(probe.read_text())["summary"]
     manifest["card"]["labelProbe"]["reading"] = notes.get("labelProbeReading")
-handcheck = args.reports / "label-handcheck.json"
-manifest["card"]["labelHandCheck"] = json.loads(handcheck.read_text()) if handcheck.exists() else None
+audit = args.reports / "label-handcheck.json"
+manifest["card"]["automatedLabelAudit"] = json.loads(audit.read_text()) if audit.exists() else None
 manifest_path.write_text(json.dumps(manifest, indent=1) + "\n")
 shutil.copyfile(args.reports / "reliability.svg", args.out / "clickables-v1-reliability.svg")
 print("model card notes added to", manifest_path)

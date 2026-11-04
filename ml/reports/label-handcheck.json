@@ -1,0 +1,19 @@
+{
+ "sampled": 300,
+ "judged": 188,
+ "unsure": 112,
+ "wrong": 0,
+ "errorRate": 0,
+ "errorRateCi95": [
+  1.734723475976807e-18,
+  0.020024853837749476
+ ],
+ "label1": {
+  "judged": 4,
+  "wrong": 0
+ },
+ "label0": {
+  "judged": 184,
+  "wrong": 0
+ }
+}

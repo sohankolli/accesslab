@@ -72,7 +72,7 @@ def fit_gbt(Xtr, ytr, Xcal, ycal):
     best = None
     for lr in (0.05, 0.1):
         for leaves in (15, 31):
-            for it in (200, 400):
+            for it in (300,):
                 m = HistGradientBoostingClassifier(
                     learning_rate=lr, max_leaf_nodes=leaves, max_iter=it,
                     class_weight="balanced", random_state=0,
@@ -120,7 +120,7 @@ def breakdown(ds, p, threshold, field):
 def load_snippets(path: Path):
     out = {}
     if path.exists():
-        with open(path) as fh:
+        with open(path, encoding="utf-8", errors="replace") as fh:
             for line in fh:
                 r = json.loads(line)
                 out[f"{r['site']}|{r['page']}|{r['id']}"] = r["snippet"]
@@ -255,13 +255,13 @@ def main():
     })
     comparisons.append(sign)
 
-    # ---- Ablations: the same network without a signal, three seeds each ----
+    # ---- Ablations: one seed each to fit the time budget ----
     ablations = []
     for name, kw in [("SIGN without class-name words", {"words": False}),
                      ("SIGN without neighbourhood", {"neighbourhood": False})]:
         Xtr, Xcal, Xte = D.mask(tr.X, **kw), D.mask(cal.X, **kw), D.mask(te.X, **kw)
         scores = []
-        for seed in SEEDS:
+        for seed in SEEDS[:1]:
             n, _ = fit_sign(Xtr, tr.y, Xcal, cal.y, seed=seed, score=M.pr_auc)
             scores.append(M.pr_auc(te.y, 1 / (1 + np.exp(-logits(n, Xte)))))
         ablations.append({"model": name, "pr_auc_mean": float(np.mean(scores)), "pr_auc_all_seeds": scores})
@@ -298,7 +298,7 @@ def main():
     graph_ok = all(g["pass"] for g in graph_gate.values())
     use_fallback = not graph_ok and fallback["passes_precision_and_calibration"]
 
-    artifacts = Path(__file__).parent / "artifacts"
+    artifacts = args.out / "artifacts"
     artifacts.mkdir(exist_ok=True)
     graph_path = (artifacts if use_fallback else args.out) / ("clickables-graph.onnx" if use_fallback else "clickables-v1.onnx")
     graph_model = Calibrated(net, temperature).eval()

@@ -4,7 +4,7 @@ function reportData(run) {
   return {
     generatedAt: new Date().toISOString(),
     run: {
-      id: run.id,
+      ...(run.id != null ? { id: run.id } : {}),
       ranAt: run.ranAt,
       score: run.score,
       acuity: acuityFor(run.score),
@@ -57,6 +57,17 @@ export function exportRunCSV(run) {
   return rows.map((row) => row.map(csvCell).join(',')).join('\r\n');
 }
 
+export function reportFilename(run, extension) {
+  const date = new Date(run.ranAt);
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `accesslab-report-${year}-${month}-${day}-${hours}${minutes}.${extension}`;
+}
+
 export function downloadFile(content, filename, type) {
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
@@ -72,9 +83,9 @@ export function downloadFile(content, filename, type) {
 }
 
 export function downloadRunJSON(run) {
-  downloadFile(exportRunJSON(run), `accesslab-report-${run.id}.json`, 'application/json');
+  downloadFile(exportRunJSON(run), reportFilename(run, 'json'), 'application/json');
 }
 
 export function downloadRunCSV(run) {
-  downloadFile(exportRunCSV(run), `accesslab-report-${run.id}.csv`, 'text/csv;charset=utf-8');
+  downloadFile(exportRunCSV(run), reportFilename(run, 'csv'), 'text/csv;charset=utf-8');
 }

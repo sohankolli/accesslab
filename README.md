@@ -409,16 +409,7 @@ production build on every pull request.
 ## Status
 
 Milestones 1 (scaffold, first audit) and 2 (rule packs, contrast and fixes, all eleven core
-
 rules, overlays, sliced audits, report) are complete. Milestone 3 work so far: the Simulate page
-
 (colour-vision, low-vision and 200% text lenses, the tab-order list and the screen-reader view),
-<<<<<<< HEAD
 the Learn guides, keyboard shortcuts, share links and file import. Still to come: CodeMirror
 editors.
-=======
-
-the Learn guides and keyboard shortcuts. Still to come: CodeMirror editors, share links and
-
-GitHub import.
->>>>>>> c753c7ded724b468b8738bd17e789c502306c4fe

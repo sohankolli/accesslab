@@ -141,6 +141,7 @@ The shipped SIGN artifact passes two of the five gates:
 
 - The automated 300-label audit judged 188 samples, left 112 unsure and marked zero of the judged samples wrong. Only four judged samples were positive. This is not a manual owner hand-check and is not sufficient to claim that labels have been independently validated.
 - Collect more trustworthy positives. This is the main blocker: 99% of the positives found in the crawl are on delegated pages.
+- Next step: label elements on delegated pages one by one, so those pages can be used again.
 - Manually inspect the false-positive and false-negative samples in data/tranco-run-output-fixed/reports/errors.json, taken at a probability of 0.5, and record the findings.
 - Evaluate additional site types and sources before making claims about broader generalisation.
 - The optional GraphSAGE comparison was not implemented.

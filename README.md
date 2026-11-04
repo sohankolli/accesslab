@@ -401,6 +401,7 @@ production build on every pull request.
   unsure; it found no wrong labels among the judged examples, but only four judged examples were
   positive. This is not an independent manual owner review. The model ships switched off because
   it misses three of the five ship gates; see `ml/reports/evaluation.md`.
+- Next step: label elements on delegated pages one by one, so those pages can be used again.
 
 ## Status
 

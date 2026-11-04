@@ -3,9 +3,15 @@ import { configureStore } from '@reduxjs/toolkit';
 import editorReducer from '../../src/features/editor/editorSlice';
 import auditReducer from '../../src/features/audit/auditSlice';
 import historyReducer from '../../src/features/report/historySlice';
+import clickablesReducer from '../../src/features/audit/clickablesSlice';
 
 export const makeStore = (preloadedState) =>
   configureStore({
-    reducer: { editor: editorReducer, audit: auditReducer, history: historyReducer },
+    reducer: {
+      editor: editorReducer,
+      audit: auditReducer,
+      history: historyReducer,
+      clickables: clickablesReducer,
+    },
     preloadedState,
   });

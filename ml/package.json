@@ -1,0 +1,22 @@
+{
+  "name": "accesslab-ml",
+  "private": true,
+  "type": "module",
+  "description": "Offline data pipeline for AccessLab's click-only controls model. Never shipped to users.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test crawler/test/*.test.mjs",
+    "crawl": "node crawler/crawl.mjs",
+    "corpus:fetch": "node corpus/fetch.mjs",
+    "corpus:sites": "node corpus/discover.mjs",
+    "tranco:sites": "node crawler/tranco.mjs",
+    "labels:sheet": "node labels/sheet.mjs",
+    "labels:probe": "node labels/probe.mjs",
+    "labels:score": "node labels/score.mjs"
+  },
+  "dependencies": {
+    "playwright": "1.56.0"
+  }
+}

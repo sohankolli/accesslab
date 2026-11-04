@@ -104,9 +104,12 @@ describe('Copy share link', () => {
     const field = await screen.findByLabelText(/Copy it with Ctrl\+C/);
     expect(field.readOnly).toBe(true);
     expect(field.value).toMatch(/\/audit#s=/);
-    expect(document.activeElement).toBe(field);
-    expect(field.selectionStart).toBe(0);
-    expect(field.selectionEnd).toBe(field.value.length);
+
+    await waitFor(() => {
+      expect(document.activeElement).toBe(field);
+      expect(field.selectionStart).toBe(0);
+      expect(field.selectionEnd).toBe(field.value.length);
+    });
   });
 
   it('does not make a link over the length limit, and suggests the file', async () => {

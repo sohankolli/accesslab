@@ -1,10 +1,36 @@
-import { Link, useParams } from 'react-router';
+import { useDispatch } from 'react-redux';
+import { useNavigate, useParams, Link } from 'react-router';
+import { learnExampleOpened } from '../editor/editorSlice';
 import { RULE_GUIDES } from './ruleguides';
 import './learn.css';
+
+function getExampleHtml(ruleId, bad) {
+  const pageExamples = {
+    'html-lang': `<!doctype html>
+<html>
+<head><title>Example page</title></head>
+<body><main><h1>Example page</h1></main></body>
+</html>`,
+    'page-title': `<!doctype html>
+<html lang="en">
+<head></head>
+<body><main><h1>Example page</h1></main></body>
+</html>`,
+    'landmark-main': `<!doctype html>
+<html lang="en">
+<head><title>Example page</title></head>
+<body>${bad}</body>
+</html>`,
+  };
+
+  return pageExamples[ruleId] ?? bad;
+}
 
 export default function RuleDetail() {
   const { ruleId } = useParams();
   const guide = RULE_GUIDES[ruleId];
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   if (!guide) {
     return (
@@ -19,6 +45,16 @@ export default function RuleDetail() {
         </div>
       </div>
     );
+  }
+
+  function tryInWorkbench() {
+    dispatch(
+      learnExampleOpened({
+        html: getExampleHtml(ruleId, guide.bad),
+        css: '',
+      }),
+    );
+    navigate('/audit');
   }
 
   return (
@@ -64,9 +100,9 @@ export default function RuleDetail() {
         <Link to="/learn" className="btn">
           All guides
         </Link>
-        <Link to="/audit" className="btn btn--primary">
+        <button type="button" className="btn btn--primary" onClick={tryInWorkbench}>
           Try it in the Workbench
-        </Link>
+        </button>
       </nav>
     </div>
   );

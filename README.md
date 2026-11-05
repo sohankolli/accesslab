@@ -382,6 +382,32 @@ feature parity, `python -m pytest train/tests`). CI (GitHub Actions) runs lint, 
 
 production build on every pull request.
 
+## Check a live page
+
+AccessLab includes a bookmarklet that lets you send the HTML and CSS of the website currently open in your browser directly to the Audit Workbench.
+
+### Setup
+
+1. Open the AccessLab home page.
+2. Drag the **Check with AccessLab** link to your browser's bookmarks bar.
+3. The bookmarklet is now saved and ready to use.
+
+### How to use
+
+1. Visit the website you want to audit.
+2. Click **Check with AccessLab** in your bookmarks bar.
+3. AccessLab opens the Audit Workbench and transfers the current page's HTML and readable CSS.
+4. Review the accessibility audit results and fix identified issues.
+
+### Notes and limitations
+
+- Pages behind login are checked as they appear in your browser.
+- Cross-origin stylesheets may not be readable due to browser security restrictions. These are skipped.
+- Pages larger than 500 KB are rejected to protect existing editor content.
+- If no page is received within a few seconds, AccessLab displays a timeout message.
+- Some websites may restrict bookmarklet execution through browser security policies.
+- Page scripts are not executed in the preview.
+
 ## Limitations
 
 - Pages without a `<title>` or file name all share one history, under "Untitled page".
@@ -404,7 +430,7 @@ production build on every pull request.
 
   audited in their initial state.
 
-- Live websites cannot be audited by URL: browsers block reading other sites (CORS).
+- Live websites cannot be fetched directly by URL because of browser security restrictions. Use the Check with AccessLab bookmarklet to transfer the current page instead.
 
 - Model suggestions are experimental and off by default. The corrected Tranco corpus has only
   55 trustworthy positives from 13 sites (6 in the test set, from 2 sites), too few to measure

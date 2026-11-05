@@ -14,6 +14,7 @@ import SourceNotice from '../editor/SourceNotice';
 import ShareLinkButton from '../editor/ShareLinkButton';
 import OpenFileButton from '../editor/OpenFileButton';
 import { useOpenSharedLink } from '../editor/useOpenSharedLink';
+import { useOpenBookmarklet } from '../editor/useOpenBookmarklet';
 import { useFileImport } from '../editor/useFileImport';
 import { sourceLineOf } from '../editor/sourceLine';
 import Splitter from '../../components/Splitter';
@@ -49,6 +50,7 @@ export default function Workbench() {
     /** @type {import('../editor/SourceNotice').Notice|null} */ (null),
   );
   useOpenSharedLink(setNotice);
+  useOpenBookmarklet(setNotice);
   const showTab = useCallback((lang) => editorRef.current?.showTab(lang), []);
   const openFiles = useFileImport({ onNotice: setNotice, onShowTab: showTab });
 

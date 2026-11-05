@@ -69,6 +69,15 @@ describe('model card', () => {
     ).toBeTruthy();
   });
 
+  it('says under limitations that the test set has been looked at and a new one is needed', async () => {
+    await renderCard();
+    const trust = screen.getByRole('region', { name: 'When not to trust it' });
+    expect(within(trust).getByText(/no longer fully untouched/)).toBeTruthy();
+    expect(
+      within(trust).getByText(/A new held-out set is needed for a clean final estimate/),
+    ).toBeTruthy();
+  });
+
   it('shows the hand-check result, its method, and what it does not fix', async () => {
     await renderCard();
     const data = screen.getByRole('region', { name: 'What it was trained on' });

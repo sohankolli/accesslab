@@ -94,6 +94,10 @@ PR-AUC values are shown with their 95% site-bootstrap interval where one was rec
 
 No run passes the ship gate, so `defaultOn` stays `false`.
 
+## The test set is no longer fully untouched
+
+The test set was looked at after each of the three runs on this branch: the corrected filter, the best-F1 threshold, and cross-validation. Each change of method was made because of a problem in the method (label leakage from the filter; a threshold and seed chosen on 6 calibration positives; `<main>` and other landmarks treated as candidates), not to raise a test score. Even so, the test numbers are no longer fully untouched. A new held-out set, not looked at during any of this work, is needed for a clean final estimate.
+
 ## Errors of the current model
 
 `ml/reports/errors.json` holds all 7 false positives and all 3 false negatives on the test sites at the shipped threshold. They have not been reviewed manually. Six of the false positives are layout wrappers on one website (booking.com), and one is a page's root `<div id="root">`, scored 0.91. The 3 misses are accordion toggles on mega.co.nz, scored 0.014. With 2 test websites holding click-only controls, these are observations, not established patterns.

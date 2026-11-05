@@ -132,3 +132,79 @@
     border-top: 1px solid var(--rule);
   }
 }
+/* Bookmarklet: check a live website directly from the browser. */
+.bookmarklet {
+  padding: var(--space-8) var(--space-6);
+  border-top: 1px solid var(--rule);
+  background: var(--room);
+}
+
+.bookmarklet__content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.bookmarklet__content h2 {
+  margin-bottom: var(--space-3);
+  font-size: var(--text-2xl);
+}
+
+.bookmarklet__content > p {
+  max-width: 60ch;
+  color: var(--graphite);
+}
+
+.bookmarklet__link {
+  display: inline-block;
+  margin: var(--space-3) 0;
+  cursor: grab;
+}
+
+.bookmarklet__content ol {
+  padding-left: var(--space-5);
+  line-height: 1.8;
+}
+
+.bookmarklet__note {
+  margin-top: var(--space-4);
+  font-size: var(--text-sm);
+}
+
+@media (max-width: 600px) {
+  .bookmarklet {
+    padding: var(--space-6) var(--space-4);
+  }
+
+  .bookmarklet__link {
+    max-width: 100%;
+  }
+}
+/* Keyboard access and readable bookmarklet source. */
+.bookmarklet__link:focus-visible,
+.bookmarklet__source summary:focus-visible {
+  outline: 3px solid var(--lens);
+  outline-offset: 4px;
+}
+
+.bookmarklet__source {
+  margin-top: var(--space-4);
+}
+
+.bookmarklet__source summary {
+  width: fit-content;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.bookmarklet__source pre {
+  max-height: 280px;
+  overflow: auto;
+  padding: var(--space-4);
+  margin-top: var(--space-3);
+  background: var(--chart);
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font-size: var(--text-sm);
+}

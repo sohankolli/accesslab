@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 import { Link, useParams } from 'react-router';
 import { historyCleared } from './historySlice';
@@ -10,6 +10,7 @@ import './report.css';
 import { downloadRunJSON, downloadRunCSV } from './reportExport';
 import PrintableReport from './PrintableReport';
 import { groupByPage, pageKeyOf } from './pages';
+import ClearHistoryConfirm from './ClearHistoryConfirm';
 
 const formatTime = (ms) =>
   new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(ms);
@@ -60,6 +61,12 @@ function ReportView({ runId }) {
   // Read out by screen readers when the page changes (the select itself is quiet about it).
   const [announcement, setAnnouncement] = useState('');
 
+  // "Clear history" opens a question in the page; focus comes back to the button.
+  const [confirming, setConfirming] = useState(false);
+  const clearButtonRef = useRef(null);
+  // After "clear all" the button is gone: focus the empty state's heading instead.
+  const focusEmptyRef = useRef(false);
+
   /** Show another page: its latest run against the one before it. */
   function showPage(key, message = '') {
     const next = groups.find((g) => g.key === key);
@@ -79,7 +86,18 @@ function ReportView({ runId }) {
         </div>
         {saveNotice}
         <div className="empty-state">
-          <h2 className="empty-state__title">No checks yet</h2>
+          <h2
+            className="empty-state__title"
+            tabIndex={-1}
+            ref={(el) => {
+              if (el && focusEmptyRef.current) {
+                focusEmptyRef.current = false;
+                el.focus();
+              }
+            }}
+          >
+            No checks yet
+          </h2>
           <p>Every check the workbench runs is recorded here, with its score and findings.</p>
           <Link to="/audit" className="btn btn--primary">
             Open the workbench
@@ -88,6 +106,23 @@ function ReportView({ runId }) {
       </div>
     );
   }
+
+  const closeConfirm = () => {
+    setConfirming(false);
+    clearButtonRef.current?.focus();
+  };
+  const clearAll = () => {
+    focusEmptyRef.current = true;
+    setConfirming(false);
+    dispatch(historyCleared());
+  };
+  const clearPage = () => {
+    const next = groups.find((g) => g.key !== group.key);
+    if (!next) return clearAll(); // the only page: nothing would be left
+    dispatch(historyCleared(group.key));
+    showPage(next.key, `Cleared the history of ${group.name}. `);
+    closeConfirm();
+  };
 
   const diff = compareRuns(before, after);
   const runLabel = (run) => `${formatTime(run.ranAt)}, score ${run.score}`;
@@ -121,16 +156,27 @@ function ReportView({ runId }) {
           <button
             type="button"
             className="btn"
-            onClick={() => {
-              if (window.confirm('Delete all saved checks?')) {
-                dispatch(historyCleared());
-              }
-            }}
+            ref={clearButtonRef}
+            aria-expanded={confirming}
+            aria-controls={confirming ? 'clear-confirm' : undefined}
+            onClick={() => (confirming ? closeConfirm() : setConfirming(true))}
           >
             Clear history
           </button>
         </div>
       </div>
+
+      {confirming && (
+        <ClearHistoryConfirm
+          id="clear-confirm"
+          pageName={group.name}
+          pageRuns={pageRuns.length}
+          allRuns={runs.length}
+          onClearPage={clearPage}
+          onClearAll={clearAll}
+          onCancel={closeConfirm}
+        />
+      )}
 
       {saveNotice}
 

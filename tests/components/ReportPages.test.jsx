@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, beforeAll } from 'vitest';
+import { describe, it, expect, afterEach, beforeAll, vi } from 'vitest';
 import { render, screen, cleanup, fireEvent, within } from '@testing-library/react';
 import { Provider } from 'react-redux';
 import { MemoryRouter, Routes, Route } from 'react-router';
@@ -102,5 +102,67 @@ describe('Report by page', () => {
     expect(pageSelect().value).toBe('page:contact us');
     renderReport('/report/1793610000000');
     expect(screen.getAllByRole('combobox', { name: 'Page' })[1].value).toBe('earlier');
+  });
+});
+
+describe('Clear history', () => {
+  const clearButton = () => screen.getByRole('button', { name: 'Clear history' });
+  const open = () => {
+    fireEvent.click(clearButton());
+    return screen.getByRole('group', { name: 'Clear history?' });
+  };
+
+  it('asks inside the page, with focus on the question', () => {
+    const confirmSpy = vi.spyOn(window, 'confirm');
+    renderReport();
+    expect(clearButton().getAttribute('aria-expanded')).toBe('false');
+    const panel = open();
+    expect(document.activeElement).toBe(panel);
+    expect(clearButton().getAttribute('aria-expanded')).toBe('true');
+    expect(panel.textContent).toContain('Clear the 3 runs of Café Aroma menu, or all 6 runs');
+    expect(confirmSpy).not.toHaveBeenCalled();
+    confirmSpy.mockRestore();
+  });
+
+  it('Esc and Cancel close it, keep the history and return focus to the button', () => {
+    const store = renderReport();
+    const panel = open();
+    fireEvent.keyDown(within(panel).getByRole('button', { name: 'Clear all pages' }), {
+      key: 'Escape',
+    });
+    expect(screen.queryByRole('group', { name: 'Clear history?' })).toBeNull();
+    expect(document.activeElement).toBe(clearButton());
+
+    fireEvent.click(within(open()).getByRole('button', { name: 'Cancel' }));
+    expect(screen.queryByRole('group', { name: 'Clear history?' })).toBeNull();
+    expect(document.activeElement).toBe(clearButton());
+    expect(store.getState().history.runs).toHaveLength(6);
+  });
+
+  it('"Clear this page" clears only this page and shows the next one', () => {
+    const store = renderReport();
+    fireEvent.click(within(open()).getByRole('button', { name: 'Clear this page' }));
+    const left = store.getState().history.runs;
+    expect(left).toHaveLength(3);
+    expect(left.some((r) => r.page?.name === 'Café Aroma menu')).toBe(false);
+    expect(pageSelect().value).toBe('page:contact us');
+    expect(
+      screen.getByText('Cleared the history of Café Aroma menu. Showing 1 run of Contact us.'),
+    ).toBeTruthy();
+    expect(document.activeElement).toBe(clearButton());
+  });
+
+  it('"Clear all pages" clears everything and focuses the empty state', () => {
+    const store = renderReport();
+    fireEvent.click(within(open()).getByRole('button', { name: 'Clear all pages' }));
+    expect(store.getState().history.runs).toEqual([]);
+    expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'No checks yet' }));
+  });
+
+  it('"Clear this page" on the only page leaves the empty state', () => {
+    const store = renderReport('/report', RUNS.slice(1, 2));
+    fireEvent.click(within(open()).getByRole('button', { name: 'Clear this page' }));
+    expect(store.getState().history.runs).toEqual([]);
+    expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'No checks yet' }));
   });
 });

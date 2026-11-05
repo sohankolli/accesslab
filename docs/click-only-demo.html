@@ -1,10 +1,11 @@
 <!doctype html>
 <!--
-  Demo for AccessLab's model suggestions. The rules score this page 100. It has
-  four click-only controls: the two tabs, the close "×" and "Choose Team".
-  With the current model switched on, the Workbench makes no suggestions here:
-  none of the page's 10 candidates, including the four click-only controls,
-  reaches the model's threshold. The model is experimental and off by default.
+  Demo for AccessLab's model suggestions. The page has four click-only
+  controls (the two tabs, the close "×" and "Choose Team"), yet the rules score
+  it 100, because the rules cannot see click handlers that scripts attach.
+  That is the point of this page.
+  The current model makes no suggestions here: none of the page's 10
+  candidates reaches its threshold. The model is experimental and off by default.
 -->
 <html lang="en">
   <head>

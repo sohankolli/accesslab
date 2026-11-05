@@ -217,9 +217,10 @@ Policy allows `'wasm-unsafe-eval'` and `worker-src 'self'`. If the model cannot 
 
 says "Model suggestions are unavailable" and everything else works as before.
 
-Try it with [`docs/click-only-demo.html`](docs/click-only-demo.html). The rules score that page 100.
-The current model makes no suggestions there: none of the page's 10 candidates, including its four
-click-only controls, reaches the threshold.
+Try it with [`docs/click-only-demo.html`](docs/click-only-demo.html). The page has four
+click-only controls, yet the rules score it 100, because they cannot see click handlers that
+scripts attach; that is the point of the page. The current model makes no suggestions on it: none
+of the page's 10 candidates reaches the model's threshold.
 
 **Status.** The model is experimental and switched off by default. Its suggestions are labelled low confidence and never change the score.
 

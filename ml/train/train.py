@@ -47,7 +47,7 @@ NOT_REACHED = "not reached"
 
 
 def not_reached(entry: dict, keys) -> dict:
-    """Mark values that need an operating threshold as "not reached" when no
+    """Mark values that need the target-precision threshold as "not reached" when no
     threshold met the target precision on the calibration sites, so the
     manifest says why they are missing instead of holding null."""
     for k in keys:
@@ -56,6 +56,9 @@ def not_reached(entry: dict, keys) -> dict:
             entry[k] = NOT_REACHED
     return entry
 
+
+OPERATING_RULE = ("the threshold with the best F1 on the calibration websites; "
+                  "the test websites are never used to choose it")
 
 THRESHOLD_KEYS = ("threshold", "precision", "precision_ci95", "recall", "flagged", "tp", "fp", "fn")
 
@@ -331,12 +334,14 @@ def main():
         from export_gbt import export_hist_gbt
         export_hist_gbt(gbt_nb, t_g, D.ROW_DIM, str(onnx_path))
         p_ship, ship_threshold, ship_temperature = p_te_g, thr_g, t_g
+        p_ship_cal = p_cal_g
         reference = lambda X: 1 / (1 + np.exp(-gbt_nb.decision_function(X) / t_g))
         ship_name = "Gradient boosting with neighbourhood (fallback)"
         architecture = (f"gradient-boosted trees over the 552 neighbourhood features ({gbt_nb.n_iter_} trees, "
                         f"up to {gbt_nb_params['max_leaf_nodes']} leaves each), temperature-calibrated")
     else:
         p_ship, ship_threshold, ship_temperature = p_te, threshold, temperature
+        p_ship_cal = p_cal
         reference = lambda X: graph_model(torch.from_numpy(X)).detach().numpy()
         ship_name = "SIGN graph network"
         architecture = f"SIGN-style network: 6 view encoders (92->48), head 288->48->1; {sign['params']} parameters"
@@ -370,8 +375,28 @@ def main():
                     "pass": None, "note": "measured in the browser by npm run ml:bench, which fills this in"},
     }
 
-    # ---- Breakdown and error analysis of the shipped model on the test sites ----
-    t_use = ship_threshold if ship_threshold is not None else 0.5
+    # ---- Operating threshold: where the app makes suggestions. Chosen by one
+    # fixed rule on the calibration sites only, apart from the ship gate. ----
+    op_t, op_f1, op_cal_p, op_cal_r = M.threshold_for_f1(cal.y, p_ship_cal)
+    if op_t is None:  # no click-only control on the calibration sites
+        raise SystemExit("the calibration split has no positives, so no operating threshold can be chosen")
+    op_p, op_r, op_counts = M.precision_recall(te.y, p_ship, op_t)
+    operating = {
+        "rule": OPERATING_RULE,
+        "value": op_t,
+        "calibration": {"f1": op_f1, "precision": op_cal_p, "recall": op_cal_r},
+        "test": {
+            "precision": op_p,
+            "precision_ci95": M.site_bootstrap(te.y, p_ship, te.site, lambda yy, pp: M.precision_recall(yy, pp, op_t)[0]),
+            "recall": op_r,
+            "recall_ci95": M.site_bootstrap(te.y, p_ship, te.site, lambda yy, pp: M.precision_recall(yy, pp, op_t)[1]),
+            **op_counts,
+        },
+    }
+    print("operating threshold", operating)
+
+    # ---- Breakdown and error analysis of the shipped model at the operating threshold ----
+    t_use = op_t
     breakdowns = {f: breakdown(te, p_ship, t_use, f) for f in ("framework", "category")}
     snippets = load_snippets(args.data / "snippets.jsonl")
     pred = p_ship >= t_use
@@ -388,7 +413,8 @@ def main():
 
     report.update({
         "comparisons": comparisons, "ablations": ablations, "held_out_sources": strict, "fallback": fallback,
-        "shipped": shipped, "graph_network_gate": graph_gate, "gate": gate, "breakdowns": breakdowns,
+        "shipped": shipped, "operating_threshold": operating, "graph_network_gate": graph_gate, "gate": gate,
+        "breakdowns": breakdowns,
         "onnx": {"bytes": size, "sha256": sha, "max_abs_diff_reference_vs_onnxruntime": full_parity},
         "seconds": round(time.time() - t0),
     })
@@ -405,6 +431,7 @@ def main():
         "input": {"name": "x", "dim": D.ROW_DIM},
         "output": {"name": "p"},
         "threshold": ship_threshold,
+        "operatingThreshold": operating,
         "temperature": ship_temperature,
         "shipped": "fallback" if use_fallback else "graph",
         "architecture": architecture,

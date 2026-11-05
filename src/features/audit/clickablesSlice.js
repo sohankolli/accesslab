@@ -2,6 +2,9 @@ import { createSlice, createSelector } from '@reduxjs/toolkit';
 import { readPref } from '../../services/storage';
 import { selectSortedIssues } from './auditSlice';
 
+/** How every model suggestion is labelled while the model is experimental. */
+export const LOW_CONFIDENCE = 'Low confidence: the model is experimental.';
+
 /** Most "Not an issue" records kept in this browser; the oldest go first. */
 export const MAX_DISMISSED = 200;
 
@@ -18,7 +21,7 @@ const clickablesSlice = createSlice({
     enabled: typeof saved().enabled === 'boolean' ? saved().enabled : null, // null: follow the model's default
     status: 'idle', // 'idle' | 'loading' | 'checking' | 'ready' | 'unavailable'
     message: null, // why suggestions are unavailable
-    model: null, // {version, threshold, defaultOn} from the manifest; threshold null when none was reached
+    model: null, // {version, threshold, defaultOn} from the manifest; threshold: where suggestions start, or null
     findings: [],
     timing: null, // {elements, featuresMs, modelMs}
     checks: 0, // finished checks, so a new result can be told from an identical old one

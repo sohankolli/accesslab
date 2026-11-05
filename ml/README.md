@@ -94,7 +94,7 @@ The training pipeline includes:
    npm run lint
    npm run build
    npm run ml:bench
-   The current browser benchmark measured the shipped model at 8 ms median over 10 runs for 2,664 elements.
+   The current browser benchmark measured the shipped model at 12 ms median over 10 runs for 2,664 elements.
 
 ## Current Tranco experiment: results and limitations
 
@@ -123,7 +123,7 @@ With 6 test positives from 2 sites, the 95% site-bootstrap intervals cover nearl
 | Gradient boosting with neighbourhood | 0.503 (0.002–1.000)   | not reached | not reached | –     |
 | Rule: pointer cursor and not native  | 0.009 (0.001–0.250)   | 1.5%        | 50.0%       | –     |
 
-No threshold reached 90% precision on the 6 calibration positives, so there is no operating threshold. Precision and recall are therefore "not reached", and the model in the app scores elements but makes no suggestions. The SIGN network's test PR-AUC was 0.176, 0.503 and 0.504 for seeds 0, 1 and 2; seed 0 was chosen on the calibration sites. On the stricter held-out-source evaluation (1,598 rows, 6 positives), SIGN scored PR-AUC 0.374 and the neighbourhood baseline 0.503.
+No threshold reached 90% precision on the 6 calibration positives, so precision and recall at a target-precision threshold are "not reached" and the precision gate is not met. Separately from the ship gate, the app makes suggestions at an operating threshold chosen by one fixed rule: the threshold with the best F1 on the calibration websites (the test websites are never used to choose it). That threshold is 0.00064, because the model ranks the calibration positives no better than chance, so the best F1 comes from flagging almost everything. On the test websites it flags 2,074 of 2,608 elements: precision 0.3% (95% interval 0.0% to 0.5%) and recall 100% (6 of 6; 95% interval 100% to 100%). Every suggestion is labelled low confidence. The SIGN network's test PR-AUC was 0.176, 0.503 and 0.504 for seeds 0, 1 and 2; seed 0 was chosen on the calibration sites. On the stricter held-out-source evaluation (1,598 rows, 6 positives), SIGN scored PR-AUC 0.374 and the neighbourhood baseline 0.503.
 
 ### Shipping gates
 
@@ -133,7 +133,7 @@ The shipped SIGN artifact passes two of the five gates:
 - Not met: beats the best gradient-boosting baseline (0.176 vs 0.525 PR-AUC).
 - Not met: calibration error ≤ 0.05 (0.062).
 - Met: model size, 169,515 bytes, below the 1 MB limit.
-- Met: browser latency, 8 ms median for 2,664 elements, below the 50 ms limit.
+- Met: browser latency, 12 ms median for 2,664 elements, below the 50 ms limit.
 
 `defaultOn` therefore stays false. The fallback baseline was not shipped, because it also has no threshold that reaches the precision target.
 
@@ -142,7 +142,7 @@ The shipped SIGN artifact passes two of the five gates:
 - The automated 300-label audit judged 188 samples, left 112 unsure and marked zero of the judged samples wrong. Only four judged samples were positive. This is not a manual owner hand-check and is not sufficient to claim that labels have been independently validated.
 - Collect more trustworthy positives. This is the main blocker: 99% of the positives found in the crawl are on delegated pages.
 - Next step: label elements on delegated pages one by one, so those pages can be used again.
-- Manually inspect the false-positive and false-negative samples in data/tranco-run-output-fixed/reports/errors.json, taken at a probability of 0.5, and record the findings.
+- Manually inspect the false-positive and false-negative samples in data/tranco-run-output-fixed/reports/errors.json, taken at the operating threshold, and record the findings.
 - Evaluate additional site types and sources before making claims about broader generalisation.
 - The optional GraphSAGE comparison was not implemented.
 - The dataset and raw snippets are not committed or published as a release. Rebuild them using the crawl and preparation steps above.

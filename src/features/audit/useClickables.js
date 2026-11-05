@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { extractRows, ROW_DIM } from '../../engine/ml/nodeFeatures';
 import { occludedRows, topCues, CUE_GROUPS } from '../../engine/ml/explain';
-import { MANIFEST_URL, NOT_REACHED, validateManifest } from '../../engine/ml/manifest';
+import { MANIFEST_URL, suggestionThreshold, validateManifest } from '../../engine/ml/manifest';
 import { modelClient } from '../../engine/ml/client';
 import { cssPath } from '../../engine/dom/cssPath';
 import { writePref } from '../../services/storage';
@@ -126,7 +126,7 @@ export function useClickables(docRef) {
           dispatch(
             manifestLoaded({
               version: valid.version,
-              threshold: valid.threshold === NOT_REACHED ? null : valid.threshold,
+              threshold: suggestionThreshold(valid),
               defaultOn: valid.defaultOn === true,
             }),
           );

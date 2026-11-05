@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router';
-import { modelSwitched, selectModelOn } from './clickablesSlice';
+import { LOW_CONFIDENCE, modelSwitched, selectModelOn } from './clickablesSlice';
 
 /** Status line under the switch: what the model is doing, in plain words. */
 function statusText(c, on) {
@@ -15,11 +15,11 @@ function statusText(c, on) {
   if (c.status === 'checking') return 'Looking for click-only controls…';
   if (c.timing) {
     const t = c.timing;
-    const none =
+    const note =
       c.model.threshold == null
-        ? ' No threshold reached 90% precision, so the model makes no suggestions.'
-        : '';
-    return `Checked ${t.elements.toLocaleString()} ${t.elements === 1 ? 'element' : 'elements'} in ${Math.round(t.modelMs)} ms.${none} Suggestions never change the score.`;
+        ? ' The model has no threshold, so it makes no suggestions.'
+        : ` ${LOW_CONFIDENCE}`;
+    return `Checked ${t.elements.toLocaleString()} ${t.elements === 1 ? 'element' : 'elements'} in ${Math.round(t.modelMs)} ms.${note} Suggestions never change the score.`;
   }
   return 'Suggestions never change the score.';
 }

@@ -14,11 +14,25 @@ export const MODEL_BASE = '/models/';
 /**
  * What the manifest holds instead of a threshold (and the numbers that need
  * one) when no threshold reached the target precision on the calibration
- * websites. The model still runs, but it has no operating point, so it
- * suggests nothing.
+ * websites. Suggestions then start at the manifest's operating threshold, if
+ * it has one; otherwise the model runs but suggests nothing.
  */
 export const NOT_REACHED = 'not reached';
 export const MANIFEST_URL = `${MODEL_BASE}clickables-v1.json`;
+
+const usableThreshold = (t) => typeof t === 'number' && t > 0 && t < 1;
+
+/**
+ * The probability at which the app makes a suggestion: the manifest's
+ * operating threshold (chosen by a fixed rule on calibration websites), or,
+ * for older manifests without one, the target-precision threshold.
+ * @param {object} m  a valid manifest
+ * @returns {number|null} null when the manifest has neither, so nothing is suggested
+ */
+export function suggestionThreshold(m) {
+  if (usableThreshold(m.operatingThreshold?.value)) return m.operatingThreshold.value;
+  return usableThreshold(m.threshold) ? m.threshold : null;
+}
 
 /**
  * Check a manifest before its model is used.
@@ -39,9 +53,11 @@ export function validateManifest(m) {
   if (typeof m.model !== 'string' || !/^[\w.-]+\.onnx$/.test(m.model)) {
     throw new Error('The model manifest does not name an .onnx file.');
   }
-  const usable = typeof m.threshold === 'number' && m.threshold > 0 && m.threshold < 1;
-  if (!usable && m.threshold !== NOT_REACHED) {
+  if (!usableThreshold(m.threshold) && m.threshold !== NOT_REACHED) {
     throw new Error('The model manifest has no usable threshold.');
+  }
+  if (m.operatingThreshold != null && !usableThreshold(m.operatingThreshold.value)) {
+    throw new Error('The model manifest has no usable operating threshold.');
   }
   return m;
 }

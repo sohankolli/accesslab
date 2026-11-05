@@ -100,3 +100,20 @@ def test_missing_threshold_values_are_marked_not_reached():
     assert entry["flagged"] == T.NOT_REACHED  # missing keys are marked too
     assert entry["pr_auc"] == 0.5 and entry["tp"] == 3  # measured values are kept
     assert "null" not in T.dump(entry) and "NaN" not in T.dump(entry)
+
+
+def test_f1_threshold_is_chosen_from_the_given_rows_only():
+    y = np.array([1, 1, 0, 1, 0, 0, 0, 0])
+    p = np.array([0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2])
+    t, f1, precision, recall = M.threshold_for_f1(y, p)
+    # Cutting at 0.6 flags 4 rows, 3 of them positive: P 0.75, R 1, F1 0.857 (the best).
+    assert t == 0.6 and abs(f1 - 6 / 7) < 1e-9 and precision == 0.75 and recall == 1.0
+    assert M.threshold_for_f1(np.zeros(4), p[:4])[0] is None
+
+
+def test_f1_threshold_does_not_split_ties_and_prefers_fewer_flags():
+    y = np.array([1, 0, 1, 0])
+    p = np.array([0.9, 0.5, 0.5, 0.1])
+    t, f1, _, _ = M.threshold_for_f1(y, p)
+    # 0.9 gives F1 0.667; 0.5 (both tied rows) gives P 2/3, R 1, F1 0.8; 0.1 gives F1 0.667.
+    assert t == 0.5 and abs(f1 - 0.8) < 1e-9

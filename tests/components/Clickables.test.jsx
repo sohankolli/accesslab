@@ -90,6 +90,19 @@ describe('model suggestions in the findings pane', () => {
     ]);
   });
 
+  it('labels the suggestions as low confidence, and as never changing the score', () => {
+    const store = setup();
+    act(() => store.dispatch(modelSwitched(true)));
+    const note = document.querySelector('.group--advisory .group__note');
+    expect(note.querySelector('strong').textContent).toBe(
+      'Low confidence: the model is experimental.',
+    );
+    expect(note.textContent).toMatch(/Suggestions never change the score\./);
+    expect(
+      screen.getByText(/Checked 10 elements in 2 ms\. Low confidence: the model is experimental\./),
+    ).toBeTruthy();
+  });
+
   it('opens with the cues, the fix and the actions, all as buttons', () => {
     const store = setup();
     act(() => store.dispatch({ type: 'audit/issueSelected', payload: suggestion.id }));
@@ -126,7 +139,7 @@ describe('model suggestions in the findings pane', () => {
     expect(store.getState().clickables.enabled).toBe(false);
   });
 
-  it('says why there are no suggestions when no threshold was reached', () => {
+  it('says why there are no suggestions when the model has no threshold', () => {
     const store = setup();
     act(() => {
       store.dispatch(manifestLoaded({ version: '1.0.0', threshold: null, defaultOn: false }));
@@ -136,7 +149,9 @@ describe('model suggestions in the findings pane', () => {
       );
     });
     expect(
-      screen.getByText(/Checked 10 elements in 2 ms\. No threshold reached 90% precision/),
+      screen.getByText(
+        /Checked 10 elements in 2 ms\. The model has no threshold, so it makes no suggestions\./,
+      ),
     ).toBeTruthy();
     expect(screen.queryByText('Possibly click-only')).toBeNull();
     expect(store.getState().audit.result.score).toBe(77);

@@ -5,7 +5,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import * as ort from 'onnxruntime-web';
 import { createEngine } from '../../src/engine/ml/engine';
-import { FEATURE_VERSION, NOT_REACHED, validateManifest } from '../../src/engine/ml/manifest';
+import {
+  FEATURE_VERSION,
+  NOT_REACHED,
+  suggestionThreshold,
+  validateManifest,
+} from '../../src/engine/ml/manifest';
 import { ROW_DIM } from '../../src/engine/ml/nodeFeatures';
 
 const PUBLIC = path.resolve(import.meta.dirname, '../../public');
@@ -65,6 +70,23 @@ describe('model manifest', () => {
     for (const threshold of [null, undefined, Number.NaN, 0, 1, 'none']) {
       expect(() => validateManifest({ ...manifest(), threshold })).toThrow(/no usable threshold/);
     }
+  });
+
+  it('suggests at the operating threshold, and refuses an unusable one', () => {
+    const op = (value) => ({
+      ...manifest(),
+      threshold: NOT_REACHED,
+      operatingThreshold: { value },
+    });
+    expect(suggestionThreshold(op(0.3))).toBe(0.3);
+    expect(
+      suggestionThreshold({ ...manifest(), threshold: 0.6, operatingThreshold: undefined }),
+    ).toBe(0.6);
+    expect(
+      suggestionThreshold({ ...manifest(), threshold: NOT_REACHED, operatingThreshold: undefined }),
+    ).toBe(null);
+    expect(() => validateManifest(op(null))).toThrow(/no usable operating threshold/);
+    expect(() => validateManifest(op(1.5))).toThrow(/no usable operating threshold/);
   });
 
   it('the shipped manifest holds no null, NaN or undefined values', () => {

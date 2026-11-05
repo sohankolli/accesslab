@@ -23,7 +23,7 @@ const count = (v) =>
   typeof v === 'number' ? v.toLocaleString() : v === NOT_REACHED ? 'not reached' : '–';
 
 const GATE_LABELS = {
-  precision: 'Precision at the shipped threshold',
+  precision: 'Precision at a threshold chosen for 90% precision',
   beats_best_gbt: 'Beats the best gradient-boosting baseline',
   ece: 'Calibration error',
   size: 'Model file size',
@@ -209,7 +209,10 @@ export default function ModelCard() {
   const test = m.metrics?.test ?? {};
   const card = m.card ?? {};
   const splits = m.data?.splits ?? {};
-  const hasThreshold = typeof m.threshold === 'number';
+  const op = m.operatingThreshold;
+  const hasOp = typeof op?.value === 'number';
+  const opTest = op?.test ?? {};
+  const testPositives = splits.test?.positives;
 
   return (
     <div className="page page--narrow model-card">
@@ -269,19 +272,20 @@ export default function ModelCard() {
           in use ({m.architecture}) turns those 552 numbers into a probability. It runs in a Web
           Worker in your browser; your code is never sent anywhere.
         </p>
-        {hasThreshold ? (
+        {hasOp ? (
           <p>
-            An element is suggested when its probability is at least {num(m.threshold, 3)}. That
-            threshold was chosen on calibration websites to keep precision at 90% or more, because a
-            noisy assistant gets ignored.
+            An element is suggested when its probability is at least {num(op.value, 4)}, the
+            operating threshold. Rule: {op.rule}. On the calibration websites it gave precision{' '}
+            {pct(op.calibration?.precision)} and recall {pct(op.calibration?.recall)}.
           </p>
         ) : (
-          <p>
-            Threshold: not reached. A threshold is chosen on calibration websites to keep precision
-            at 90% or more, because a noisy assistant gets ignored. No threshold reached that, so
-            the model in use scores every element but suggests none.
-          </p>
+          <p>The model has no operating threshold, so it scores every element but suggests none.</p>
         )}
+        <p>
+          The ship gate asks for a threshold that keeps precision at 90% or more on the calibration
+          websites, because a noisy assistant gets ignored. That threshold:{' '}
+          {typeof m.threshold === 'number' ? num(m.threshold, 3) : 'not reached'}.
+        </p>
       </section>
 
       <section aria-labelledby="mc-data">
@@ -306,27 +310,38 @@ export default function ModelCard() {
         <h2 id="mc-accuracy">How accurate it is on websites it never saw</h2>
         <p>Measured for the model in use: {test.model}.</p>
         <ul>
-          {hasThreshold ? (
+          {hasOp ? (
             <>
               <li>
-                Precision {pct(test.precision)}
-                {ci(test.precision_ci95, pct)}: of {count(test.flagged)} suggestions on the test
-                sites, {count(test.tp)} were real click-only controls.
+                Precision at the operating threshold {pct(opTest.precision)}
+                {ci(opTest.precision_ci95, pct)}: of {count(opTest.flagged)} suggestions on the test
+                sites, {count(opTest.tp)} were click-only controls.
               </li>
               <li>
-                Recall {pct(test.recall)}: it found {count(test.tp)} of{' '}
-                {count((test.tp ?? 0) + (test.fn ?? 0))} click-only controls. The rest are missed,
-                so no suggestions does not mean none exist.
+                Recall at the operating threshold {pct(opTest.recall)}
+                {ci(opTest.recall_ci95, pct)}: it found {count(opTest.tp)} of{' '}
+                {count((opTest.tp ?? 0) + (opTest.fn ?? 0))} click-only controls. Missed ones are
+                possible, so no suggestions does not mean none exist.
+              </li>
+              <li>
+                These numbers rest on {count(testPositives)} click-only controls in{' '}
+                {count(splits.test?.rows)} elements, so they are weak evidence.
               </li>
             </>
           ) : (
             <li>
-              Precision and recall: not reached. They are measured at the threshold, and no
-              threshold reached 90% precision. The test websites hold{' '}
-              {count(splits.test?.positives)} click-only controls in {count(splits.test?.rows)}{' '}
-              elements.
+              Precision and recall: not measured, because the model has no operating threshold. The
+              test websites hold {count(testPositives)} click-only controls in{' '}
+              {count(splits.test?.rows)} elements.
             </li>
           )}
+          <li>
+            Precision and recall at a threshold chosen for 90% precision:{' '}
+            {typeof m.threshold === 'number'
+              ? `${pct(test.precision)} and ${pct(test.recall)}`
+              : 'not reached'}
+            .
+          </li>
           <li>
             Area under the precision-recall curve {num(test.pr_auc, 3)}
             {ci(test.pr_auc_ci95, (v) => num(v, 3))}.
@@ -336,7 +351,7 @@ export default function ModelCard() {
             rates. With so few click-only controls, a low value is easy to reach and says little.
           </li>
         </ul>
-        <TableWrap caption="Compared on the same test websites">
+        <TableWrap caption="Compared on the same test websites; precision and recall at a threshold chosen for 90% precision">
           <thead>
             <tr>
               <th scope="col">Model</th>
@@ -399,16 +414,16 @@ export default function ModelCard() {
       <section aria-labelledby="mc-fails">
         <h2 id="mc-fails">Where it fails</h2>
         <Breakdown
-          title="By framework"
+          title={hasOp ? 'By framework, at the operating threshold' : 'By framework'}
           rows={m.metrics?.byFramework}
           field="framework"
-          hasThreshold={hasThreshold}
+          hasThreshold={hasOp}
         />
         <Breakdown
-          title="By kind of site"
+          title={hasOp ? 'By kind of site, at the operating threshold' : 'By kind of site'}
           rows={m.metrics?.byCategory}
           field="category"
-          hasThreshold={hasThreshold}
+          hasThreshold={hasOp}
         />
         {card.failurePatterns?.length > 0 && (
           <>

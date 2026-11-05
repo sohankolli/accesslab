@@ -61,21 +61,34 @@ The shipped seed (seed 0 in the new run) was chosen on the calibration sites. It
 
 **How to read the new numbers.** Every new test score rests on 6 positive elements from 2 websites, and both intervals for the gradient-boosting models run from close to 0 up to 1.0. The new run is enough to show that the old scores were inflated, but too small to measure how good the model is. The scores are better than chance, yet none of these models, or the differences between them, are established.
 
+## Operating threshold (new run only)
+
+Separately from the ship gate, the new run chooses the threshold at which the app makes suggestions with one fixed rule: the threshold with the best F1 on the calibration websites. The test websites are never used to choose it. The old run had no such threshold.
+
+| At the operating threshold | Calibration websites   | Test websites                                      |
+| -------------------------- | ---------------------- | -------------------------------------------------- |
+| Threshold                  | 0.000642 (chosen here) | same                                               |
+| Precision (95% interval)   | 0.61%                  | 0.29% (0.00%–0.52%)                                |
+| Recall (95% interval)      | 100%                   | 100% (100%–100%)                                   |
+| Flagged / click-only found | –                      | 2,074 flagged; 6 of 6 found, 2,068 false positives |
+
+The model ranks the 6 calibration positives no better than chance, so the best F1 comes from flagging almost everything. These numbers are very weak evidence, and they are reported as measured. On `docs/click-only-demo.html` the model, at this threshold, suggests all 11 candidate elements.
+
 ## Ship gate
 
-| Condition                                 | Old (SIGN)                             | New (SIGN)                            |
-| ----------------------------------------- | -------------------------------------- | ------------------------------------- |
-| Precision ≥ 0.90                          | 0.8925 — Fail                          | not reached — Not met                 |
-| Beats best gradient boosting              | 0.9708 vs 0.9855 — Fail                | 0.1761 vs 0.5246 — Not met            |
-| Calibration error (ECE) ≤ 0.05            | 0.0883 — Fail                          | 0.0624 — Not met                      |
-| File ≤ 1 MB                               | 169,515 bytes — Pass                   | 169,515 bytes — Pass                  |
-| 2,000+ elements in the Web Worker ≤ 50 ms | 10 ms median for 2,664 elements — Pass | 8 ms median for 2,664 elements — Pass |
+| Condition                                 | Old (SIGN)                             | New (SIGN)                             |
+| ----------------------------------------- | -------------------------------------- | -------------------------------------- |
+| Precision ≥ 0.90                          | 0.8925 — Fail                          | not reached — Not met                  |
+| Beats best gradient boosting              | 0.9708 vs 0.9855 — Fail                | 0.1761 vs 0.5246 — Not met             |
+| Calibration error (ECE) ≤ 0.05            | 0.0883 — Fail                          | 0.0624 — Not met                       |
+| File ≤ 1 MB                               | 169,515 bytes — Pass                   | 169,515 bytes — Pass                   |
+| 2,000+ elements in the Web Worker ≤ 50 ms | 10 ms median for 2,664 elements — Pass | 12 ms median for 2,664 elements — Pass |
 
 Both runs fail the ship gate. The neighbourhood gradient-boosting fallback also fails, because it has no threshold that meets the precision target. `defaultOn` must stay `false`. The new run's model, as selected by `train.py` on the calibration split, is the one now shipped in `public/models/`.
 
 ## Errors of the new model
 
-The new run has no calibrated operating threshold, so the error samples in `data/tranco-run-output-fixed/reports/errors.json` use the fallback threshold of 0.5: 50 sampled false positives and 3 false negatives. These samples have not been reviewed manually. The old run's samples (`data/tranco-run-output/reports/false-*-review.csv`) came from the confounded data and should not be used to find recurring error patterns.
+The error samples in `ml/reports/errors.json` are taken at the new operating threshold (below): 50 of the 2,068 false positives, and there are no false negatives. These samples have not been reviewed manually. The old run's samples (`data/tranco-run-output/reports/false-*-review.csv`) came from the confounded data and should not be used to find recurring error patterns.
 
 ## Label quality and remaining checks
 

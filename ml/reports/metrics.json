@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-04T23:31:16+00:00",
+ "generated": "2026-11-05T00:05:11+00:00",
  "feature_version": "clickables-features-1",
  "data": {
   "pages_crawled": 1407,
@@ -193,6 +193,31 @@
   "recall": null,
   "ece": 0.0624451743350278
  },
+ "operating_threshold": {
+  "rule": "the threshold with the best F1 on the calibration websites; the test websites are never used to choose it",
+  "value": 0.000642445171251893,
+  "calibration": {
+   "f1": 0.01206030150753769,
+   "precision": 0.006066734074823054,
+   "recall": 1.0
+  },
+  "test": {
+   "precision": 0.0028929604628736743,
+   "precision_ci95": [
+    0.0,
+    0.005225187130000123
+   ],
+   "recall": 1.0,
+   "recall_ci95": [
+    1.0,
+    1.0
+   ],
+   "tp": 6,
+   "fp": 2068,
+   "fn": 0,
+   "flagged": 2074
+  }
+ },
  "graph_network_gate": {
   "precision": {
    "target": ">= 0.9",
@@ -255,12 +280,12 @@
     "positives": 3,
     "sites": 1,
     "pr_auc": 0.01032557885986072,
-    "precision": 0.0,
-    "recall": 0.0,
-    "tp": 0,
-    "fp": 5,
-    "fn": 3,
-    "flagged": 5
+    "precision": 0.006607929515418502,
+    "recall": 1.0,
+    "tp": 3,
+    "fp": 451,
+    "fn": 0,
+    "flagged": 454
    },
    {
     "framework": "other",
@@ -268,12 +293,12 @@
     "positives": 3,
     "sites": 20,
     "pr_auc": 0.7575757575757576,
-    "precision": 0.03409090909090909,
+    "precision": 0.001851851851851852,
     "recall": 1.0,
     "tp": 3,
-    "fp": 85,
+    "fp": 1617,
     "fn": 0,
-    "flagged": 88
+    "flagged": 1620
    }
   ],
   "category": [
@@ -283,12 +308,12 @@
     "positives": 6,
     "sites": 21,
     "pr_auc": 0.1760919970556091,
-    "precision": 0.03225806451612903,
-    "recall": 0.5,
-    "tp": 3,
-    "fp": 90,
-    "fn": 3,
-    "flagged": 93
+    "precision": 0.0028929604628736743,
+    "recall": 1.0,
+    "tp": 6,
+    "fp": 2068,
+    "fn": 0,
+    "flagged": 2074
    }
   ]
  },
@@ -297,5 +322,5 @@
   "sha256": "efbe7562bd527803b3054b3f5d89cc1f745300d0be53748af4dd1a2276fea702",
   "max_abs_diff_reference_vs_onnxruntime": 1.4901161193847656e-07
  },
- "seconds": 191
+ "seconds": 54
 }

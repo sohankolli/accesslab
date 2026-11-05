@@ -1,6 +1,6 @@
 import { memo, useId, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { dismissedCleared, notAnIssue, selectAdvisory } from './clickablesSlice';
+import { dismissedCleared, LOW_CONFIDENCE, notAnIssue, selectAdvisory } from './clickablesSlice';
 import { selectSortedIssues } from './auditSlice';
 import { fixSnippets } from './fixSnippet';
 import { downloadFeedback } from './feedback';
@@ -147,7 +147,7 @@ function ClickablesGroup({ onShowIssue, onShowInCode }) {
             </span>
           </h3>
           <p className="group__note">
-            Suggestions from a trained model. They never change the score.
+            <strong>{LOW_CONFIDENCE}</strong> Suggestions never change the score.
           </p>
           <ol className="rows" start={ruleCount + 1}>
             {findings.map((f, i) => (

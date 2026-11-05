@@ -6,7 +6,7 @@ export const MAX_PAGE_BYTES = 500 * 1024;
 
 const encoder = new TextEncoder();
 
-/** The page's size: its HTML and CSS in UTF-8 bytes. */
+/** The page's size in bytes: its HTML and CSS in UTF-8 bytes. */
 export const pageBytes = (html, css) => encoder.encode(html).length + encoder.encode(css).length;
 
 /**
@@ -23,7 +23,7 @@ function oversize(html, css) {
 export const initialState = {
   html: SAMPLE_HTML,
   css: SAMPLE_CSS,
-  /** Where the code came from: 'sample' | 'paste' | 'file' | 'link'. */
+  /** Where the code came from: 'sample' | 'paste' | 'file' | 'link' | 'learn'. */
   source: 'sample',
   /** The name of the file last opened, when source is 'file'; otherwise null. */
   fileName: null,
@@ -129,6 +129,24 @@ const editorSlice = createSlice({
       state.rejected = null;
     },
     /**
+     * Load an example from a Learn rule guide.
+     */
+    learnExampleOpened(state, action) {
+      const { html, css = '' } = action.payload;
+      const bytes = oversize(html, css);
+
+      if (bytes) {
+        state.rejected = { lang: 'html', bytes };
+        return;
+      }
+
+      state.html = html;
+      state.css = css;
+      state.source = 'learn';
+      state.fileName = null;
+      state.rejected = null;
+    },
+    /**
      * Append an issue's one-click CSS fix to the stylesheet as one commented
      * line, so undoing it is just deleting that line. Applying the same fix
      * twice changes nothing.
@@ -150,7 +168,9 @@ export const {
   rejectionCleared,
   sampleLoaded,
   sharedPageOpened,
+  learnExampleOpened,
   fixApplied,
   editorSaveResult,
 } = editorSlice.actions;
+
 export default editorSlice.reducer;

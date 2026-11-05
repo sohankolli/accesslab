@@ -12,7 +12,8 @@ AccessLab is a course project for DS359 Full Stack Development I at IIIT Dharwad
 - **File import.** "Open file", or dropping a file on the editor, loads an `.html`, `.htm` or `.css` file. The file is read in the browser.
 - **Bookmarklet.** Drag **Check with AccessLab** from the home page to your bookmarks bar, then click it on any website to send that page's HTML and readable CSS to the workbench.
 - **Simulate.** Colour-vision, low-vision and 200% text lenses, the keyboard tab order and a screen-reader view, shown on a separate copy of the page that is never audited.
-- **Report.** A weighted 0–100 score with its trend and history, kept by page (the "Page" select shows one page at a time), a before-and-after comparison of any two of the last 20 runs, and downloads of a run as JSON, CSV or a printable PDF.
+- **Report.** A weighted 0–100 score with its trend and history, kept by page (the "Page" select shows one page at a time), a before-and-after comparison of any two of a page's last 20 runs (20 per page, 100 overall), and downloads of a run as JSON, CSV or a printable PDF.
+- **Saved in your browser.** Your code, history and settings are kept in this browser, so a refresh shows the same page, score and history.
 - **Learn.** A guide for each of the eleven rules: why it matters, how to fix it, and an example next to an improved one.
 - **Keyboard shortcuts.** Press <kbd>?</kbd> outside a text field to see them, for example <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>W</kbd> for the Workbench.
 - **Model suggestions (experimental).** A trained model can flag elements that look clickable but are not controls, which the rules cannot see. It is off by default and never changes the score.

@@ -27,13 +27,30 @@ function saveableIssue(issue) {
   };
 }
 
+/**
+ * The page's latest saved run, when `audit` is just that run again: the same page,
+ * the same code (by hash) and the same score. Then it is not saved a second time,
+ * so refreshing the workbench or coming back to it does not grow the history.
+ * Runs saved before hashes were recorded never match. The score must match too,
+ * so switching a rule pack on or off still records the new score.
+ * @param {object[]} runs newest first
+ * @param {{score: number, codeHash?: string, page?: {key: string}}} audit
+ */
+export function repeatedRun(runs, audit) {
+  if (!audit.codeHash) return undefined;
+  const key = pageKeyOf(audit);
+  const latest = runs.find((r) => pageKeyOf(r) === key);
+  return latest?.codeHash === audit.codeHash && latest.score === audit.score ? latest : undefined;
+}
+
 const historySlice = createSlice({
   name: 'history',
   initialState: { runs: [], saveFailed: false },
 
   reducers: {
     runAdded(state, action) {
-      const { ranAt, score, issues = [], page } = action.payload;
+      const { ranAt, score, issues = [], page, codeHash } = action.payload;
+      if (repeatedRun(state.runs, action.payload)) return; // nothing changed since that run
 
       const counts = {};
 
@@ -52,6 +69,8 @@ const historySlice = createSlice({
         issues: issues.map(saveableIssue),
         // Which page was checked: { key, name } (see pages.js).
         ...(page ? { page: { key: page.key, name: page.name } } : {}),
+        // A fingerprint of the code that was checked (codeHash.js).
+        ...(codeHash ? { codeHash } : {}),
       };
       state.runs.unshift(run);
 

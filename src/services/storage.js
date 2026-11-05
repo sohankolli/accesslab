@@ -41,6 +41,8 @@ const isRun = (run) =>
   typeof run.counts === 'object' &&
   !Array.isArray(run.counts) &&
   isPage(run.page) &&
+  // Runs saved before code hashes were recorded have none.
+  (run.codeHash === undefined || typeof run.codeHash === 'string') &&
   // Older saved runs do not have issues, so keep them compatible.
   (run.issues === undefined ||
     (Array.isArray(run.issues) &&

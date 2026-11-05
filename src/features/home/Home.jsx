@@ -1,6 +1,3 @@
-/* eslint-disable jsx-a11y/anchor-is-valid */
-/* eslint-disable jsx-a11y/click-events-have-key-events */
-/* eslint-disable jsx-a11y/no-static-element-interactions */
 import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router';
@@ -96,8 +93,10 @@ export default function Home() {
             Want to check a website without copying its code? Add AccessLab to your bookmarks bar.
           </p>
 
+          {/* React blocks javascript: URLs in JSX, so the real URL is set through the ref. */}
           <a
             ref={bookmarkletLink}
+            href="#check-with-accesslab"
             className="btn btn--primary btn--lg bookmarklet__link"
             draggable="true"
             onClick={(event) => {
@@ -108,11 +107,9 @@ export default function Home() {
             Check with AccessLab
           </a>
 
-          {bookmarkletHint && (
-            <p role="status" className="bookmarklet__note">
-              {bookmarkletHint}
-            </p>
-          )}
+          <p role="status" className="bookmarklet__note">
+            {bookmarkletHint}
+          </p>
 
           <ol>
             <li>Drag this link to your browser's bookmarks bar.</li>

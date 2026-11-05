@@ -55,6 +55,20 @@ describe('model card', () => {
     }
   });
 
+  it('names the shipped model and seed, why it was chosen, and each seed by number', async () => {
+    await renderCard();
+    expect(
+      screen.getByText(
+        /Model in use: SIGN graph network, trained with seed 2\. The graph network missed/,
+      ),
+    ).toBeTruthy();
+    expect(
+      screen.getByText(/0\.504 for seed 0, 0\.503 for seed 1, 0\.176 for seed 2 \(shipped\)/),
+    ).toBeTruthy();
+    const trust = screen.getByRole('region', { name: 'When not to trust it' });
+    expect(within(trust).getByText(/seed 2, the weakest of the three seeds/)).toBeTruthy();
+  });
+
   it('shows the hand-check result, its method, and what it does not fix', async () => {
     await renderCard();
     const data = screen.getByRole('region', { name: 'What it was trained on' });

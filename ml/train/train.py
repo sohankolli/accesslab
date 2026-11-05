@@ -260,7 +260,10 @@ def main():
         print("sign seed", seed, info)
     runs.sort(key=lambda r: -r[0])
     _, ship_seed, net, ship_info = runs[0]
-    seed_test = [M.pr_auc(te.y, 1 / (1 + np.exp(-logits(r[2], te.X)))) for r in runs]
+    # In seed order (0, 1, 2), not in the order they were ranked.
+    by_seed = sorted(runs, key=lambda r: r[1])
+    seed_test = [M.pr_auc(te.y, 1 / (1 + np.exp(-logits(r[2], te.X)))) for r in by_seed]
+    seed_runs = [{"seed": r[1], "calibration_pr_auc": r[0], "test_pr_auc": t} for r, t in zip(by_seed, seed_test)]
 
     temperature = fit_temperature(logits(net, cal.X), cal.y)
     p_cal = 1 / (1 + np.exp(-logits(net, cal.X) / temperature))
@@ -312,7 +315,7 @@ def main():
                       "pass": bool(threshold is not None and sign["precision"] >= GATE["precision"])},
         "beats_best_gbt": {"target": f"PR-AUC > {best_gbt['model']}", "value": sign["pr_auc"],
                            "baseline": best_gbt["pr_auc"], "pass": bool(sign["pr_auc"] > best_gbt["pr_auc"]),
-                           "note": f"shipped seed; mean over seeds {np.mean(seed_test):.3f}"},
+                           "note": f"shipped seed {ship_seed}; mean over seeds {np.mean(seed_test):.3f}"},
         "ece": {"target": f"<= {GATE['ece']}", "value": sign["ece"], "pass": bool(sign["ece"] <= GATE["ece"])},
     }
     graph_ok = all(g["pass"] for g in graph_gate.values())
@@ -434,6 +437,12 @@ def main():
         "operatingThreshold": operating,
         "temperature": ship_temperature,
         "shipped": "fallback" if use_fallback else "graph",
+        "selection": {"model": ship_name, **({} if use_fallback else {"seed": ship_seed}), "reason": (
+            "The graph network missed the ship gate and the gradient-boosting fallback passed precision and "
+            "calibration, so the fallback ships." if use_fallback else
+            "The graph network passed the ship gate." if graph_ok else
+            "The graph network missed the ship gate. The gradient-boosting fallback ships only if it passes "
+            "precision and calibration, and it did not, so the graph network ships, switched off by default.")},
         "architecture": architecture,
         "trainedAt": report["generated"],
         "data": {k: report["data"][k] for k in ("sites", "sources", "rows", "positives", "frameworks", "categories",
@@ -445,7 +454,9 @@ def main():
             "ablations": [{"model": a["model"], "pr_auc": a["pr_auc_mean"]} for a in ablations],
             "heldOutSources": {k: strict[k] for k in ("sign_pr_auc", "gbt_neighbourhood_pr_auc", "test_rows", "test_positives")},
             "seeds": {"pr_auc": seed_test, "mean": float(np.mean(seed_test)), "sd": float(np.std(seed_test)),
-                      "note": "test PR-AUC of the graph network trained with each seed; the shipped seed was chosen on calibration sites"},
+                      "runs": seed_runs, "shipped": ship_seed,
+                      "rule": "the seed with the highest PR-AUC on the calibration websites; test scores are never used",
+                      "note": "test PR-AUC of the graph network trained with each seed, in seed order"},
             "graphNetwork": {"gate": graph_gate, "precision": sign["precision"], "recall": sign["recall"], "ece": sign["ece"]},
             "byFramework": breakdowns["framework"],
             "byCategory": breakdowns["category"],

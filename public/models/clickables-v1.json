@@ -19,13 +19,13 @@
     "calibration": {
       "f1": 0.01206030150753769,
       "precision": 0.006066734074823054,
-      "recall": 1
+      "recall": 1.0
     },
     "test": {
       "precision": 0.0028929604628736743,
-      "precision_ci95": [0, 0.005225187130000123],
-      "recall": 1,
-      "recall_ci95": [1, 1],
+      "precision_ci95": [0.0, 0.005225187130000123],
+      "recall": 1.0,
+      "recall_ci95": [1.0, 1.0],
       "tp": 6,
       "fp": 2068,
       "fn": 0,
@@ -34,8 +34,13 @@
   },
   "temperature": 0.4899311363697052,
   "shipped": "graph",
+  "selection": {
+    "model": "SIGN graph network",
+    "seed": 2,
+    "reason": "The graph network missed the ship gate. The gradient-boosting fallback ships only if it passes precision and calibration, and it did not, so the graph network ships, switched off by default."
+  },
   "architecture": "SIGN-style network: 6 view encoders (92->48), head 288->48->1; 40705 parameters",
-  "trainedAt": "2026-11-05T00:05:11+00:00",
+  "trainedAt": "2026-11-05T00:10:26+00:00",
   "data": {
     "sites": 136,
     "sources": 136,
@@ -146,10 +151,29 @@
       "test_positives": 6
     },
     "seeds": {
-      "pr_auc": [0.1760919970556091, 0.5028205758832605, 0.5041732000233716],
-      "mean": 0.394361924320747,
+      "pr_auc": [0.5041732000233716, 0.5028205758832605, 0.1760919970556091],
+      "mean": 0.39436192432074707,
       "sd": 0.15434113355219028,
-      "note": "test PR-AUC of the graph network trained with each seed; the shipped seed was chosen on calibration sites"
+      "runs": [
+        {
+          "seed": 0,
+          "calibration_pr_auc": 0.003511042826672727,
+          "test_pr_auc": 0.5041732000233716
+        },
+        {
+          "seed": 1,
+          "calibration_pr_auc": 0.003579156903346707,
+          "test_pr_auc": 0.5028205758832605
+        },
+        {
+          "seed": 2,
+          "calibration_pr_auc": 0.003897340669307196,
+          "test_pr_auc": 0.1760919970556091
+        }
+      ],
+      "shipped": 2,
+      "rule": "the seed with the highest PR-AUC on the calibration websites; test scores are never used",
+      "note": "test PR-AUC of the graph network trained with each seed, in seed order"
     },
     "graphNetwork": {
       "gate": {
@@ -163,7 +187,7 @@
           "value": 0.1760919970556091,
           "baseline": 0.5245901639344263,
           "pass": false,
-          "note": "shipped seed; mean over seeds 0.394"
+          "note": "shipped seed 2; mean over seeds 0.394"
         },
         "ece": {
           "target": "<= 0.05",
@@ -188,7 +212,7 @@
         "sites": 1,
         "pr_auc": 0.01032557885986072,
         "precision": 0.006607929515418502,
-        "recall": 1,
+        "recall": 1.0,
         "tp": 3,
         "fp": 451,
         "fn": 0,
@@ -201,7 +225,7 @@
         "sites": 20,
         "pr_auc": 0.7575757575757576,
         "precision": 0.001851851851851852,
-        "recall": 1,
+        "recall": 1.0,
         "tp": 3,
         "fp": 1617,
         "fn": 0,
@@ -216,7 +240,7 @@
         "sites": 21,
         "pr_auc": 0.1760919970556091,
         "precision": 0.0028929604628736743,
-        "recall": 1,
+        "recall": 1.0,
         "tp": 6,
         "fp": 2068,
         "fn": 0,
@@ -235,7 +259,7 @@
       "value": 0.1760919970556091,
       "baseline": 0.5245901639344263,
       "pass": false,
-      "note": "shipped seed; mean over seeds 0.394"
+      "note": "shipped seed 2; mean over seeds 0.394"
     },
     "ece": {
       "target": "<= 0.05",
@@ -253,7 +277,7 @@
       "pass": true,
       "elements": 2664,
       "runs": [8, 8, 8, 9, 9, 12, 14, 14, 15, 15],
-      "note": "median of 10 runs in the app's Web Worker; headless Chromium, 12 × 12th Gen Intel(R) Core(TM) i7-1255U, no CPU throttling"
+      "note": "median of 10 runs in the app's Web Worker; headless Chromium, 12 \u00d7 12th Gen Intel(R) Core(TM) i7-1255U, no CPU throttling"
     }
   },
   "defaultOn": false,
@@ -268,6 +292,7 @@
       "The errors have not been reviewed by hand. errors.json holds samples taken at the operating threshold: 50 of the 2,068 false positives on the test websites; there are no false negatives. No recurring causes are claimed."
     ],
     "limitations": [
+      "The shipped model is the SIGN graph network trained with seed 2, the weakest of the three seeds on the test websites (PR-AUC 0.176, against 0.504 for seed 0 and 0.503 for seed 1). The pipeline picks the seed with the highest PR-AUC on the calibration websites, and seed 2 scored highest there, but all three scored about 0.004, below the 0.005 share of click-only controls on those websites, so the choice was close to arbitrary. Seeds are never switched by test score.",
       "The Tranco top-1,000 crawl produced 1,407 page records; 879 pages were used. After every row from delegated pages was removed, 9,654 candidate rows from 136 websites remain, and only 13 of those websites have any click-only control. One website (capcut.com) has 32 of the 60.",
       "All examples come from the Tranco crawl. The corpus has no Vue or Angular pages, and the results are not representative of other kinds of websites."
     ],

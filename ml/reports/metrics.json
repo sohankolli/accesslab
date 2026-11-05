@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-05T00:05:11+00:00",
+ "generated": "2026-11-05T00:10:26+00:00",
  "feature_version": "clickables-features-1",
  "data": {
   "pages_crawled": 1407,
@@ -112,9 +112,9 @@
    "epochs_run": 9,
    "best_epoch": 2,
    "pr_auc_all_seeds": [
-    0.1760919970556091,
+    0.5041732000233716,
     0.5028205758832605,
-    0.5041732000233716
+    0.1760919970556091
    ],
    "ece": 0.0624451743350278,
    "ece_uncalibrated": 0.1317281522314947,
@@ -229,7 +229,7 @@
    "value": 0.1760919970556091,
    "baseline": 0.5245901639344263,
    "pass": false,
-   "note": "shipped seed; mean over seeds 0.394"
+   "note": "shipped seed 2; mean over seeds 0.394"
   },
   "ece": {
    "target": "<= 0.05",
@@ -253,7 +253,7 @@
    "value": 0.1760919970556091,
    "baseline": 0.5245901639344263,
    "pass": false,
-   "note": "shipped seed; mean over seeds 0.394"
+   "note": "shipped seed 2; mean over seeds 0.394"
   },
   "ece": {
    "target": "<= 0.05",
@@ -322,5 +322,5 @@
   "sha256": "efbe7562bd527803b3054b3f5d89cc1f745300d0be53748af4dd1a2276fea702",
   "max_abs_diff_reference_vs_onnxruntime": 1.4901161193847656e-07
  },
- "seconds": 54
+ "seconds": 51
 }

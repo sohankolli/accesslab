@@ -10,6 +10,7 @@
     "The errors have not been reviewed by hand. errors.json holds samples taken at the operating threshold: 50 of the 2,068 false positives on the test websites; there are no false negatives. No recurring causes are claimed."
   ],
   "limitations": [
+    "The shipped model is the SIGN graph network trained with seed 2, the weakest of the three seeds on the test websites (PR-AUC 0.176, against 0.504 for seed 0 and 0.503 for seed 1). The pipeline picks the seed with the highest PR-AUC on the calibration websites, and seed 2 scored highest there, but all three scored about 0.004, below the 0.005 share of click-only controls on those websites, so the choice was close to arbitrary. Seeds are never switched by test score.",
     "The Tranco top-1,000 crawl produced 1,407 page records; 879 pages were used. After every row from delegated pages was removed, 9,654 candidate rows from 136 websites remain, and only 13 of those websites have any click-only control. One website (capcut.com) has 32 of the 60.",
     "All examples come from the Tranco crawl. The corpus has no Vue or Angular pages, and the results are not representative of other kinds of websites."
   ],

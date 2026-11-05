@@ -244,6 +244,13 @@ export default function ModelCard() {
             : 'Not every quality check below has passed, so suggestions are off by default. You can switch them on under the rule packs on the Workbench; treat them as hints.'}{' '}
           Suggestions are advisory: they never change the score, the history or the report.
         </p>
+        {m.selection && (
+          <p>
+            Model in use: {m.selection.model}
+            {m.selection.seed != null && `, trained with seed ${m.selection.seed}`}.{' '}
+            {m.selection.reason}
+          </p>
+        )}
         <GateTable caption="Ship gate for the model in use, on test websites" gate={m.gate} />
         {m.shipped === 'fallback' && (
           <>
@@ -383,8 +390,16 @@ export default function ModelCard() {
           <p>
             The graph network is not stable on this much data: trained three times with different
             random seeds, its PR-AUC on the test websites was{' '}
-            {m.metrics.seeds.pr_auc.map((v) => num(v, 3)).join(', ')} (mean{' '}
-            {num(m.metrics.seeds.mean, 3)}).
+            {m.metrics.seeds.runs
+              ? m.metrics.seeds.runs
+                  .map(
+                    (r) =>
+                      `${num(r.test_pr_auc, 3)} for seed ${r.seed}${r.seed === m.metrics.seeds.shipped ? ' (shipped)' : ''}`,
+                  )
+                  .join(', ')
+              : m.metrics.seeds.pr_auc.map((v) => num(v, 3)).join(', ')}{' '}
+            (mean {num(m.metrics.seeds.mean, 3)}).
+            {m.metrics.seeds.rule && ` The shipped seed is ${m.metrics.seeds.rule}.`}
           </p>
         )}
         {m.metrics?.heldOutSources && (

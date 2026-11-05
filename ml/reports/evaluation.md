@@ -48,16 +48,18 @@ PR-AUC values are shown with their 95% site-bootstrap interval. In the new test 
 ¹ No threshold reached the 0.90 precision target on the calibration sites, which hold only 6 positives. Precision and recall at an operating threshold are therefore not reported.
 ² A low ECE is expected when almost every label is 0, and says little about how well the model ranks positives.
 
-| Other result                               | Old                    | New                                 |
-| ------------------------------------------ | ---------------------- | ----------------------------------- |
-| SIGN test PR-AUC per seed (0, 1, 2)        | 0.9700, 0.9750, 0.9733 | 0.1761, 0.5028, 0.5042 (mean 0.394) |
-| SIGN without class-name words (1 seed)     | 0.9688                 | 0.1077                              |
-| SIGN without neighbourhood (1 seed)        | 0.9764                 | 0.4696                              |
-| Held-out sources: SIGN / neighbourhood GBT | 0.9108 / 0.9678        | 0.3741 / 0.5029                     |
-| Held-out sources: test rows / positives    | 4,707 / 1,905          | 1,598 / 6                           |
-| SIGN parameters                            | 40,705                 | 40,705                              |
+| Other result                               | Old                                                                                           | New                                                                  |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| SIGN test PR-AUC per seed                  | 0.9700 (seed 1, shipped), then 0.9750 and 0.9733 for seeds 0 and 2 in calibration-rank order³ | seed 0: 0.5042, seed 1: 0.5028, seed 2 (shipped): 0.1761; mean 0.394 |
+| SIGN without class-name words (1 seed)     | 0.9688                                                                                        | 0.1077                                                               |
+| SIGN without neighbourhood (1 seed)        | 0.9764                                                                                        | 0.4696                                                               |
+| Held-out sources: SIGN / neighbourhood GBT | 0.9108 / 0.9678                                                                               | 0.3741 / 0.5029                                                      |
+| Held-out sources: test rows / positives    | 4,707 / 1,905                                                                                 | 1,598 / 6                                                            |
+| SIGN parameters                            | 40,705                                                                                        | 40,705                                                               |
 
-The shipped seed (seed 0 in the new run) was chosen on the calibration sites. Its test score of 0.18 is much lower than seeds 1 and 2 (about 0.50), which shows how much a choice made on 6 calibration positives can swing the result.
+³ The old run recorded the other two seeds' scores only in the order they ranked on calibration, so which of 0.9750 and 0.9733 belongs to seed 0 is not known. An earlier version of this report listed both runs' scores as if they were in seed order; that was wrong.
+
+**Which model ships, and why.** The pipeline ships the SIGN graph network unless it misses the ship gate and the gradient-boosting fallback passes precision and calibration. The fallback has no threshold that reaches 90% precision, so the graph network ships. Among the three seeds, it ships the one with the highest PR-AUC on the calibration sites: seed 2 (0.0039, against 0.0036 for seed 1 and 0.0035 for seed 0). All three are below the 0.005 share of click-only controls on those sites, so the choice was close to arbitrary, and seed 2 turned out to be the weakest on the test sites (0.18, against about 0.50 for the others). Seeds are not switched by test score.
 
 **How to read the new numbers.** Every new test score rests on 6 positive elements from 2 websites, and both intervals for the gradient-boosting models run from close to 0 up to 1.0. The new run is enough to show that the old scores were inflated, but too small to measure how good the model is. The scores are better than chance, yet none of these models, or the differences between them, are established.
 

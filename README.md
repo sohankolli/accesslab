@@ -384,6 +384,8 @@ production build on every pull request.
 
 ## Limitations
 
+- Pages without a `<title>` or file name all share one history, under "Untitled page".
+
 - Automated checks find only part of the real accessibility problems; meaningful alt text,
 
   sensible reading order and caption quality still need a person.

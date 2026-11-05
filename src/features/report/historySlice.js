@@ -1,6 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
+import { pageKeyOf } from './pages';
 
-const MAX_RUNS = 20;
+// Each page keeps its own last 20 runs, so checking one page often never wipes
+// out another page's history. The overall cap bounds what localStorage holds.
+const MAX_RUNS_PER_PAGE = 20;
+const MAX_RUNS = 100;
 
 // Keep only the information needed to create a report.
 // Do not store DOM elements, documents, or other browser objects.
@@ -29,7 +33,7 @@ const historySlice = createSlice({
 
   reducers: {
     runAdded(state, action) {
-      const { ranAt, score, issues = [] } = action.payload;
+      const { ranAt, score, issues = [], page } = action.payload;
 
       const counts = {};
 
@@ -40,19 +44,32 @@ const historySlice = createSlice({
         }
       }
 
-      state.runs.unshift({
+      const run = {
         id: String(ranAt),
         ranAt,
         score,
         counts,
         issues: issues.map(saveableIssue),
-      });
+        // Which page was checked: { key, name } (see pages.js).
+        ...(page ? { page: { key: page.key, name: page.name } } : {}),
+      };
+      state.runs.unshift(run);
+
+      // Over the cap for this page: drop this page's oldest run.
+      const key = pageKeyOf(run);
+      const samePage = state.runs.filter((r) => pageKeyOf(r) === key);
+      if (samePage.length > MAX_RUNS_PER_PAGE) {
+        const oldest = samePage.at(-1);
+        state.runs = state.runs.filter((r) => r !== oldest);
+      }
 
       state.runs.splice(MAX_RUNS);
     },
 
-    historyCleared(state) {
-      state.runs = [];
+    /** historyCleared() clears every page; historyCleared(pageKey) clears just that page. */
+    historyCleared(state, action) {
+      const key = action.payload;
+      state.runs = key === undefined ? [] : state.runs.filter((r) => pageKeyOf(r) !== key);
     },
 
     historySaveResult(state, action) {

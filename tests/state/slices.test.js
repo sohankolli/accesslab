@@ -61,6 +61,37 @@ describe('historySlice', () => {
     const state = historyReducer(undefined, runAdded(audit(1, 50)));
     expect(historyReducer(state, historyCleared())).toEqual({ runs: [], saveFailed: false });
   });
+
+  const onPage = (ranAt, score, name) => ({
+    ...audit(ranAt, score),
+    page: { key: `page:${name.toLowerCase()}`, name },
+  });
+
+  it('saves the page with each run', () => {
+    const state = historyReducer(undefined, runAdded(onPage(1, 50, 'Menu')));
+    expect(state.runs[0].page).toEqual({ key: 'page:menu', name: 'Menu' });
+    expect(historyReducer(state, runAdded(audit(2, 60))).runs[0]).not.toHaveProperty('page');
+  });
+
+  it('keeps 20 runs per page, so one busy page never pushes out another', () => {
+    let state = historyReducer(undefined, runAdded(onPage(1, 50, 'Other')));
+    for (let i = 2; i <= 30; i++) state = historyReducer(state, runAdded(onPage(i, i, 'Busy')));
+    const busy = state.runs.filter((r) => r.page.key === 'page:busy');
+    expect(busy).toHaveLength(20);
+    expect(busy.at(-1).ranAt).toBe(11); // the oldest ones went
+    expect(state.runs.at(-1).page.name).toBe('Other');
+  });
+
+  it('clears one page, leaving the others and the earlier checks', () => {
+    let state = historyReducer(undefined, runAdded(audit(1, 40))); // an earlier check
+    state = historyReducer(state, runAdded(onPage(2, 50, 'A')));
+    state = historyReducer(state, runAdded(onPage(3, 60, 'B')));
+    state = historyReducer(state, runAdded(onPage(4, 70, 'A')));
+    state = historyReducer(state, historyCleared('page:a'));
+    expect(state.runs.map((r) => r.ranAt)).toEqual([3, 1]);
+    state = historyReducer(state, historyCleared('earlier'));
+    expect(state.runs.map((r) => r.ranAt)).toEqual([3]);
+  });
 });
 
 describe('auditSlice', () => {

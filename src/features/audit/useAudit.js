@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useStore } from 'react-redux';
 import { toAuditResult } from '../../engine/runAudit';
 import { runRulesSliced } from '../../engine/scheduler';
 import { rulesFor } from '../../engine/rules';
 import { useSettings } from '../../context/SettingsContext';
 import { auditStarted, auditCompleted, auditFailed } from './auditSlice';
 import { runAdded } from '../report/historySlice';
+import { pageOf } from '../report/pages';
 
 /**
  * Runs the audit of the preview's document. Starting a new audit aborts the old
@@ -18,6 +19,7 @@ import { runAdded } from '../report/historySlice';
  */
 export function useAudit({ docRef, html, css }) {
   const dispatch = useDispatch();
+  const store = useStore();
 
   // Only the rule packs switched on in settings take part in the audit.
   const { enabledPacks } = useSettings();
@@ -41,7 +43,10 @@ export function useAudit({ docRef, html, css }) {
         // Runs in ~12 ms slices, yielding to the browser in between so typing stays smooth.
         const results = await runRulesSliced(doc, rules, { signal: controller.signal });
         if (controller.signal.aborted) return; // superseded while the last rule ran
-        const audit = toAuditResult(results);
+        // Which page this is: its <title>, else the opened file's name (pages.js).
+        const { source, fileName } = store.getState().editor;
+        const page = pageOf({ title: doc.title, fileName: source === 'file' ? fileName : null });
+        const audit = { ...toAuditResult(results), page };
         dispatch(auditCompleted(audit, codeRef.current));
         dispatch(runAdded(audit));
       } catch (err) {
@@ -51,7 +56,7 @@ export function useAudit({ docRef, html, css }) {
         if (!controller.signal.aborted) dispatch(auditFailed(err?.message || String(err)));
       }
     },
-    [dispatch, rules],
+    [dispatch, store, rules],
   );
 
   // New code is about to replace the preview's document: stop auditing the old

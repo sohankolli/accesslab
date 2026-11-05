@@ -40,6 +40,29 @@ describe('storage', () => {
     expect(loadHistory().runs).toEqual([run('1')]);
   });
 
+  it('keeps runs saved before pages were recorded, and runs with a page', () => {
+    const old = run('1'); // no page: shown as "Earlier checks"
+    const withPage = {
+      ...run('2'),
+      page: { key: 'page:café aroma menu', name: 'Café Aroma menu' },
+    };
+    saveHistory({ runs: [withPage, old] });
+    expect(loadHistory().runs).toEqual([withPage, old]);
+  });
+
+  it('drops runs whose page is malformed', () => {
+    const good = { ...run('1'), page: { key: 'page:a', name: 'A' } };
+    const bad = [
+      { ...run('2'), page: null },
+      { ...run('3'), page: 'A' },
+      { ...run('4'), page: { key: 'page:a' } },
+      { ...run('5'), page: { key: 'a', name: 'A' } },
+      { ...run('6'), page: { key: 'page:a', name: '' } },
+    ];
+    localStorage.setItem(KEY, JSON.stringify({ history: { runs: [good, ...bad] } }));
+    expect(loadHistory().runs).toEqual([good]);
+  });
+
   it('treats unreadable or non-object data as empty', () => {
     localStorage.setItem(KEY, '{not json');
     expect(loadHistory()).toEqual({ runs: [] });

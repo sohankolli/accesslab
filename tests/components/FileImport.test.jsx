@@ -211,7 +211,8 @@ describe('help for framework apps', () => {
     const details = summary.closest('details');
     expect(details.closest('.src-head')).toBe(screen.getByText('Open file').closest('.src-head'));
     expect(details.textContent).toContain('Copy outerHTML');
-    expect(details.textContent).toContain('AccessLab checks the rendered page.');
+    expect(details.textContent).toContain('AccessLab checks the rendered page');
+    expect(details.textContent).toContain('bookmarklet');
   });
 });
 

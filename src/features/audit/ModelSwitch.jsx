@@ -1,6 +1,12 @@
 import { useDispatch, useSelector } from 'react-redux';
 import { Link } from 'react-router';
-import { LOW_CONFIDENCE, modelSwitched, NOT_ACCURATE, selectModelOn } from './clickablesSlice';
+import {
+  experimentalLine,
+  LOW_CONFIDENCE,
+  modelSwitched,
+  NOT_ACCURATE,
+  selectModelOn,
+} from './clickablesSlice';
 
 /** Status line under the switch: what the model is doing, in plain words. */
 function statusText(c, on) {
@@ -30,6 +36,7 @@ export default function ModelSwitch() {
   const c = useSelector((s) => s.clickables);
   const on = useSelector(selectModelOn);
   const unavailable = c.status === 'unavailable';
+  const line = on && !unavailable ? experimentalLine(c.model?.testResult) : null;
   return (
     <div className="model-switch">
       <label className="packs__option">
@@ -50,6 +57,7 @@ export default function ModelSwitch() {
       >
         {statusText(c, on)} <Link to="/learn/model-card">About the model</Link>
       </p>
+      {line && <p className="model-switch__status">{line}</p>}
     </div>
   );
 }

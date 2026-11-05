@@ -2,7 +2,12 @@ import { useCallback, useEffect, useRef } from 'react';
 import { useDispatch, useSelector, useStore } from 'react-redux';
 import { extractRows, ROW_DIM } from '../../engine/ml/nodeFeatures';
 import { occludedRows, topCues, CUE_GROUPS } from '../../engine/ml/explain';
-import { MANIFEST_URL, suggestionThreshold, validateManifest } from '../../engine/ml/manifest';
+import {
+  MANIFEST_URL,
+  suggestionThreshold,
+  testResult,
+  validateManifest,
+} from '../../engine/ml/manifest';
 import { modelClient } from '../../engine/ml/client';
 import { cssPath } from '../../engine/dom/cssPath';
 import { writePref } from '../../services/storage';
@@ -128,6 +133,7 @@ export function useClickables(docRef) {
               version: valid.version,
               threshold: suggestionThreshold(valid),
               defaultOn: valid.defaultOn === true,
+              testResult: testResult(valid),
             }),
           );
         }

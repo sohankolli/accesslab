@@ -35,6 +35,19 @@ export function suggestionThreshold(m) {
   return usableThreshold(m.threshold) ? m.threshold : null;
 }
 
+const isCount = (v) => Number.isInteger(v) && v >= 0;
+
+/**
+ * How the shipped model did on the held-out test websites at its threshold.
+ * @param {object} m  a valid manifest
+ * @returns {{correct: number, suggestions: number}|null} null when the manifest does not say
+ */
+export function testResult(m) {
+  const t = m.operatingThreshold?.test;
+  if (!t || !isCount(t.tp) || !isCount(t.flagged) || t.tp > t.flagged) return null;
+  return { correct: t.tp, suggestions: t.flagged };
+}
+
 /**
  * Check a manifest before its model is used.
  * @param {unknown} m  parsed JSON

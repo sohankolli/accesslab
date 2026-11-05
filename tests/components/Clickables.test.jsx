@@ -5,10 +5,14 @@ import { MemoryRouter } from 'react-router';
 import { useRef } from 'react';
 import FindingsPane from '../../src/features/audit/FindingsPane';
 import ModelSwitch from '../../src/features/audit/ModelSwitch';
+import { testResult } from '../../src/engine/ml/manifest';
+import fs from 'node:fs';
+import path from 'node:path';
 import { SettingsProvider } from '../../src/context/SettingsContext';
 import { auditCompleted } from '../../src/features/audit/auditSlice';
 import {
   checkCompleted,
+  experimentalLine,
   manifestLoaded,
   modelSwitched,
   modelUnavailable,
@@ -268,5 +272,60 @@ describe('scoring a page', () => {
     expect(findings).toEqual([]);
     expect(client.score).toHaveBeenCalledTimes(1);
     expect(timing.elements).toBeGreaterThan(0);
+  });
+});
+
+describe('the experimental line under the switch', () => {
+  const shipped = JSON.parse(
+    fs.readFileSync(path.resolve(import.meta.dirname, '../../public/models/clickables-v1.json')),
+  );
+
+  function renderSwitch(result, on = true) {
+    const store = makeStore();
+    store.dispatch(
+      manifestLoaded({ version: '1.0.0', threshold: 0.2, defaultOn: false, testResult: result }),
+    );
+    store.dispatch(modelSwitched(on));
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <ModelSwitch />
+        </MemoryRouter>
+      </Provider>,
+    );
+  }
+
+  it('is built from the shipped manifest test numbers', () => {
+    const r = testResult(shipped);
+    expect(r).toEqual({
+      correct: shipped.operatingThreshold.test.tp,
+      suggestions: shipped.operatingThreshold.test.flagged,
+    });
+    renderSwitch(r);
+    expect(
+      screen.getByText(
+        `Experimental: on held-out test sites, ${r.correct} of ${r.suggestions} suggestions were correct.`,
+      ),
+    ).toBeTruthy();
+  });
+
+  it('follows the numbers it is given, and says "suggestion was" for one', () => {
+    expect(experimentalLine({ correct: 7, suggestions: 12 })).toBe(
+      'Experimental: on held-out test sites, 7 of 12 suggestions were correct.',
+    );
+    expect(experimentalLine({ correct: 1, suggestions: 1 })).toBe(
+      'Experimental: on held-out test sites, 1 of 1 suggestion was correct.',
+    );
+  });
+
+  it('is not shown when the switch is off or the manifest has no test numbers', () => {
+    renderSwitch({ correct: 3, suggestions: 10 }, false);
+    expect(screen.queryByText(/^Experimental:/)).toBeNull();
+    cleanup();
+    renderSwitch(null);
+    expect(screen.queryByText(/^Experimental:/)).toBeNull();
+    expect(testResult({ operatingThreshold: { test: { tp: 'not reached', flagged: 4 } } })).toBe(
+      null,
+    );
   });
 });

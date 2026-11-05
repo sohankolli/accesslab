@@ -65,7 +65,7 @@ The optional model pipeline (crawling, labelling, training) has its own instruct
 
 ## What does not work yet
 
-- **Model suggestions are experimental and off by default.** The corpus has only 55 trustworthy positives from 13 sites (6 in the test set, from 2 sites), too few to measure how good the model is; on the test sites, 3 of its 10 suggestions are correct, and it misses two of the five ship gates. See the model card (`/learn/model-card` in the app), [`docs/model.md`](docs/model.md) and [`ml/reports/evaluation.md`](ml/reports/evaluation.md).
+- **Model suggestions are experimental and off by default.** The model is now trained on delegated React, Vue and Angular pages as well (the framework-page rule), with negative sampling and a single model type. On a new held-out set of 28 such sites it reaches PR-AUC 0.408, against 0.037 for the previous model, and about half of its suggestions are correct (53%); it misses three of the five ship gates. The labels on the new pages were not hand-checked. See the model card (`/learn/model-card` in the app), [`docs/model.md`](docs/model.md) and [`ml/reports/evaluation.md`](ml/reports/evaluation.md).
 - **Untitled pages share one history.** Pages without a `<title>` or file name are all saved under "Untitled page".
 - **The bookmarklet has limits.** Cross-origin stylesheets cannot be read because of browser security restrictions, so they are skipped. Some websites restrict bookmarklets through their security policies, and the bookmarklet needs pop-ups allowed to open AccessLab. Pages larger than 500 KB are rejected.
 - **Page scripts are not run in the preview**, so pages that build their content with JavaScript are audited in their initial state.

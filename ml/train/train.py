@@ -43,6 +43,14 @@ def parse_args():
                     help="JSON list of the frozen test websites; missing: a fresh stratified site split")
     ap.add_argument("--keep-delegated", action="store_true",
                     help="also use pages with document-level click listeners (their 0 labels are unreliable)")
+    ap.add_argument("--candidates", choices=["all", "gbt-element"], default="all",
+                    help="gbt-element: train only element-only gradient boosting (no graph network, "
+                         "ablations or source holdout)")
+    ap.add_argument("--neg-per-pos", type=int, default=0,
+                    help="inside each training fold and the final retrain, keep every positive and at most "
+                         "this many negatives per positive (fixed seed); 0 keeps every row")
+    ap.add_argument("--compare-onnx", type=Path, default=None,
+                    help="an existing model (the shipped one) to score on the test sites with the same code")
     return ap.parse_args()
 
 
@@ -225,6 +233,8 @@ def main():
     args.out.mkdir(parents=True, exist_ok=True)
     args.fixtures.mkdir(parents=True, exist_ok=True)
 
+    if args.candidates == "gbt-element":
+        CANDIDATES[:] = [c for c in CANDIDATES if c["name"] == "Gradient boosting, element only"]
     full = D.load(args.data / "rows.jsonl", args.data / "rows.npz")
     pages = [json.loads(l) for l in open(args.data / "pages.jsonl")]
     # Pages that listen for clicks on the whole document (event delegation) may
@@ -284,7 +294,12 @@ def main():
         a, b, _ = D.split_by_site(part.site, part.y, seed=seed, fractions=(0.85, 0.15, 0.0))
         return part.take(a), part.take(b)
 
+    def sampled(part, seed):
+        """The training rows used to fit: all of them, or every positive and a few negatives each."""
+        return part.take(D.sample_negatives(part.y, args.neg_per_pos, seed)) if args.neg_per_pos else part
+
     def fit(cand, part, seed=0):
+        part = sampled(part, seed)
         inner_tr, inner_va = inner_split(part, seed)
         if cand["kind"] == "sign":
             net, info = fit_sign(inner_tr.X, inner_tr.y, inner_va.X, inner_va.y, seed=cand["seed"], score=M.pr_auc)
@@ -324,8 +339,9 @@ def main():
         else:
             chosen_params = Counter(json.dumps(i["params"], sort_keys=True) for i in cand["fold_info"]).most_common(1)[0][0]
             params = json.loads(chosen_params)
+            fit_rows = sampled(dev, FOLDS)
             cand["final"] = HistGradientBoostingClassifier(class_weight="balanced", random_state=0, **params).fit(
-                dev.X[:, cand["cols"]], dev.y)
+                fit_rows.X[:, cand["cols"]], fit_rows.y)
             cand["final_info"] = {"params": params}
         cand["p_te"] = 1 / (1 + np.exp(-z_of(cand, cand["final"], te.X) / cand["temperature"]))
         cand["test"] = summarise(cand["name"], te.y, cand["p_te"], cand["threshold"], te.site)
@@ -339,10 +355,11 @@ def main():
     gbts = [c for c in CANDIDATES if c["kind"] == "gbt"]
     seed_runs = [{"seed": c["seed"], "oof_pr_auc": c["oof_pr_auc"], "test_pr_auc": c["test"]["pr_auc"]} for c in signs]
     seed_test = [r["test_pr_auc"] for r in seed_runs]
+    extras = bool(signs)  # the ablations and the source holdout train graph networks
 
     # ---- Ablations of the graph network, seed 0, trained on the development sites ----
     ablations = []
-    for name, kw in [("SIGN without class-name words", {"words": False}),
+    for name, kw in [] if not extras else [("SIGN without class-name words", {"words": False}),
                      ("SIGN without neighbourhood", {"neighbourhood": False})]:
         a_tr, a_va = inner_split(dev, 0)
         n, _ = fit_sign(D.mask(a_tr.X, **kw), a_tr.y, D.mask(a_va.X, **kw), a_va.y, seed=0, score=M.pr_auc)
@@ -351,20 +368,23 @@ def main():
         print(name, score)
 
     # ---- A stricter split: whole source repositories held out ----
-    groups = np.unique(ds.group)
+    strict = {"held_out_sources": [], "test_rows": None, "test_positives": None, "sign_pr_auc": None,
+              "gbt_neighbourhood_pr_auc": None, "note": "not run: only element-only gradient boosting was trained"}
+    groups = np.unique(ds.group) if extras else np.array([])
     rng = np.random.default_rng(7)
-    held = set(rng.choice(groups, max(2, round(len(groups) * 0.2)), replace=False).tolist())
-    g_te = np.isin(ds.group, list(held))
-    g_rest = np.flatnonzero(~g_te)
-    g_tr_i, g_cal_i, _ = D.split_by_site(ds.site[g_rest], ds.y[g_rest], seed=11, fractions=(0.85, 0.15, 0.0))
-    gtr, gcal, gte = ds.take(g_rest[g_tr_i]), ds.take(g_rest[g_cal_i]), ds.take(np.flatnonzero(g_te))
-    gnet, _ = fit_sign(gtr.X, gtr.y, gcal.X, gcal.y, seed=0, score=M.pr_auc)
-    ggbt, _, _ = fit_gbt(gtr.X, gtr.y, gcal.X, gcal.y)
-    strict = {
-        "held_out_sources": sorted(held), "test_rows": int(len(gte.y)), "test_positives": int(gte.y.sum()),
-        "sign_pr_auc": M.pr_auc(gte.y, 1 / (1 + np.exp(-logits(gnet, gte.X)))),
-        "gbt_neighbourhood_pr_auc": M.pr_auc(gte.y, ggbt.predict_proba(gte.X)[:, 1]),
-    }
+    held = set() if not extras else set(rng.choice(groups, max(2, round(len(groups) * 0.2)), replace=False).tolist())
+    if extras:
+        g_te = np.isin(ds.group, list(held))
+        g_rest = np.flatnonzero(~g_te)
+        g_tr_i, g_cal_i, _ = D.split_by_site(ds.site[g_rest], ds.y[g_rest], seed=11, fractions=(0.85, 0.15, 0.0))
+        gtr, gcal, gte = ds.take(g_rest[g_tr_i]), ds.take(g_rest[g_cal_i]), ds.take(np.flatnonzero(g_te))
+        gnet, _ = fit_sign(gtr.X, gtr.y, gcal.X, gcal.y, seed=0, score=M.pr_auc)
+        ggbt, _, _ = fit_gbt(gtr.X, gtr.y, gcal.X, gcal.y)
+        strict = {
+            "held_out_sources": sorted(held), "test_rows": int(len(gte.y)), "test_positives": int(gte.y.sum()),
+            "sign_pr_auc": M.pr_auc(gte.y, 1 / (1 + np.exp(-logits(gnet, gte.X)))),
+            "gbt_neighbourhood_pr_auc": M.pr_auc(gte.y, ggbt.predict_proba(gte.X)[:, 1]),
+        }
     print("held-out sources", strict)
 
     # ---- Export the chosen model with its temperature folded in ----
@@ -397,6 +417,26 @@ def main():
                 "tests/ml/modelParity.test.js checks onnxruntime-web gives the same.",
         "inputs": ref_in.tolist(), "outputs": ref_out.tolist(),
     }))
+    # Both the new model and the existing one are scored here by the same code:
+    # their ONNX files through onnxruntime, then the same measures.
+    p_new_onnx = sess.run(["p"], {"x": te.X})[0]
+    heldout = {"rows": int(len(te.y)), "positives": int(te.y.sum()), "sites": len(set(te.site.tolist())),
+               "new": summarise(chosen["name"], te.y, p_new_onnx, ship_threshold, te.site)}
+    heldout["new"]["suggestions_per_1000"] = (1000 * heldout["new"].get("flagged", 0) / len(te.y)
+                                              if ship_threshold is not None else 0.0)
+    if args.compare_onnx:
+        old_manifest = json.loads(args.compare_onnx.with_suffix(".json").read_text())
+        old_t = old_manifest.get("threshold")
+        old_t = old_t if isinstance(old_t, (int, float)) else None
+        old_sess = ort.InferenceSession(str(args.compare_onnx), providers=["CPUExecutionProvider"])
+        p_old = old_sess.run(["p"], {"x": te.X})[0]
+        heldout["shipped"] = summarise(f"existing model ({args.compare_onnx.name})", te.y, p_old, old_t, te.site)
+        heldout["shipped"]["suggestions_per_1000"] = (1000 * heldout["shipped"].get("flagged", 0) / len(te.y)
+                                                      if old_t is not None else 0.0)
+        heldout["new_beats_shipped"] = bool(heldout["new"]["pr_auc"] > heldout["shipped"]["pr_auc"])
+        np.save(args.reports / "heldout-p-shipped.npy", p_old)
+    np.save(args.reports / "heldout-p-new.npy", p_new_onnx)
+    print("held-out comparison", json.dumps(finite(heldout), indent=1))
     size = onnx_path.stat().st_size
     sha = hashlib.sha256(onnx_path.read_bytes()).hexdigest()
 
@@ -411,8 +451,9 @@ def main():
              "note": f"shipped seed {chosen['seed']}; mean over seeds {np.mean(seed_test):.3f}"}
             if chosen["kind"] == "sign" else
             {"target": "the graph network beats the best gradient-boosting baseline",
-             "value": max(seed_test), "baseline": best_gbt_test, "pass": False,
-             "note": "a gradient-boosting model was chosen by out-of-fold PR-AUC, so no graph network ships"}),
+             "value": max(seed_test) if seed_test else None, "baseline": best_gbt_test, "pass": False,
+             "note": ("a gradient-boosting model was chosen by out-of-fold PR-AUC, so no graph network ships"
+                      if seed_test else "no graph network was trained in this run")}),
         "ece": {"target": f"<= {GATE['ece']}", "value": shipped["ece"], "pass": bool(shipped["ece"] <= GATE["ece"])},
         "size": {"target": f"<= {GATE['size_bytes']} bytes", "value": size, "pass": bool(size <= GATE["size_bytes"])},
         "latency": {"target": f"<= {GATE['latency_ms']} ms for 2,000 elements in the Web Worker", "value": None,
@@ -453,7 +494,7 @@ def main():
     }
     report.update({
         "cross_validation": cross_validation, "comparisons": comparisons, "ablations": ablations,
-        "held_out_sources": strict, "shipped": shipped, "operating_threshold": operating, "gate": gate,
+        "held_out_sources": strict, "heldout_comparison": heldout, "shipped": shipped, "operating_threshold": operating, "gate": gate,
         "breakdowns": breakdowns,
         "onnx": {"bytes": size, "sha256": sha, "max_abs_diff_reference_vs_onnxruntime": full_parity},
         "seconds": round(time.time() - t0),
@@ -490,7 +531,8 @@ def main():
                              if k in c} for c in comparisons],
             "ablations": [{"model": a["model"], "pr_auc": a["pr_auc_mean"]} for a in ablations],
             "heldOutSources": {k: strict[k] for k in ("sign_pr_auc", "gbt_neighbourhood_pr_auc", "test_rows", "test_positives")},
-            "seeds": {"pr_auc": seed_test, "mean": float(np.mean(seed_test)), "sd": float(np.std(seed_test)),
+            "seeds": {"pr_auc": seed_test, "mean": float(np.mean(seed_test)) if seed_test else None,
+                      "sd": float(np.std(seed_test)) if seed_test else None,
                       "runs": seed_runs, **({"shipped": chosen["seed"]} if chosen["kind"] == "sign" else {}),
                       "rule": "the seeds are candidates like the others, compared by out-of-fold PR-AUC; test scores are never used",
                       "note": "test PR-AUC of the graph network trained with each seed, in seed order"},
@@ -517,6 +559,10 @@ def main():
     for key in ("metrics", "operatingThreshold", "crossValidation"):
         manifest[key] = fill_unmeasured(manifest[key])
     manifest["gate"]["precision"] = fill_unmeasured(manifest["gate"]["precision"])
+    manifest["gate"]["beats_best_gbt"] = fill_unmeasured(manifest["gate"]["beats_best_gbt"])
+    if not extras:  # no graph network: leave out the sections that only describe one
+        for key in ("seeds", "ablations", "heldOutSources"):
+            manifest["metrics"].pop(key)
     (args.out / "clickables-v1.json").write_text(dump(manifest) + "\n")
     print(json.dumps({"chosen": chosen["name"], "shipped": shipped, "gate": gate}, indent=1, default=float))
     print("finished in", round(time.time() - t0), "s")

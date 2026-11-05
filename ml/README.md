@@ -29,7 +29,7 @@ Run it
    node crawler/crawl.mjs --sites data/sites.json --out data/crawl-tranco --concurrency 2
    node filter_tranco_training_data.cjs
    node filter_tranco_snippets.cjs
-   The filtering scripts create the prepared training corpus under data/crawl-tranco-train/. The filter drops every row from pages with delegated (document-level) click listeners, whatever its label, because those labels cannot be trusted. It also drops landmarks and page regions (`<main>`, `<header>`, `<footer>`, `<nav>`, `<aside>`, `<form>`, `<search>`, `<section>` and the matching roles), which stopped being candidates after this crawl; it uses the app's own rule (`isLandmarkMarkup` in src/engine/ml/nodeFeatures.js) on each element's stored start tag. An earlier version dropped only the delegated negatives, which made the page type a stand-in for the label; see reports/evaluation.md for the effect.
+   The filtering scripts create the prepared training corpus under data/crawl-tranco-train/. The filter keeps a page if it has no delegated (document-level) click listeners, or if it is built with React, Vue or Angular, which bind handlers on each element where the labeller sees them. Other delegated pages are dropped whole, whatever their labels, because their labels cannot be trusted. The decision reads only page facts, never a row's label. It also drops landmarks and page regions (`<main>`, `<header>`, `<footer>`, `<nav>`, `<aside>`, `<form>`, `<search>`, `<section>` and the matching roles), which stopped being candidates after this crawl; it uses the app's own rule (`isLandmarkMarkup` in src/engine/ml/nodeFeatures.js) on each element's stored start tag. An earlier version dropped only the delegated negatives, which made the page type a stand-in for the label; see reports/evaluation.md for the effect.
 
 The historical GitHub stand-in commands remain available for older experiments, but that corpus was not used for the current model:
 node corpus/fetch.mjs --root data/corpus
@@ -98,7 +98,28 @@ The training pipeline includes:
    npm run ml:bench
    The current browser benchmark measured the shipped model at 9 ms median over 10 runs for 2,663 elements, in headless Google Chrome 151 on a 12th Gen Intel Core i7-1255U (12 logical cores).
 
-## Current Tranco experiment: results and limitations
+## Framework-pages run (current model): held-out set and success rule
+
+This section was written, and `train/heldout-sites.json` committed, before this run's training started.
+
+- Data: the filter above, which adds delegated React, Vue and Angular pages to the 136 non-delegated sites the shipped model used.
+- Held-out set: `python train/heldout.py` takes the 177 newly included sites (sites whose rows all come from delegated React, Vue or Angular pages, so the shipped model never saw them) and draws about 15% per framework, at least one per framework, with a fixed seed: 23 React, 4 Vue and 1 Angular site. It reads only page facts. Every other site is a development site.
+- Model: element-only gradient boosting only, the shipped model's type and export path. 5-fold cross-validation grouped by site on the development sites. Inside each training fold every positive is kept with at most 10 negatives per positive (fixed seed); validation folds and the held-out set are complete. Temperature scaling and the threshold rule (lowest threshold with at least 50% out-of-fold precision, else "not reached") use the out-of-fold predictions. The final model is retrained on all development sites with the same sampling.
+- **Success rule:** the new model is better only if its PR-AUC on the held-out set is higher than the currently shipped model's PR-AUC on the same set. Both are scored by the same code (their ONNX files run through onnxruntime), and neither is tuned on the held-out set, which is scored once. If the rule does not hold, the shipped model is not changed.
+- The labels on the new pages come from the same automated probing and were not hand-checked; the earlier automated audit covered non-delegated pages only.
+
+Result: **the success rule holds.** Held-out PR-AUC 0.408 (95% site-bootstrap interval 0.169–0.610) for the new model, 0.037 (0.026–0.066) for the previous model. At the new threshold (0.906): 568 suggestions on 31,951 elements (17.8 per 1,000), precision 53% (24–79%), recall 33% (13–53%). Calibration error 0.116. The held-out sites are the same kind of page as most of the new training data, so this shows the new model is better on delegated framework pages, not elsewhere. Full numbers: [`reports/evaluation.md`](reports/evaluation.md). The run:
+
+```
+python train/heldout.py
+python train/train.py --data data/crawl-tranco-train --keep-delegated --candidates gbt-element \
+  --neg-per-pos 10 --test-sites train/heldout-sites.json --compare-onnx ../public/models/clickables-v1.onnx \
+  --out data/framework-run/models --reports data/framework-run/reports --fixtures data/framework-run/fixtures
+```
+
+`--keep-delegated` is needed because the filter has already removed the delegated pages that cannot be used. The section below describes the previous model (non-delegated pages only).
+
+## Previous model (non-delegated pages only): results and limitations
 
 **Read this first.** The model is experimental and switched off by default. Its suggestions are labelled low confidence and never change the score.
 
@@ -142,7 +163,7 @@ On the 2,559 test elements the shipped model makes **10 suggestions, 3 of them c
 
 ### Shipping gates
 
-The shipped model passes three of the five gates:
+The previous model passed three of the five gates (the current one passes two: size and latency):
 
 - Not met: precision ≥ 0.90 at the shipped threshold (30%).
 - Not met: the graph network beats the best gradient-boosting baseline. A gradient-boosting model was chosen, so no graph network ships.

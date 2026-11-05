@@ -133,3 +133,14 @@ def test_threshold_is_the_lowest_with_half_precision_or_none():
     assert t == p[7] and at["precision"] == 0.5 and at["flagged"] == 8
     t, at = T.choose_threshold(np.array([0, 0, 0, 0, 0, 1]), p[:6])
     assert t is None and at["precision"] == T.NOT_REACHED
+
+
+def test_sample_negatives_keeps_every_positive_and_caps_negatives():
+    y = np.zeros(1000, np.int8)
+    y[:20] = 1
+    idx = D.sample_negatives(y, 10, seed=0)
+    assert y[idx].sum() == 20 and (y[idx] == 0).sum() == 200
+    assert np.array_equal(idx, D.sample_negatives(y, 10, seed=0))  # fixed seed
+    assert np.all(np.diff(idx) > 0)
+    few = np.array([1, 0, 0], np.int8)
+    assert len(D.sample_negatives(few, 10)) == 3  # fewer negatives than the cap: all kept

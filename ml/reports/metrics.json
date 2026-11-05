@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-05T00:30:56+00:00",
+ "generated": "2026-11-05T23:06:19+00:00",
  "feature_version": "clickables-features-1",
  "data": {
   "pages_crawled": 1407,
@@ -9,63 +9,65 @@
    "robots": 38,
    "failed-scripts": 120
   },
-  "sites": 136,
-  "sources": 136,
-  "rows": 9367,
-  "positives": 55,
+  "sites": 313,
+  "sources": 313,
+  "rows": 178314,
+  "positives": 5372,
   "frameworks": {
+   "react": 146834,
    "other": 8226,
    "jquery": 706,
-   "react": 435
+   "angular": 1660,
+   "vue": 20888
   },
   "categories": {
-   "tranco": 9367
+   "tranco": 178314
   },
-  "delegated_pages_excluded": true,
+  "delegated_pages_excluded": false,
   "rows_excluded_delegated": 0,
   "positives_excluded_delegated": 0,
-  "note": "Tranco top-1,000 crawl. Every row from pages with document-level (delegated) click listeners was removed, whatever its label, and landmarks and page regions are not candidates.",
+  "note": "Tranco top-1,000 crawl. Pages with document-level (delegated) click listeners are kept only when built with React, Vue or Angular; other delegated pages are dropped whole. Landmarks and page regions are not candidates. Training folds keep every positive and at most 10 negatives per positive. New labels were not hand-checked.",
   "splits": {
    "development": {
-    "sites": 115,
-    "rows": 6808,
-    "positives": 49
+    "sites": 285,
+    "rows": 146363,
+    "positives": 4450
    },
    "test": {
-    "sites": 21,
-    "rows": 2559,
-    "positives": 6
+    "sites": 28,
+    "rows": 31951,
+    "positives": 922
    }
   },
   "folds": [
    {
-    "sites": 22,
-    "rows": 605,
-    "positives": 32,
+    "sites": 57,
+    "rows": 26838,
+    "positives": 890,
     "fold": 0
    },
    {
-    "sites": 24,
-    "rows": 1031,
-    "positives": 5,
+    "sites": 57,
+    "rows": 31027,
+    "positives": 890,
     "fold": 1
    },
    {
-    "sites": 23,
-    "rows": 2571,
-    "positives": 4,
+    "sites": 57,
+    "rows": 37902,
+    "positives": 890,
     "fold": 2
    },
    {
-    "sites": 23,
-    "rows": 1462,
-    "positives": 4,
+    "sites": 57,
+    "rows": 25492,
+    "positives": 890,
     "fold": 3
    },
    {
-    "sites": 23,
-    "rows": 1139,
-    "positives": 4,
+    "sites": 57,
+    "rows": 25104,
+    "positives": 890,
     "fold": 4
    }
   ],
@@ -77,49 +79,13 @@
   "rule": "the candidate with the highest out-of-fold PR-AUC in 5-fold cross-validation grouped by website on the development sites; the test sites are never used to choose",
   "candidates": [
    {
-    "model": "SIGN graph network, seed 0",
-    "oof_pr_auc": 0.2072791106608014,
-    "temperature": 1.0805031061172485,
-    "threshold": 0.5875849723815918,
-    "precision": 0.5,
-    "recall": 0.1836734693877551,
-    "flagged": 18
-   },
-   {
-    "model": "SIGN graph network, seed 1",
-    "oof_pr_auc": 0.20718922225344472,
-    "temperature": 0.4418645203113556,
-    "threshold": 0.8761142492294312,
-    "precision": 0.5294117647058824,
-    "recall": 0.1836734693877551,
-    "flagged": 17
-   },
-   {
-    "model": "SIGN graph network, seed 2",
-    "oof_pr_auc": 0.1563587591755247,
-    "temperature": 0.5199230313301086,
-    "threshold": 0.7519819140434265,
-    "precision": 0.5,
-    "recall": 0.14285714285714285,
-    "flagged": 14
-   },
-   {
     "model": "Gradient boosting, element only",
-    "oof_pr_auc": 0.2443717128452262,
-    "temperature": 2.7718496322631836,
-    "threshold": 0.1106298416852951,
-    "precision": 0.5,
-    "recall": 0.20408163265306123,
-    "flagged": 20
-   },
-   {
-    "model": "Gradient boosting with neighbourhood",
-    "oof_pr_auc": 0.2397648336979823,
-    "temperature": 2.763184070587158,
-    "threshold": 0.1410888433456421,
-    "precision": 0.5238095238095238,
-    "recall": 0.22448979591836735,
-    "flagged": 21
+    "oof_pr_auc": 0.27615448815880617,
+    "temperature": 0.6209717988967896,
+    "threshold": 0.9057487845420837,
+    "precision": 0.5063613231552163,
+    "recall": 0.22359550561797753,
+    "flagged": 1965
    }
   ],
   "chosen": "Gradient boosting, element only"
@@ -127,292 +93,192 @@
  "comparisons": [
   {
    "model": "Rule: pointer cursor and not native",
-   "pr_auc": 0.008635019509719864,
+   "pr_auc": 0.06167959793234175,
    "pr_auc_ci95": [
-    0.0010773109172846115,
-    0.25
+    0.027543867686139492,
+    0.10927179599964162
    ],
    "threshold": 0.5,
-   "precision": 0.014925373134328358,
-   "recall": 0.5,
-   "tp": 3,
-   "fp": 198,
-   "fn": 3,
-   "flagged": 201,
+   "precision": 0.1664145234493192,
+   "recall": 0.2386117136659436,
+   "tp": 220,
+   "fp": 1102,
+   "fn": 702,
+   "flagged": 1322,
    "precision_ci95": [
-    0.0,
-    0.25
+    0.08128459741193386,
+    0.23322587577906723
    ],
    "recall_ci95": [
-    0.0,
-    1.0
+    0.07821509850657832,
+    0.4387983319065611
    ]
-  },
-  {
-   "model": "SIGN graph network, seed 0",
-   "pr_auc": 0.5035455557878081,
-   "pr_auc_ci95": [
-    0.0029659488838792085,
-    1.0
-   ],
-   "threshold": 0.5875849723815918,
-   "precision": 0.5,
-   "recall": 0.5,
-   "tp": 3,
-   "fp": 3,
-   "fn": 3,
-   "flagged": 6,
-   "precision_ci95": [
-    0.0,
-    0.75
-   ],
-   "recall_ci95": [
-    0.0,
-    1.0
-   ],
-   "ece": 0.010921183401728977,
-   "oof_pr_auc": 0.2072791106608014,
-   "temperature": 1.0805031061172485,
-   "epochs": 4
-  },
-  {
-   "model": "SIGN graph network, seed 1",
-   "pr_auc": 0.5036107442376802,
-   "pr_auc_ci95": [
-    0.0029232798863745887,
-    1.0
-   ],
-   "threshold": 0.8761142492294312,
-   "precision": 0.6,
-   "recall": 0.5,
-   "tp": 3,
-   "fp": 2,
-   "fn": 3,
-   "flagged": 5,
-   "precision_ci95": [
-    0.0,
-    0.75
-   ],
-   "recall_ci95": [
-    0.0,
-    1.0
-   ],
-   "ece": 0.00991469000156933,
-   "oof_pr_auc": 0.20718922225344472,
-   "temperature": 0.4418645203113556,
-   "epochs": 4
-  },
-  {
-   "model": "SIGN graph network, seed 2",
-   "pr_auc": 0.503498212946692,
-   "pr_auc_ci95": [
-    0.0028220819176455465,
-    1.0
-   ],
-   "threshold": 0.7519819140434265,
-   "precision": 0.14285714285714285,
-   "recall": 0.5,
-   "tp": 3,
-   "fp": 18,
-   "fn": 3,
-   "flagged": 21,
-   "precision_ci95": [
-    0.0,
-    0.3678749999999997
-   ],
-   "recall_ci95": [
-    0.0,
-    1.0
-   ],
-   "ece": 0.023266148627677712,
-   "oof_pr_auc": 0.1563587591755247,
-   "temperature": 0.5199230313301086,
-   "epochs": 3
   },
   {
    "model": "Gradient boosting, element only",
-   "pr_auc": 0.5069605568445475,
+   "pr_auc": 0.40803634742367484,
    "pr_auc_ci95": [
-    0.004058031306001536,
-    1.0
+    0.16876048389072154,
+    0.6098781429903218
+   ],
+   "threshold": 0.9057487845420837,
+   "precision": 0.5316901408450704,
+   "recall": 0.3275488069414317,
+   "tp": 302,
+   "fp": 266,
+   "fn": 620,
+   "flagged": 568,
+   "precision_ci95": [
+    0.24185671958247254,
+    0.7914173913043476
+   ],
+   "recall_ci95": [
+    0.13250373779965394,
+    0.5284878389154704
+   ],
+   "ece": 0.1160421503501427,
+   "oof_pr_auc": 0.27615448815880617,
+   "temperature": 0.6209717988967896,
+   "params": {
+    "learning_rate": 0.05,
+    "max_iter": 300,
+    "max_leaf_nodes": 15
+   }
+  }
+ ],
+ "ablations": [],
+ "held_out_sources": {
+  "held_out_sources": [],
+  "test_rows": null,
+  "test_positives": null,
+  "sign_pr_auc": null,
+  "gbt_neighbourhood_pr_auc": null,
+  "note": "not run: only element-only gradient boosting was trained"
+ },
+ "heldout_comparison": {
+  "rows": 31951,
+  "positives": 922,
+  "sites": 28,
+  "new": {
+   "model": "Gradient boosting, element only",
+   "pr_auc": 0.40803634742367484,
+   "pr_auc_ci95": [
+    0.16876048389072154,
+    0.6098781429903218
+   ],
+   "threshold": 0.9057487845420837,
+   "precision": 0.5316901408450704,
+   "recall": 0.3275488069414317,
+   "tp": 302,
+   "fp": 266,
+   "fn": 620,
+   "flagged": 568,
+   "precision_ci95": [
+    0.24185671958247254,
+    0.7914173913043476
+   ],
+   "recall_ci95": [
+    0.13250373779965394,
+    0.5284878389154704
+   ],
+   "suggestions_per_1000": 17.777221370223153
+  },
+  "shipped": {
+   "model": "existing model (clickables-v1.onnx)",
+   "pr_auc": 0.03692785291202986,
+   "pr_auc_ci95": [
+    0.02611319076939589,
+    0.0656570394044374
    ],
    "threshold": 0.1106298416852951,
-   "precision": 0.3,
-   "recall": 0.5,
-   "tp": 3,
-   "fp": 7,
-   "fn": 3,
-   "flagged": 10,
+   "precision": 0.04155124653739612,
+   "recall": 0.016268980477223426,
+   "tp": 15,
+   "fp": 346,
+   "fn": 907,
+   "flagged": 361,
    "precision_ci95": [
-    0.0,
-    1.0
+    0.016915522597454654,
+    0.09253835924713578
    ],
    "recall_ci95": [
-    0.0,
-    1.0
+    0.006287031545652235,
+    0.03809332122114921
    ],
-   "ece": 0.007907476850002362,
-   "oof_pr_auc": 0.2443717128452262,
-   "temperature": 2.7718496322631836,
-   "params": {
-    "learning_rate": 0.05,
-    "max_iter": 300,
-    "max_leaf_nodes": 15
-   }
+   "suggestions_per_1000": 11.298550906074928
   },
-  {
-   "model": "Gradient boosting with neighbourhood",
-   "pr_auc": 0.5100478228957243,
-   "pr_auc_ci95": [
-    0.004922197510981219,
-    1.0
-   ],
-   "threshold": 0.1410888433456421,
-   "precision": 0.5,
-   "recall": 0.5,
-   "tp": 3,
-   "fp": 3,
-   "fn": 3,
-   "flagged": 6,
-   "precision_ci95": [
-    0.0,
-    1.0
-   ],
-   "recall_ci95": [
-    0.0,
-    1.0
-   ],
-   "ece": 0.006598065311948129,
-   "oof_pr_auc": 0.2397648336979823,
-   "temperature": 2.763184070587158,
-   "params": {
-    "learning_rate": 0.05,
-    "max_iter": 300,
-    "max_leaf_nodes": 15
-   }
-  }
- ],
- "ablations": [
-  {
-   "model": "SIGN without class-name words",
-   "pr_auc_mean": 0.127816930697336,
-   "pr_auc_all_seeds": [
-    0.127816930697336
-   ]
-  },
-  {
-   "model": "SIGN without neighbourhood",
-   "pr_auc_mean": 0.4608449122203474,
-   "pr_auc_all_seeds": [
-    0.4608449122203474
-   ]
-  }
- ],
- "held_out_sources": {
-  "held_out_sources": [
-   "0xrpc.io",
-   "adnxs.com",
-   "astrumu.io",
-   "auth0.com",
-   "comcast.net",
-   "dns.google",
-   "duckdns.org",
-   "ebay.com",
-   "eeroup.com",
-   "fda.gov",
-   "hm.com",
-   "homedepot.com",
-   "juicyscore.com",
-   "lg.com",
-   "mega.co.nz",
-   "onetag-sys.com",
-   "people.com",
-   "researchgate.net",
-   "run.app",
-   "salesforce.com",
-   "scorecardresearch.com",
-   "service-now.com",
-   "skyhigh.cloud",
-   "unsplash.com",
-   "wikimedia.org",
-   "www.gov.uk",
-   "xiaomi.com"
-  ],
-  "test_rows": 1527,
-  "test_positives": 4,
-  "sign_pr_auc": 0.004662707494056608,
-  "gbt_neighbourhood_pr_auc": 0.2556058900428499
+  "new_beats_shipped": true
  },
  "shipped": {
   "model": "Gradient boosting, element only",
-  "pr_auc": 0.5069605568445475,
+  "pr_auc": 0.40803634742367484,
   "pr_auc_ci95": [
-   0.004058031306001536,
-   1.0
+   0.16876048389072154,
+   0.6098781429903218
   ],
-  "threshold": 0.1106298416852951,
-  "precision": 0.3,
-  "recall": 0.5,
-  "tp": 3,
-  "fp": 7,
-  "fn": 3,
-  "flagged": 10,
+  "threshold": 0.9057487845420837,
+  "precision": 0.5316901408450704,
+  "recall": 0.3275488069414317,
+  "tp": 302,
+  "fp": 266,
+  "fn": 620,
+  "flagged": 568,
   "precision_ci95": [
-   0.0,
-   1.0
+   0.24185671958247254,
+   0.7914173913043476
   ],
   "recall_ci95": [
-   0.0,
-   1.0
+   0.13250373779965394,
+   0.5284878389154704
   ],
-  "ece": 0.007907476850002362
+  "ece": 0.1160421503501427
  },
  "operating_threshold": {
   "rule": "the lowest threshold whose precision on the out-of-fold predictions is at least 50% (with at least 5 elements flagged); if none reaches 50%, there is no threshold and no suggestions. The test websites are never used to choose it",
-  "value": 0.1106298416852951,
+  "value": 0.9057487845420837,
   "outOfFold": {
-   "precision": 0.5,
-   "recall": 0.20408163265306123,
-   "flagged": 20
+   "precision": 0.5063613231552163,
+   "recall": 0.22359550561797753,
+   "flagged": 1965
   },
   "test": {
-   "precision": 0.3,
+   "precision": 0.5316901408450704,
    "precision_ci95": [
-    0.0,
-    1.0
+    0.24185671958247254,
+    0.7914173913043476
    ],
-   "recall": 0.5,
+   "recall": 0.3275488069414317,
    "recall_ci95": [
-    0.0,
-    1.0
+    0.13250373779965394,
+    0.5284878389154704
    ],
-   "tp": 3,
-   "fp": 7,
-   "fn": 3,
-   "flagged": 10
+   "tp": 302,
+   "fp": 266,
+   "fn": 620,
+   "flagged": 568
   }
  },
  "gate": {
   "precision": {
    "target": ">= 0.9",
-   "value": 0.3,
+   "value": 0.5316901408450704,
    "pass": false
   },
   "beats_best_gbt": {
    "target": "the graph network beats the best gradient-boosting baseline",
-   "value": 0.5036107442376802,
-   "baseline": 0.5100478228957243,
+   "value": null,
+   "baseline": 0.40803634742367484,
    "pass": false,
-   "note": "a gradient-boosting model was chosen by out-of-fold PR-AUC, so no graph network ships"
+   "note": "no graph network was trained in this run"
   },
   "ece": {
    "target": "<= 0.05",
-   "value": 0.007907476850002362,
-   "pass": true
+   "value": 0.1160421503501427,
+   "pass": false
   },
   "size": {
    "target": "<= 1000000 bytes",
-   "value": 281219,
+   "value": 283067,
    "pass": true
   },
   "latency": {
@@ -425,52 +291,65 @@
  "breakdowns": {
   "framework": [
    {
-    "framework": "jquery",
-    "rows": 459,
-    "positives": 3,
+    "framework": "angular",
+    "rows": 514,
+    "positives": 6,
     "sites": 1,
-    "pr_auc": 0.03488372093023256,
-    "precision": null,
-    "recall": 0.0,
-    "tp": 0,
-    "fp": 0,
-    "fn": 3,
-    "flagged": 0
+    "pr_auc": 0.260840108401084,
+    "precision": 0.4,
+    "recall": 0.3333333333333333,
+    "tp": 2,
+    "fp": 3,
+    "fn": 4,
+    "flagged": 5
    },
    {
-    "framework": "other",
-    "rows": 2100,
-    "positives": 3,
-    "sites": 20,
-    "pr_auc": 1.0,
-    "precision": 0.3,
-    "recall": 1.0,
-    "tp": 3,
-    "fp": 7,
-    "fn": 0,
-    "flagged": 10
+    "framework": "react",
+    "rows": 25414,
+    "positives": 870,
+    "sites": 23,
+    "pr_auc": 0.43513708563588704,
+    "precision": 0.5967741935483871,
+    "recall": 0.34022988505747126,
+    "tp": 296,
+    "fp": 200,
+    "fn": 574,
+    "flagged": 496
+   },
+   {
+    "framework": "vue",
+    "rows": 6023,
+    "positives": 46,
+    "sites": 4,
+    "pr_auc": 0.13837906544290773,
+    "precision": 0.05970149253731343,
+    "recall": 0.08695652173913043,
+    "tp": 4,
+    "fp": 63,
+    "fn": 42,
+    "flagged": 67
    }
   ],
   "category": [
    {
     "category": "tranco",
-    "rows": 2559,
-    "positives": 6,
-    "sites": 21,
-    "pr_auc": 0.5069605568445475,
-    "precision": 0.3,
-    "recall": 0.5,
-    "tp": 3,
-    "fp": 7,
-    "fn": 3,
-    "flagged": 10
+    "rows": 31951,
+    "positives": 922,
+    "sites": 28,
+    "pr_auc": 0.40803634742367484,
+    "precision": 0.5316901408450704,
+    "recall": 0.3275488069414317,
+    "tp": 302,
+    "fp": 266,
+    "fn": 620,
+    "flagged": 568
    }
   ]
  },
  "onnx": {
-  "bytes": 281219,
-  "sha256": "1836586777e9c0c2f11c00e4c892ec0d52a2acfe25695492636df289f2163f28",
-  "max_abs_diff_reference_vs_onnxruntime": 8.89413058757782e-08
+  "bytes": 283067,
+  "sha256": "9e299fc811a6d1d3be95f966c03873695dcdb8fe022a6f864c61df3645e71503",
+  "max_abs_diff_reference_vs_onnxruntime": 1.6391277313232422e-07
  },
- "seconds": 181
+ "seconds": 705
 }

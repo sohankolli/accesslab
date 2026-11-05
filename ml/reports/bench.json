@@ -1,21 +1,28 @@
 {
- "conditions": "headless Chromium, 12 × 12th Gen Intel(R) Core(TM) i7-1255U, no CPU throttling",
+ "conditions": {
+  "browser": "Google Chrome 151.0.7922.137 (/usr/bin/google-chrome)",
+  "headless": true,
+  "cpu": "12th Gen Intel(R) Core(TM) i7-1255U, 12 logical cores",
+  "runs": 10,
+  "throttling": "none"
+ },
  "elements": 2000,
  "shipped": {
   "elements": 2664,
   "runs": [
-   8,
-   8,
-   8,
    9,
    9,
-   12,
-   14,
+   9,
+   10,
+   10,
+   11,
    14,
    15,
-   15
+   15,
+   18
   ],
-  "median": 12
+  "median": 11,
+  "browser": "Google Chrome 151.0.7922.137 (/usr/bin/google-chrome)"
  },
  "graph": null
 }

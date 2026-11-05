@@ -9,7 +9,7 @@
 // switched on by default only if every gate condition then passes.
 // Needs Playwright (npm i -D playwright, or set CHROMIUM_PATH to a Chromium).
 /* global document -- the waitForFunction callbacks run inside the browser page */
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
@@ -19,6 +19,8 @@ const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const manifestPath = path.join(root, 'public/models/clickables-v1.json');
 const RUNS = 10;
 const ELEMENTS = 2000;
+const HEADLESS = true;
+const executablePath = process.env.CHROMIUM_PATH || null;
 
 const { chromium } = await import('playwright').catch(() => {
   console.error(
@@ -71,9 +73,11 @@ async function measure() {
       break;
     await new Promise((r) => setTimeout(r, 500));
   }
-  const browser = await chromium.launch(
-    process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
-  );
+  const browser = await chromium.launch({
+    headless: HEADLESS,
+    ...(executablePath ? { executablePath } : {}),
+  });
+  const browserName = describeBrowser(browser);
   const runs = [];
   let elements = null;
   try {
@@ -121,18 +125,43 @@ async function measure() {
     await new Promise((r) => setTimeout(r, 500));
   }
   runs.sort((a, b) => a - b);
-  return { elements, runs, median: runs[Math.floor(runs.length / 2)] };
+  return { elements, runs, median: runs[Math.floor(runs.length / 2)], browser: browserName };
+}
+
+/**
+ * The browser that actually ran: its own name and version (for example
+ * "Google Chrome 142.0.7444.59") when CHROMIUM_PATH points at one, otherwise
+ * Playwright's bundled Chromium.
+ */
+function describeBrowser(browser) {
+  if (!executablePath) return `Playwright Chromium ${browser.version()}`;
+  let name = '';
+  try {
+    name = execFileSync(executablePath, ['--version'], { encoding: 'utf8' }).trim();
+  } catch {
+    // Some builds cannot print a version; fall back to what Playwright reports.
+  }
+  return `${name || `Chromium-based browser ${browser.version()}`} (${executablePath})`;
 }
 
 const cpus = os.cpus();
-const conditions = `headless Chromium, ${cpus.length} × ${cpus[0]?.model?.trim() ?? 'CPU'}, no CPU throttling`;
+const cpu = `${cpus[0]?.model?.trim() ?? 'unknown CPU'}, ${cpus.length} logical cores`;
+const describe = (r) => ({
+  browser: r.browser,
+  headless: HEADLESS,
+  cpu,
+  runs: r.runs.length,
+  throttling: 'none',
+});
+const conditionsText = (r) =>
+  `${r.runs.length} runs in the app's Web Worker (median reported); ${r.browser}, ${HEADLESS ? 'headless' : 'with a window'}; CPU: ${cpu}; no CPU throttling`;
 const latency = (r) => ({
   target: '<= 50 ms for 2,000 elements in the Web Worker',
   value: r.median,
   pass: r.median <= 50 && r.elements >= ELEMENTS,
   elements: r.elements,
   runs: r.runs,
-  note: `median of ${r.runs.length} runs in the app's Web Worker; ${conditions}`,
+  note: conditionsText(r),
 });
 
 const shipped = await measure();
@@ -178,6 +207,7 @@ fs.writeFileSync(manifestPath, JSON.stringify(manifest, null, 1) + '\n');
 fs.mkdirSync(path.join(root, 'ml/reports'), { recursive: true });
 fs.writeFileSync(
   path.join(root, 'ml/reports/bench.json'),
-  JSON.stringify({ conditions, elements: ELEMENTS, shipped, graph }, null, 1) + '\n',
+  JSON.stringify({ conditions: describe(shipped), elements: ELEMENTS, shipped, graph }, null, 1) +
+    '\n',
 );
 console.log(`defaultOn: ${manifest.defaultOn}`);

@@ -94,7 +94,7 @@ The training pipeline includes:
    npm run lint
    npm run build
    npm run ml:bench
-   The current browser benchmark measured the shipped model at 12 ms median over 10 runs for 2,664 elements.
+   The current browser benchmark measured the shipped model at 11 ms median over 10 runs for 2,664 elements, in headless Google Chrome 151 on a 12th Gen Intel Core i7-1255U (12 logical cores).
 
 ## Current Tranco experiment: results and limitations
 
@@ -133,7 +133,7 @@ The shipped SIGN artifact passes two of the five gates:
 - Not met: beats the best gradient-boosting baseline (0.176 vs 0.525 PR-AUC).
 - Not met: calibration error ≤ 0.05 (0.062).
 - Met: model size, 169,515 bytes, below the 1 MB limit.
-- Met: browser latency, 12 ms median for 2,664 elements, below the 50 ms limit.
+- Met: browser latency, 11 ms median for 2,664 elements, below the 50 ms limit.
 
 `defaultOn` therefore stays false. The fallback baseline was not shipped, because it also has no threshold that reaches the precision target.
 

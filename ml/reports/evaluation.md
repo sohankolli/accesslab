@@ -84,7 +84,7 @@ The model ranks the 6 calibration positives no better than chance, so the best F
 | Beats best gradient boosting              | 0.9708 vs 0.9855 — Fail                | 0.1761 vs 0.5246 — Not met             |
 | Calibration error (ECE) ≤ 0.05            | 0.0883 — Fail                          | 0.0624 — Not met                       |
 | File ≤ 1 MB                               | 169,515 bytes — Pass                   | 169,515 bytes — Pass                   |
-| 2,000+ elements in the Web Worker ≤ 50 ms | 10 ms median for 2,664 elements — Pass | 12 ms median for 2,664 elements — Pass |
+| 2,000+ elements in the Web Worker ≤ 50 ms | 10 ms median for 2,664 elements — Pass | 11 ms median for 2,664 elements — Pass |
 
 Both runs fail the ship gate. The neighbourhood gradient-boosting fallback also fails, because it has no threshold that meets the precision target. `defaultOn` must stay `false`. The new run's model, as selected by `train.py` on the calibration split, is the one now shipped in `public/models/`.
 

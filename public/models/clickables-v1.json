@@ -19,13 +19,13 @@
     "calibration": {
       "f1": 0.01206030150753769,
       "precision": 0.006066734074823054,
-      "recall": 1.0
+      "recall": 1
     },
     "test": {
       "precision": 0.0028929604628736743,
-      "precision_ci95": [0.0, 0.005225187130000123],
-      "recall": 1.0,
-      "recall_ci95": [1.0, 1.0],
+      "precision_ci95": [0, 0.005225187130000123],
+      "recall": 1,
+      "recall_ci95": [1, 1],
       "tp": 6,
       "fp": 2068,
       "fn": 0,
@@ -212,7 +212,7 @@
         "sites": 1,
         "pr_auc": 0.01032557885986072,
         "precision": 0.006607929515418502,
-        "recall": 1.0,
+        "recall": 1,
         "tp": 3,
         "fp": 451,
         "fn": 0,
@@ -225,7 +225,7 @@
         "sites": 20,
         "pr_auc": 0.7575757575757576,
         "precision": 0.001851851851851852,
-        "recall": 1.0,
+        "recall": 1,
         "tp": 3,
         "fp": 1617,
         "fn": 0,
@@ -240,7 +240,7 @@
         "sites": 21,
         "pr_auc": 0.1760919970556091,
         "precision": 0.0028929604628736743,
-        "recall": 1.0,
+        "recall": 1,
         "tp": 6,
         "fp": 2068,
         "fn": 0,
@@ -273,11 +273,11 @@
     },
     "latency": {
       "target": "<= 50 ms for 2,000 elements in the Web Worker",
-      "value": 12,
+      "value": 11,
       "pass": true,
       "elements": 2664,
-      "runs": [8, 8, 8, 9, 9, 12, 14, 14, 15, 15],
-      "note": "median of 10 runs in the app's Web Worker; headless Chromium, 12 \u00d7 12th Gen Intel(R) Core(TM) i7-1255U, no CPU throttling"
+      "runs": [9, 9, 9, 10, 10, 11, 14, 15, 15, 18],
+      "note": "10 runs in the app's Web Worker (median reported); Google Chrome 151.0.7922.137 (/usr/bin/google-chrome), headless; CPU: 12th Gen Intel(R) Core(TM) i7-1255U, 12 logical cores; no CPU throttling"
     }
   },
   "defaultOn": false,

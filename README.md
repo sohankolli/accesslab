@@ -217,15 +217,17 @@ Policy allows `'wasm-unsafe-eval'` and `worker-src 'self'`. If the model cannot 
 
 says "Model suggestions are unavailable" and everything else works as before.
 
-Try it with [`docs/click-only-demo.html`](docs/click-only-demo.html). The rules score that page 100. The current
-model, at its current operating threshold, suggests all 11 candidate elements on the page, so its
-suggestions there are mostly wrong (see below). The rule score stays 100.
+Try it with [`docs/click-only-demo.html`](docs/click-only-demo.html). The rules score that page 100.
+The current model makes no suggestions there: none of the page's 10 candidates, including its four
+click-only controls, reaches the threshold.
 
-**Status.** The model is experimental and switched off by default. Its suggestions are advisory and never change the score.
+**Status.** The model is experimental and switched off by default. Its suggestions are labelled low confidence and never change the score.
 
 - **Earlier results were inflated by label leakage.** The earlier training filter dropped rows from pages with delegated (document-level) click listeners only when their label was 0. Counting the raw crawl by page type and label showed that it kept 8,691 positives from delegated pages and only 60 from other pages, while every negative it kept came from a non-delegated page, so the page type gave the label away. The filter now drops whole delegated pages, and every number here comes from that corrected run.
-- **Too few positives to measure the model.** The corrected corpus has 9,654 candidate rows from 136 sites, but only 60 trustworthy positives from 13 sites. The test split has 6 positives from 2 sites, so the 95% intervals cover nearly 0 to 1 and this run cannot measure how good the model is. The shipped SIGN graph network (seed 2, chosen on the calibration sites, and the weakest of the three seeds on the test sites) scored PR-AUC 0.176 (0.003–0.793) on the test sites, against 0.525 for the best gradient-boosting baseline.
-- **Ship gate and operating threshold.** No threshold reached 90% precision on the calibration sites, so the precision gate shows as not met ("not reached"). The baseline-comparison and calibration (ECE 0.062) gates are not met either. Size (169,515 bytes) and latency are met. Separately from the ship gate, the app makes suggestions at an operating threshold chosen by one fixed rule: the threshold with the best F1 on the calibration websites (the test websites are never used to choose it). That threshold is 0.00064, because the model ranks the calibration positives no better than chance, so the best F1 comes from flagging almost everything. On the test websites it flags 2,074 of 2,608 elements: precision 0.3% (95% interval 0.0% to 0.5%) and recall 100% (6 of 6; 95% interval 100% to 100%). Every suggestion is labelled low confidence.
+- **Too few positives to measure the model.** The corpus has 9,367 candidate rows from 136 sites, but only 55 trustworthy positives from 13 sites. The 21 test sites hold 6 positives from 2 sites, so the 95% intervals cover nearly 0 to 1 and this run cannot measure how good the model is.
+- **How the model and threshold were chosen.** By 5-fold cross-validation grouped by website on the 115 development sites (49 positives), never on the test sites. The candidate with the highest out-of-fold PR-AUC ships: element-only gradient boosting (0.244). Its threshold, 0.111, is the lowest with at least 50% out-of-fold precision.
+- **Test results.** PR-AUC 0.507 (0.004–1.000). On the 2,559 test elements the model makes 10 suggestions, 3 of them correct: precision 30% and recall 50% (3 of 6), each with a 95% interval from 0% to 100%.
+- **Ship gate.** Not met: precision ≥ 0.90 (30%) and "graph network beats gradient boosting" (a gradient-boosting model ships). Met: calibration error (0.008), size (281,219 bytes) and latency (9 ms median for 2,663 elements).
 
 The metrics and gate results are in [`ml/reports/evaluation.md`](ml/reports/evaluation.md).
 The pipeline, dataset rebuild instructions and retraining steps are in
@@ -396,12 +398,12 @@ production build on every pull request.
 - Live websites cannot be audited by URL: browsers block reading other sites (CORS).
 
 - Model suggestions are experimental and off by default. The corrected Tranco corpus has only
-  60 trustworthy positives from 13 sites (6 in the test split, from 2 sites), too few to measure
-  how good the model is, and no threshold reaches 90% precision. Labels can still be wrong when a
-  handler sits on an ancestor. An automated 300-label audit judged 188 examples and marked 112
-  unsure; it found no wrong labels among the judged examples, but only four judged examples were
-  positive. This is not an independent manual owner review. The model ships switched off because
-  it misses three of the five ship gates; see `ml/reports/evaluation.md`.
+  55 trustworthy positives from 13 sites (6 in the test set, from 2 sites), too few to measure
+  how good the model is; on the test sites, 3 of its 10 suggestions are correct. Labels can still
+  be wrong when a handler sits on an ancestor. An automated 300-label audit judged 188 examples
+  and marked 112 unsure; it found no wrong labels among the judged examples, but only four judged
+  examples were positive. This is not an independent manual owner review. The model ships
+  switched off because it misses two of the five ship gates; see `ml/reports/evaluation.md`.
 - Next step: label elements on delegated pages one by one, so those pages can be used again.
 
 ## Status

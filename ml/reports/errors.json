@@ -1,307 +1,68 @@
 {
- "model": "SIGN graph network",
- "threshold": 0.000642445171251893,
+ "model": "Gradient boosting, element only",
+ "threshold": 0.1106298416852951,
  "false_positives": [
   {
-   "p": 0.004411671310663223,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<blockquote data-al-id=\"383\"> <p data-al-id=\"384\">Follow our <a href=\"https://t.me/TelegramTips\" data-al-id=\"385\"><strong data-al-id=\"386\">Tips Channel</strong></a> to learn more about Telegram featur"
-  },
-  {
-   "p": 0.008151127956807613,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<div class=\"dev_page_bread_crumbs\" data-al-id=\"68\"></div>"
-  },
-  {
-   "p": 0.0011593833332881331,
+   "p": 0.1146434708353014,
    "site": "booking.com",
    "category": "tranco",
-   "snippet": "<div data-testid=\"webcore-carousel-price-container-skeleton\" class=\"b3f1da6687 db5f1a8490 d683e89eeb\" data-al-id=\"289\"><span class=\"ab6126d40e a7c315cf87\" data-al-id=\"290\"></span></div>"
+   "snippet": "<div class=\"e2d98352ed\" data-al-id=\"144\"><label for=\"searchbox-horizontal-destination-input\" class=\"fff1944c52 ef59685d03 d2e12d8bf8\" data-al-id=\"145\">\u091c\u0917\u0939 \u0921\u093e\u0932\u0947\u0902</label><div class=\"b99b6ef58f a10a01543"
   },
   {
-   "p": 0.06420295685529709,
-   "site": "mega.co.nz",
-   "category": "tranco",
-   "snippet": "<p class=\"blurb\" data-al-id=\"536\">Safeguard your online privacy with the lightning-fast MEGA VPN. Enjoy unlimited, full-speed VPN traffic with built-in ad blocking and fast, modern encryption for a sm"
-  },
-  {
-   "p": 0.4544800817966461,
-   "site": "mega.co.nz",
-   "category": "tranco",
-   "snippet": "<span class=\"heavy\" data-al-id=\"980\">Resources</span>"
-  },
-  {
-   "p": 0.005402834620326757,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<ul data-al-id=\"214\"> <li data-al-id=\"215\"><a href=\"#q-who-can-see-my-phone-number\" data-al-id=\"216\">Who can see my phone number?</a></li> <li data-al-id=\"217\"><a href=\"#q-i-have-a-new-phone-number-wh"
-  },
-  {
-   "p": 0.025861430913209915,
+   "p": 0.1390277160413212,
    "site": "booking.com",
    "category": "tranco",
-   "snippet": "<div data-testid=\"in-product-interlinking-item\" style=\"--bui_stack_spaced_gap--s:4\" class=\"f6e3a11b0d a19a26a18c a81870d302 ac30880487 e95943ce9b fd6e9622ae\" data-al-id=\"966\"><div class=\"aa225776f2 ca"
+   "snippet": "<div class=\"f5983ed53d\" data-testid=\"recently-viewed-properties-carousel\" data-al-id=\"266\"><div data-testid=\"webcore-carousel-heading-skeleton\" class=\"b3f1da6687 db5f1a8490 d366f8235b\" data-al-id=\"267"
   },
   {
-   "p": 0.014856641180813313,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<strong data-al-id=\"580\">external website, app or marketplace</strong>"
-  },
-  {
-   "p": 0.023856570944190025,
+   "p": 0.1390277160413212,
    "site": "booking.com",
    "category": "tranco",
-   "snippet": "<div data-testid=\"in-product-interlinking-item\" style=\"--bui_stack_spaced_gap--s:4\" class=\"f6e3a11b0d a19a26a18c a81870d302 ac30880487 e95943ce9b fd6e9622ae\" data-al-id=\"642\"><div class=\"aa225776f2 ca"
+   "snippet": "<div class=\"f5983ed53d\" data-al-id=\"416\"><div data-testid=\"webcore-carousel-heading-skeleton\" class=\"b3f1da6687 db5f1a8490 d366f8235b\" data-al-id=\"417\"><span class=\"ab6126d40e a7c315cf87\" data-al-id=\""
   },
   {
-   "p": 0.6412478089332581,
-   "site": "google.cn",
-   "category": "tranco",
-   "snippet": "<div data-al-id=\"0\"> <a href=\"https://www.google.com.hk/webhp?hl=zh-CN&amp;sourceid=cnhp\" data-al-id=\"1\"> <img src=\"//www.google.cn/intl/zh-CN_cn/landing/cnexp/google-search.png\" alt=\"Google\" width=\"5"
-  },
-  {
-   "p": 0.07816392183303833,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<em data-al-id=\"1158\">Settings &gt; Privacy &amp; Security</em>"
-  },
-  {
-   "p": 0.028194110840559006,
+   "p": 0.170573973198077,
    "site": "booking.com",
    "category": "tranco",
-   "snippet": "<div style=\"--bui_stack_spaced_gap--s:0\" class=\"f6e3a11b0d ae5dbab14d e95943ce9b shell__stack\" data-al-id=\"109\"><div class=\"shell__stack-item\" data-al-id=\"110\"><div class=\"shell__region-wrapper\" data-"
+   "snippet": "<div class=\"d16ab35aba\" data-al-id=\"357\"><div style=\"--bui_stack_spaced_gap--s:1\" class=\"f6e3a11b0d ae5dbab14d d8df6227ee ff07c65a27 e95943ce9b d23e337564\" data-al-id=\"358\"><div data-testid=\"promotion"
   },
   {
-   "p": 0.024928290396928787,
+   "p": 0.909559323817093,
+   "site": "sciencedirect.com",
+   "category": "tranco",
+   "snippet": "<div id=\"root\" data-al-id=\"0\"><link rel=\"preload\" as=\"image\" href=\"https://sdfestaticassets-us-east-1.sciencedirectassets.com/shared-assets/24/images/elsevier-non-solus-new-grey.svg\" data-al-id=\"1\"><d"
+  },
+  {
+   "p": 0.1235125730351315,
    "site": "booking.com",
    "category": "tranco",
-   "snippet": "<div data-testid=\"in-product-interlinking-item\" style=\"--bui_stack_spaced_gap--s:4\" class=\"f6e3a11b0d a19a26a18c a81870d302 ac30880487 e95943ce9b fd6e9622ae\" data-al-id=\"906\"><div class=\"aa225776f2 ca"
+   "snippet": "<div data-testid=\"promotional-banner-container\" style=\"--bui_box_spaced_padding--s:4\" class=\"c3bdfd4ac2 a0ab5da06c d46ff48a92 f728e61e72 d0acd69e66 c256f1a28a ff3113aeec a4f0f5436e fd6ed34cb5\" data-al"
   },
   {
-   "p": 0.0035187152680009604,
+   "p": 0.1390277160413212,
    "site": "booking.com",
    "category": "tranco",
-   "snippet": "<div class=\"aa225776f2 ca9d921c46\" data-al-id=\"913\"><div style=\"--bui_stack_spaced_gap--s:0\" class=\"f6e3a11b0d ae5dbab14d d8df6227ee e95943ce9b\" data-al-id=\"914\"><a title=\"in Vrind\u0101van, \u092d\u093e\u0930\u0924 \u0939\u094b\u091f\u0932\" hre"
-  },
-  {
-   "p": 0.07169455289840698,
-   "site": "appsflyersdk.com",
-   "category": "tranco",
-   "snippet": "<div class=\"folder\" id=\"folder0\" data-al-id=\"8\"><div class=\"line\" data-al-id=\"9\"><span class=\"folder-button fold\" data-al-id=\"10\"></span><span class=\"html-tag\" data-al-id=\"11\">&lt;Error&gt;</span></di"
-  },
-  {
-   "p": 0.005023082252591848,
-   "site": "mega.co.nz",
-   "category": "tranco",
-   "snippet": "<div class=\"text-pane\" data-al-id=\"567\"> <h2 class=\"heading\" data-al-id=\"568\">Security that\u2019s always on</h2> <p class=\"blurb\" data-al-id=\"569\">We protect your data with zero-knowledge encryption, the "
-  },
-  {
-   "p": 0.07604433596134186,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<strong data-al-id=\"1235\">back up your passkey</strong>"
-  },
-  {
-   "p": 0.05998802185058594,
-   "site": "booking.com",
-   "category": "tranco",
-   "snippet": "<div data-al-id=\"14\"><div style=\"--bui_stack_spaced_gap--s:2\" class=\"f6e3a11b0d ae5dbab14d e95943ce9b shell__stack\" data-al-id=\"15\"><div class=\"shell__stack-item\" data-al-id=\"16\"><div data-al-id=\"17\">"
-  },
-  {
-   "p": 0.5370497703552246,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<li data-al-id=\"495\">by writing to EDSR at Avenue Huart Hamoir 71, 1030 Brussels, Belgium, or</li>"
-  },
-  {
-   "p": 0.2309679239988327,
-   "site": "mega.co.nz",
-   "category": "tranco",
-   "snippet": "<div class=\"img\" style=\"background-image: url('https://mega.io/wp-content/uploads/2023/01/Business-img-3.png');\" data-al-id=\"595\"></div>"
-  },
-  {
-   "p": 0.015969788655638695,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<strong data-al-id=\"584\">delivered instantly</strong>"
-  },
-  {
-   "p": 0.035833053290843964,
-   "site": "mega.co.nz",
-   "category": "tranco",
-   "snippet": "<div class=\"blurb-and-btn\" data-al-id=\"772\"> <p class=\"blurb\" data-al-id=\"773\">Join the millions of individuals and businesses who trust MEGA to store and protect their data in the cloud.</p> <div cla"
-  },
-  {
-   "p": 0.006546595133841038,
-   "site": "booking.com",
-   "category": "tranco",
-   "snippet": "<div class=\"ecb8d66605\" data-al-id=\"1897\"><h3 class=\"b08850ce41 f546354b44 cc045b173b\" data-al-id=\"1898\">\u0928\u093f\u092f\u092e \u0914\u0930 \u0938\u0947\u091f\u093f\u0902\u0917\u094d\u0938</h3></div>"
-  },
-  {
-   "p": 0.009609661065042019,
-   "site": "booking.com",
-   "category": "tranco",
-   "snippet": "<div class=\"b99b6ef58f\" data-al-id=\"583\">\u0907\u0938 \u0921\u0940\u0932 \u092e\u0947\u0902 \u0936\u093e\u092e\u093f\u0932 \u092a\u094d\u0930\u0949\u092a\u0930\u094d\u091f\u0940 \u092a\u0930 10% \u092f\u093e \u091c\u093c\u094d\u092f\u093e\u0926\u093e \u0915\u0940 \u092c\u091a\u0924 \u0915\u0930\u0947\u0902 - \u092c\u0938 \u0928\u0940\u0932\u093e \u2018Genius \u0932\u0947\u092c\u0932\u2019 \u0926\u0947\u0916\u0947\u0902</div>"
-  },
-  {
-   "p": 0.013103511184453964,
-   "site": "mega.co.nz",
-   "category": "tranco",
-   "snippet": "<h6 class=\"heading\" data-al-id=\"580\">Back up your data to MEGA</h6>"
-  },
-  {
-   "p": 0.0034769035410135984,
-   "site": "booking.com",
-   "category": "tranco",
-   "snippet": "<div class=\"aa225776f2 ca9d921c46\" data-al-id=\"763\"><div style=\"--bui_stack_spaced_gap--s:0\" class=\"f6e3a11b0d ae5dbab14d d8df6227ee e95943ce9b\" data-al-id=\"764\"><a title=\"in \u0905\u0939\u092e\u0926\u093e\u092c\u093e\u0926, \u092d\u093e\u0930\u0924 \u0939\u094b\u091f\u0932\" href"
-  },
-  {
-   "p": 0.32036828994750977,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<strong data-al-id=\"1171\">My Stories</strong>"
-  },
-  {
-   "p": 0.000650712987408042,
-   "site": "mega.co.nz",
-   "category": "tranco",
-   "snippet": "<div class=\"container\" data-al-id=\"522\"> <div class=\"img-box\" data-al-id=\"523\"> <div class=\"img light\" style=\"background-image: url('https://mega.io/wp-content/uploads/MEGA-icon-cloud.png');\" data-al-"
-  },
-  {
-   "p": 0.07719992101192474,
-   "site": "mega.co.nz",
-   "category": "tranco",
-   "snippet": "<div class=\"img-box\" data-al-id=\"614\"> <div class=\"img\" style=\"background-image: url('https://mega.io/wp-content/uploads/2023/01/Business-img-5.png');\" data-al-id=\"615\"></div> </div>"
-  },
-  {
-   "p": 0.15085245668888092,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<div class=\"tl_main_card_wrap\" data-al-id=\"158\"> <picture class=\"dev_page_tgsticker tl_main_card_animated js-tgsticker_image\" data-al-id=\"159\"><div data-al-id=\"160\"></div><source type=\"application/x-t"
-  },
-  {
-   "p": 0.02745913900434971,
-   "site": "mega.co.nz",
-   "category": "tranco",
-   "snippet": "<div class=\"banner-text\" data-al-id=\"732\">15 GB free storage</div>"
-  },
-  {
-   "p": 0.006368831265717745,
-   "site": "discord.media",
-   "category": "tranco",
-   "snippet": "<span data-al-id=\"58\">Performance &amp; security by</span>"
-  },
-  {
-   "p": 0.005521563813090324,
-   "site": "0xrpc.io",
-   "category": "tranco",
-   "snippet": "<li data-al-id=\"52\"><a href=\"https://github.com/FraxFinance/fraxtal-node/blob/4681d2a7e1bef6dc9d368594fdfd88258e8fc5f9/.env.hoodi-testnet.SAMPLE#L4\" data-al-id=\"53\">Frax</a></li>"
-  },
-  {
-   "p": 0.003350499551743269,
-   "site": "discord.media",
-   "category": "tranco",
-   "snippet": "<h2 class=\"text-3xl font-normal leading-1.3 mb-4\" data-al-id=\"38\">What happened?</h2>"
-  },
-  {
-   "p": 0.24128153920173645,
-   "site": "booking.com",
-   "category": "tranco",
-   "snippet": "<div style=\"--bui_stack_spaced_gap--s:4;--bui_stack_spaced_gap--m:8\" class=\"f6e3a11b0d ae5dbab14d e95943ce9b shell__stack\" data-al-id=\"404\"><div class=\"shell__stack-item\" data-al-id=\"405\"><div data-al"
-  },
-  {
-   "p": 0.004326938651502132,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<h5 data-al-id=\"1620\"><a href=\"//core.telegram.org/\" data-al-id=\"1621\">Platform</a></h5>"
-  },
-  {
-   "p": 0.012661812826991081,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<strong data-al-id=\"829\">assign them</strong>"
-  },
-  {
-   "p": 0.015361187048256397,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<li data-al-id=\"130\"><a href=\"#q-can-i-delete-my-messages\" data-al-id=\"131\">Can I delete my messages?</a></li>"
-  },
-  {
-   "p": 0.005181352142244577,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<p data-al-id=\"1049\">Always compare visualizations using a channel that is known to be secure \u2014 it's safest if you do this in person, in an offline meeting with the conversation partner.</p>"
-  },
-  {
-   "p": 0.08067628741264343,
-   "site": "mega.co.nz",
-   "category": "tranco",
-   "snippet": "<div class=\"info-group\" data-al-id=\"783\"> <a class=\"logo\" href=\"https://mega.io\" aria-label=\"MEGA logo link to home page of MEGA website\" data-al-id=\"784\"></a> <span class=\"heavy slogan\" data-al-id=\"7"
-  },
-  {
-   "p": 0.005439757835119963,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<div data-al-id=\"187\"></div>"
-  },
-  {
-   "p": 0.0013842532644048333,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<p data-al-id=\"1320\">All Telegram client apps are fully open source. We offer <a href=\"https://core.telegram.org/reproducible-builds\" data-al-id=\"1321\">verifiable builds both for iOS and Android</a> \u2013"
-  },
-  {
-   "p": 0.015031469985842705,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<li data-al-id=\"96\"><a href=\"#q-who-are-the-people-behind-telegram\" data-al-id=\"97\">Who are the people behind Telegram?</a></li>"
-  },
-  {
-   "p": 0.30506840348243713,
-   "site": "booking.com",
-   "category": "tranco",
-   "snippet": "<span data-testid=\"searchbox-form-button-icon\" aria-hidden=\"true\" class=\"fc70cba028 e7ca4956d1 ca6ff50764\" data-al-id=\"175\"><svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 24 24\" width=\"50px\" dat"
-  },
-  {
-   "p": 0.004168371669948101,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<blockquote data-al-id=\"1253\"> <p data-al-id=\"1254\">If you're a developer, you may find our <a href=\"https://core.telegram.org/bots/faq\" data-al-id=\"1255\">Bots FAQ</a> more useful.</p> </blockquote>"
-  },
-  {
-   "p": 0.01282425131648779,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<div class=\"tl_main_card_cell\" data-al-id=\"175\"> <div class=\"tl_main_card_wrap\" data-al-id=\"176\"> <picture class=\"dev_page_tgsticker tl_main_card_animated js-tgsticker_image\" data-al-id=\"177\"><div dat"
-  },
-  {
-   "p": 0.031465865671634674,
-   "site": "mega.co.nz",
-   "category": "tranco",
-   "snippet": "<div class=\"text-pane\" data-al-id=\"801\"> <p class=\"tagline\" data-al-id=\"802\">SWITCH TO MEGA</p> <h3 class=\"heading\" data-al-id=\"803\">Try our new migration tool</h3> <p class=\"blurb\" data-al-id=\"804\">C"
-  },
-  {
-   "p": 0.018275214359164238,
-   "site": "booking.com",
-   "category": "tranco",
-   "snippet": "<div class=\"shell__column afd3558156 ccd5b150e3\" data-al-id=\"108\"><div style=\"--bui_stack_spaced_gap--s:0\" class=\"f6e3a11b0d ae5dbab14d e95943ce9b shell__stack\" data-al-id=\"109\"><div class=\"shell__sta"
-  },
-  {
-   "p": 0.09795797616243362,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<strong data-al-id=\"564\">Global Search</strong>"
-  },
-  {
-   "p": 0.0126689737662673,
-   "site": "t.me",
-   "category": "tranco",
-   "snippet": "<p data-al-id=\"1119\">Note that logging out does <strong data-al-id=\"1120\">not</strong> trigger remote deletion of your secret chat messages on your partner's device \u2014 to do that, choose 'Clear History"
+   "snippet": "<div class=\"f5983ed53d\" data-al-id=\"482\"><div data-testid=\"webcore-carousel-heading-skeleton\" class=\"b3f1da6687 db5f1a8490 d366f8235b\" data-al-id=\"483\"><span class=\"ab6126d40e a7c315cf87\" data-al-id=\""
   }
  ],
- "false_negatives": []
+ "false_negatives": [
+  {
+   "p": 0.013547711045577417,
+   "site": "mega.co.nz",
+   "category": "tranco",
+   "snippet": "<div class=\"accordion-toggle\" data-al-id=\"662\"> <div class=\"heading\" data-al-id=\"663\">How can you increase productivity in the workplace with MEGA for Business?</div> <div class=\"icon-box\" data-al-id="
+  },
+  {
+   "p": 0.013547711045577417,
+   "site": "mega.co.nz",
+   "category": "tranco",
+   "snippet": "<div class=\"accordion-toggle\" data-al-id=\"671\"> <div class=\"heading\" data-al-id=\"672\">How does MEGA encourage and improve team collaboration?</div> <div class=\"icon-box\" data-al-id=\"673\"> <span class="
+  },
+  {
+   "p": 0.013547711045577417,
+   "site": "mega.co.nz",
+   "category": "tranco",
+   "snippet": "<div class=\"accordion-toggle\" data-al-id=\"653\"> <div class=\"heading\" data-al-id=\"654\">How does MEGA for Business help you grow your business?</div> <div class=\"icon-box\" data-al-id=\"655\"> <span class="
+  }
+ ]
 }

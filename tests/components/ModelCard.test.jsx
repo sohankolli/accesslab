@@ -55,18 +55,18 @@ describe('model card', () => {
     }
   });
 
-  it('names the shipped model and seed, why it was chosen, and each seed by number', async () => {
+  it('names the shipped model, why it was chosen, and every candidate from cross-validation', async () => {
     await renderCard();
+    expect(screen.getByText(new RegExp(`^Model in use: ${shipped.selection.model}`))).toBeTruthy();
+    const table = screen.getByRole('region', {
+      name: 'Candidates in cross-validation, on the development sites',
+    });
+    const rows = within(table).getAllByRole('row').slice(1);
+    expect(rows).toHaveLength(shipped.crossValidation.candidates.length);
+    expect(within(table).getByText(`${shipped.crossValidation.chosen} (chosen)`)).toBeTruthy();
     expect(
-      screen.getByText(
-        /Model in use: SIGN graph network, trained with seed 2\. The graph network missed/,
-      ),
+      screen.getByText(/0\.\d{3} for seed 0, 0\.\d{3} for seed 1, 0\.\d{3} for seed 2/),
     ).toBeTruthy();
-    expect(
-      screen.getByText(/0\.504 for seed 0, 0\.503 for seed 1, 0\.176 for seed 2 \(shipped\)/),
-    ).toBeTruthy();
-    const trust = screen.getByRole('region', { name: 'When not to trust it' });
-    expect(within(trust).getByText(/seed 2, the weakest of the three seeds/)).toBeTruthy();
   });
 
   it('shows the hand-check result, its method, and what it does not fix', async () => {
@@ -77,30 +77,29 @@ describe('model card', () => {
     expect(within(data).getByText(/does not fix the small number of positives/)).toBeTruthy();
   });
 
-  it('shows a precision gate with no threshold as "not reached" and not met', async () => {
+  it('shows a threshold that was not reached as "not reached", not met, and no suggestions', async () => {
     await renderCard({
       ...shipped,
       threshold: 'not reached',
+      operatingThreshold: { ...shipped.operatingThreshold, value: 'not reached' },
       gate: { precision: { target: '>= 0.9', value: 'not reached', pass: false } },
     });
-    const row = screen.getByRole('row', {
-      name: /Precision at a threshold chosen for 90% precision/,
-    });
+    const row = screen.getByRole('row', { name: /Precision at the shipped threshold/ });
     expect(within(row).getByText('not reached')).toBeTruthy();
     expect(within(row).getByText('Not met')).toBeTruthy();
-    expect(screen.getByText(/That threshold: not reached/)).toBeTruthy();
-    expect(
-      screen.getByText(/Precision and recall at a threshold chosen for 90% precision: not reached/),
-    ).toBeTruthy();
+    expect(screen.getByText(/^Threshold: not reached\./)).toBeTruthy();
+    expect(screen.getByText(/not accurate enough yet to make suggestions/)).toBeTruthy();
+    expect(screen.getByText(/Precision and recall: not reached/)).toBeTruthy();
   });
 
   it('shows the operating threshold, its rule, and test precision and recall with intervals', async () => {
     await renderCard({
       ...shipped,
+      threshold: 0.25,
       operatingThreshold: {
-        rule: 'the threshold with the best F1 on the calibration websites',
+        rule: 'the lowest threshold whose out-of-fold precision is at least 50%',
         value: 0.25,
-        calibration: { f1: 0.5, precision: 0.5, recall: 0.5 },
+        outOfFold: { precision: 0.5, recall: 0.2, flagged: 20 },
         test: {
           precision: 0.4,
           precision_ci95: [0.1, 0.7],
@@ -113,8 +112,11 @@ describe('model card', () => {
         },
       },
     });
-    expect(screen.getByText(/at least 0\.2500, the operating threshold/)).toBeTruthy();
-    expect(screen.getByText(/Rule: the threshold with the best F1/)).toBeTruthy();
+    expect(screen.getByText(/at least 0\.250, the operating threshold/)).toBeTruthy();
+    expect(screen.getByText(/Rule: the lowest threshold whose out-of-fold precision/)).toBeTruthy();
+    expect(
+      screen.getByText(/out-of-fold predictions it gave precision 50\.0% and recall 20\.0%/),
+    ).toBeTruthy();
     expect(
       screen.getByText(
         /Precision at the operating threshold 40\.0% \(95% interval 10\.0% to 70\.0%\)/,
@@ -125,10 +127,5 @@ describe('model card', () => {
         /Recall at the operating threshold 50\.0% \(95% interval 20\.0% to 90\.0%\)/,
       ),
     ).toBeTruthy();
-  });
-
-  it('says there are no suggestions when a manifest has no operating threshold', async () => {
-    await renderCard({ ...shipped, operatingThreshold: undefined });
-    expect(screen.getByText(/has no operating threshold, so it scores every element/)).toBeTruthy();
   });
 });

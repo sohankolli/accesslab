@@ -70,14 +70,14 @@ python train/train.py --data data/crawl-tranco-train \
   --out data/tranco-run-output-fixed/models \
   --reports data/tranco-run-output-fixed/reports \
   --fixtures data/tranco-run-output-fixed/fixtures \
-  --corpus-note "Tranco top-1,000 crawl. Every row from pages with document-level (delegated) click listeners was removed, whatever its label."
+  --corpus-note "Tranco top-1,000 crawl. Every row from pages with document-level (delegated) click listeners was removed, whatever its label, and landmarks and page regions are not candidates."
 ```
 
 The training command writes its run-specific model artifacts, reports and parity fixtures under data/tranco-run-output-fixed/. The model, manifest and parity fixture train.py selected are then copied to ../public/models/ and ../tests/ml/fixtures/, `python train/card.py --out ../public/models --reports reports` adds the model-card notes, and `npm run ml:bench` measures latency. Do not commit the crawl data, snippets, virtual environment or run cache.
 
 The training pipeline includes:
 
-- Split: website-level 70/15/15 split, with no site shared between train, calibration and test. The test sites are kept apart and scored once, at the end. The training and calibration sites together are the development sites.
+- Split: the test sites are the 21 websites listed in `train/test-sites.json`, kept apart and scored once, at the end. Every other website is a development site. (Without that file, a fresh stratified 70/15/15 website split is made, and its training and calibration sites are the development sites.)
 - Candidates: SIGN graph network with seeds 0, 1 and 2, gradient boosting on element features, and gradient boosting with neighbourhood features. The cursor rule is reported for comparison only.
 - Model selection rule (fixed before running): 5-fold cross-validation grouped by website on the development sites, so no site is in both the training and the validation part of a fold. Every candidate gives out-of-fold predictions; the shipped model is the candidate with the highest out-of-fold PR-AUC (ties go to the earlier candidate in the list above). The test set is never used to choose. Inside each fold, a few training sites are held back for early stopping (SIGN) and the small grid (gradient boosting), so a validation fold never influences its own predictions.
 - Calibration: temperature scaling fitted on the chosen model's out-of-fold predictions. The chosen model is then retrained on all development sites for shipping (SIGN for the median best epoch across folds; gradient boosting with the grid setting chosen most often).
@@ -96,11 +96,11 @@ The training pipeline includes:
    npm run lint
    npm run build
    npm run ml:bench
-   The current browser benchmark measured the shipped model at 11 ms median over 10 runs for 2,664 elements, in headless Google Chrome 151 on a 12th Gen Intel Core i7-1255U (12 logical cores).
+   The current browser benchmark measured the shipped model at 9 ms median over 10 runs for 2,663 elements, in headless Google Chrome 151 on a 12th Gen Intel Core i7-1255U (12 logical cores).
 
 ## Current Tranco experiment: results and limitations
 
-**Read this first.** The model is experimental and switched off by default. Its suggestions are advisory and never change the score.
+**Read this first.** The model is experimental and switched off by default. Its suggestions are labelled low confidence and never change the score.
 
 ### Earlier results were inflated by label leakage
 
@@ -109,42 +109,55 @@ An earlier version of `filter_tranco_training_data.cjs` dropped rows from delega
 ### Dataset and split
 
 - The top-1,000 Tranco crawl produced 1,407 page records: 879 pages were used, 370 errored, 38 were excluded by robots rules and 120 had failed scripts.
-- The prepared corpus contains 9,654 candidate rows from 136 sites. Only **60 are positives, from 13 sites**; one site (capcut.com) has 32 of them.
-- The site-disjoint split has 95 training sites (5,853 rows, 48 positives), 20 calibration sites (1,193 rows, 6 positives from 2 sites) and 21 test sites (2,608 rows, **6 positives from 2 sites**).
+- The prepared corpus contains 9,367 candidate rows from 136 sites. Only **55 are positives, from 13 sites**; one site (capcut.com) has 32 of them. Landmarks and page regions are not candidates; removing them dropped 287 rows, 5 of them positives on `<nav>` and `<header>`.
+- The 21 test sites are frozen in `train/test-sites.json` (the test sites of the first corrected-filter run), so changes to the data cannot move sites in or out of the test set. They hold 2,559 rows and **6 positives from 2 sites**.
+- The other 115 sites (6,808 rows, 49 positives) are the development sites, split into 5 folds by website. One fold holds 32 positives, all from capcut.com; the others hold 4 or 5.
 - All examples come from the Tranco crawl category. They are not representative of all industries, frameworks or types of websites.
 - Labels come from automated event-listener and React-handler probing. Handlers on ancestors remain a possible source of label noise.
+
+### Model selection (cross-validation)
+
+| Candidate                                     | Out-of-fold PR-AUC | Threshold (50% out-of-fold precision) |
+| --------------------------------------------- | ------------------ | ------------------------------------- |
+| SIGN graph network, seed 0                    | 0.207              | 0.588                                 |
+| SIGN graph network, seed 1                    | 0.207              | 0.876                                 |
+| SIGN graph network, seed 2                    | 0.156              | 0.752                                 |
+| **Gradient boosting, element only (shipped)** | **0.244**          | **0.111**                             |
+| Gradient boosting with neighbourhood          | 0.240              | 0.141                                 |
+
+By the rule above, element-only gradient boosting ships. The candidates are close, so the choice is not clear-cut. Its temperature (2.77) and threshold (0.111, out-of-fold precision 50%, recall 20%) were set on the out-of-fold predictions, and it was then retrained on all 115 development sites.
 
 ### Test metrics
 
 With 6 test positives from 2 sites, the 95% site-bootstrap intervals cover nearly the whole range from 0 to 1. **This run cannot measure how good the model is.**
 
-| Model                                | PR-AUC (95% interval) | Precision   | Recall      | ECE   |
-| ------------------------------------ | --------------------- | ----------- | ----------- | ----- |
-| Shipped SIGN graph network           | 0.176 (0.003–0.793)   | not reached | not reached | 0.062 |
-| Gradient boosting, element only      | 0.525 (0.014–1.000)   | not reached | not reached | –     |
-| Gradient boosting with neighbourhood | 0.503 (0.002–1.000)   | not reached | not reached | –     |
-| Rule: pointer cursor and not native  | 0.009 (0.001–0.250)   | 1.5%        | 50.0%       | –     |
+| Model (each at its own threshold, same rule) | PR-AUC (95% interval) | Precision       | Recall       |
+| -------------------------------------------- | --------------------- | --------------- | ------------ |
+| **Shipped: gradient boosting, element only** | 0.507 (0.004–1.000)   | 30% (0–100%)    | 50% (0–100%) |
+| Gradient boosting with neighbourhood         | 0.510                 | 50%             | 50%          |
+| SIGN graph network, seed 0 / 1 / 2           | 0.504 / 0.504 / 0.503 | 50% / 60% / 14% | 50% each     |
+| Rule: pointer cursor and not native          | 0.009                 | 1.5%            | 50%          |
 
-No threshold reached 90% precision on the 6 calibration positives, so precision and recall at a target-precision threshold are "not reached" and the precision gate is not met. Separately from the ship gate, the app makes suggestions at an operating threshold chosen by one fixed rule: the threshold with the best F1 on the calibration websites (the test websites are never used to choose it). That threshold is 0.00064, because the model ranks the calibration positives no better than chance, so the best F1 comes from flagging almost everything. On the test websites it flags 2,074 of 2,608 elements: precision 0.3% (95% interval 0.0% to 0.5%) and recall 100% (6 of 6; 95% interval 100% to 100%). Every suggestion is labelled low confidence. The shipped model is the SIGN graph network trained with seed 2. The pipeline ships it because the gradient-boosting fallback, which replaces it only when it passes precision and calibration, has no threshold that reaches 90% precision. Seed 2 was chosen as the seed with the highest PR-AUC on the calibration sites (0.0039; all three seeds were below the 0.005 share of positives there), and it is the weakest of the three on the test sites: PR-AUC 0.176, against 0.504 for seed 0 and 0.503 for seed 1. Seeds are not switched by test score. On the stricter held-out-source evaluation (1,598 rows, 6 positives), SIGN scored PR-AUC 0.374 and the neighbourhood baseline 0.503.
+On the 2,559 test elements the shipped model makes **10 suggestions, 3 of them correct**, and finds 3 of the 6 click-only controls. Its calibration error is 0.008. Test scores were looked at only after the choice was made; they were not used to choose. On the stricter held-out-source evaluation (1,527 rows, 4 positives), SIGN scored PR-AUC 0.005 and the neighbourhood baseline 0.256. On `docs/click-only-demo.html` the model makes no suggestions: none of its 10 candidates, including its four click-only controls, reaches the threshold.
 
 ### Shipping gates
 
-The shipped SIGN artifact passes two of the five gates:
+The shipped model passes three of the five gates:
 
-- Not met: precision ≥ 0.90. No threshold reached it ("not reached").
-- Not met: beats the best gradient-boosting baseline (0.176 vs 0.525 PR-AUC).
-- Not met: calibration error ≤ 0.05 (0.062).
-- Met: model size, 169,515 bytes, below the 1 MB limit.
-- Met: browser latency, 11 ms median for 2,664 elements, below the 50 ms limit.
+- Not met: precision ≥ 0.90 at the shipped threshold (30%).
+- Not met: the graph network beats the best gradient-boosting baseline. A gradient-boosting model was chosen, so no graph network ships.
+- Met: calibration error ≤ 0.05 (0.008).
+- Met: model size, 281,219 bytes, below the 1 MB limit.
+- Met: browser latency, 9 ms median for 2,663 elements, below the 50 ms limit.
 
-`defaultOn` therefore stays false. The fallback baseline was not shipped, because it also has no threshold that reaches the precision target.
+`defaultOn` therefore stays false.
 
 ### Label audit and remaining work
 
 - The automated 300-label audit judged 188 samples, left 112 unsure and marked zero of the judged samples wrong. Only four judged samples were positive. This is not a manual owner hand-check and is not sufficient to claim that labels have been independently validated.
 - Collect more trustworthy positives. This is the main blocker: 99% of the positives found in the crawl are on delegated pages.
 - Next step: label elements on delegated pages one by one, so those pages can be used again.
-- Manually inspect the false-positive and false-negative samples in data/tranco-run-output-fixed/reports/errors.json, taken at the operating threshold, and record the findings.
+- Manually inspect the false positives and false negatives in reports/errors.json (all 7 and all 3 at the shipped threshold) and record the findings.
 - Evaluate additional site types and sources before making claims about broader generalisation.
 - The optional GraphSAGE comparison was not implemented.
 - The dataset and raw snippets are not committed or published as a release. Rebuild them using the crawl and preparation steps above.

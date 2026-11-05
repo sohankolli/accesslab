@@ -39,6 +39,8 @@ def parse_args():
     ap.add_argument("--reports", type=Path, default=Path("reports"))
     ap.add_argument("--fixtures", type=Path, default=Path("../tests/ml/fixtures"))
     ap.add_argument("--corpus-note", default="")
+    ap.add_argument("--test-sites", type=Path, default=Path(__file__).with_name("test-sites.json"),
+                    help="JSON list of the frozen test websites; missing: a fresh stratified site split")
     ap.add_argument("--keep-delegated", action="store_true",
                     help="also use pages with document-level click listeners (their 0 labels are unreliable)")
     return ap.parse_args()
@@ -230,10 +232,18 @@ def main():
     # default they are left out of training and evaluation alike.
     keep = np.ones(len(full.y), bool) if args.keep_delegated else ~full.delegated
     ds = full.take(np.flatnonzero(keep))
-    tr_i, cal_i, te_i, split_seed = D.balanced_split(ds.site, ds.y)
-    # The test sites are kept apart and scored once at the end. Training and
-    # calibration sites together are the development sites, used for every choice.
-    dev, te = ds.take(np.sort(np.concatenate([tr_i, cal_i]))), ds.take(te_i)
+    # The test sites are kept apart and scored once at the end. They are frozen
+    # in test-sites.json (the 21 sites of the first corrected-filter run), so
+    # later changes to the data cannot move sites in or out of the test set.
+    # Every other site is a development site, used for every choice.
+    if args.test_sites.exists():
+        test_sites = set(json.loads(args.test_sites.read_text()))
+        is_test = np.isin(ds.site, sorted(test_sites))
+        dev_i, te_i, split_seed = np.flatnonzero(~is_test), np.flatnonzero(is_test), "frozen"
+    else:
+        tr_i, cal_i, te_i, split_seed = D.balanced_split(ds.site, ds.y)
+        dev_i = np.sort(np.concatenate([tr_i, cal_i]))
+    dev, te = ds.take(dev_i), ds.take(te_i)
     assert not (set(dev.site) & set(te.site))
     folds = D.grouped_folds(dev.site, dev.y, k=FOLDS)
     for tr_f, va_f in folds:

@@ -23,7 +23,7 @@ const count = (v) =>
   typeof v === 'number' ? v.toLocaleString() : v === NOT_REACHED ? 'not reached' : '–';
 
 const GATE_LABELS = {
-  precision: 'Precision at a threshold chosen for 90% precision',
+  precision: 'Precision at the shipped threshold',
   beats_best_gbt: 'Beats the best gradient-boosting baseline',
   ece: 'Calibration error',
   size: 'Model file size',
@@ -281,17 +281,20 @@ export default function ModelCard() {
         </p>
         {hasOp ? (
           <p>
-            An element is suggested when its probability is at least {num(op.value, 4)}, the
-            operating threshold. Rule: {op.rule}. On the calibration websites it gave precision{' '}
-            {pct(op.calibration?.precision)} and recall {pct(op.calibration?.recall)}.
+            An element is suggested when its probability is at least {num(op.value, 3)}, the
+            operating threshold. Rule: {op.rule}.{' '}
+            {op.outOfFold &&
+              `On the out-of-fold predictions it gave precision ${pct(op.outOfFold.precision)} and recall ${pct(op.outOfFold.recall)}.`}
           </p>
         ) : (
-          <p>The model has no operating threshold, so it scores every element but suggests none.</p>
+          <p>
+            Threshold: not reached. {op?.rule && `Rule: ${op.rule}.`} No threshold met the rule, so
+            the model is not accurate enough yet to make suggestions.
+          </p>
         )}
         <p>
-          The ship gate asks for a threshold that keeps precision at 90% or more on the calibration
-          websites, because a noisy assistant gets ignored. That threshold:{' '}
-          {typeof m.threshold === 'number' ? num(m.threshold, 3) : 'not reached'}.
+          The ship gate separately asks for 90% precision on the test websites at the shipped
+          threshold, because a noisy assistant gets ignored.
         </p>
       </section>
 
@@ -307,11 +310,50 @@ export default function ModelCard() {
         </p>
         <LabelQuality card={card} />
         <p>
-          The data is split by website, so the model is always tested on sites it never saw:
-          training {count(splits.train?.sites)} sites, calibration{' '}
-          {count(splits.calibration?.sites)}, test {count(splits.test?.sites)}.
+          The data is split by website, so the model is always tested on sites it never saw:{' '}
+          {splits.development
+            ? `${count(splits.development.sites)} development sites (${count(splits.development.positives)} click-only controls) and ${count(splits.test?.sites)} test sites (${count(splits.test?.positives)}).`
+            : `training ${count(splits.train?.sites)} sites, calibration ${count(splits.calibration?.sites)}, test ${count(splits.test?.sites)}.`}
         </p>
       </section>
+
+      {m.crossValidation && (
+        <section aria-labelledby="mc-choice">
+          <h2 id="mc-choice">How the model was chosen</h2>
+          <p>
+            Rule, fixed before the run: {m.crossValidation.rule}. The development sites were split
+            into {m.crossValidation.folds} folds by website, so no site was in both the training and
+            the validation part of a fold. Each candidate was scored on the folds it did not see.
+            The chosen model&rsquo;s temperature scaling and threshold were set on those out-of-fold
+            predictions, and it was then retrained on all development sites.
+          </p>
+          <TableWrap caption="Candidates in cross-validation, on the development sites">
+            <thead>
+              <tr>
+                <th scope="col">Candidate</th>
+                <th scope="col">Out-of-fold PR-AUC</th>
+                <th scope="col">Threshold</th>
+                <th scope="col">Out-of-fold precision</th>
+                <th scope="col">Out-of-fold recall</th>
+              </tr>
+            </thead>
+            <tbody>
+              {m.crossValidation.candidates.map((c) => (
+                <tr key={c.model}>
+                  <th scope="row">
+                    {c.model}
+                    {c.model === m.crossValidation.chosen && ' (chosen)'}
+                  </th>
+                  <td>{num(c.oof_pr_auc, 3)}</td>
+                  <td>{num(c.threshold, 3)}</td>
+                  <td>{pct(c.precision)}</td>
+                  <td>{pct(c.recall)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </TableWrap>
+        </section>
+      )}
 
       <section aria-labelledby="mc-accuracy">
         <h2 id="mc-accuracy">How accurate it is on websites it never saw</h2>
@@ -337,18 +379,11 @@ export default function ModelCard() {
             </>
           ) : (
             <li>
-              Precision and recall: not measured, because the model has no operating threshold. The
-              test websites hold {count(testPositives)} click-only controls in{' '}
-              {count(splits.test?.rows)} elements.
+              Precision and recall: not reached, because no threshold met the rule, so the model
+              makes no suggestions. The test websites hold {count(testPositives)} click-only
+              controls in {count(splits.test?.rows)} elements.
             </li>
           )}
-          <li>
-            Precision and recall at a threshold chosen for 90% precision:{' '}
-            {typeof m.threshold === 'number'
-              ? `${pct(test.precision)} and ${pct(test.recall)}`
-              : 'not reached'}
-            .
-          </li>
           <li>
             Area under the precision-recall curve {num(test.pr_auc, 3)}
             {ci(test.pr_auc_ci95, (v) => num(v, 3))}.
@@ -358,7 +393,7 @@ export default function ModelCard() {
             rates. With so few click-only controls, a low value is easy to reach and says little.
           </li>
         </ul>
-        <TableWrap caption="Compared on the same test websites; precision and recall at a threshold chosen for 90% precision">
+        <TableWrap caption="Compared on the same test websites, each at its own threshold chosen by the same rule">
           <thead>
             <tr>
               <th scope="col">Model</th>
@@ -388,8 +423,8 @@ export default function ModelCard() {
         </TableWrap>
         {m.metrics?.seeds && (
           <p>
-            The graph network is not stable on this much data: trained three times with different
-            random seeds, its PR-AUC on the test websites was{' '}
+            Trained three times with different random seeds, the graph network&rsquo;s PR-AUC on the
+            test websites was{' '}
             {m.metrics.seeds.runs
               ? m.metrics.seeds.runs
                   .map(
@@ -399,7 +434,7 @@ export default function ModelCard() {
                   .join(', ')
               : m.metrics.seeds.pr_auc.map((v) => num(v, 3)).join(', ')}{' '}
             (mean {num(m.metrics.seeds.mean, 3)}).
-            {m.metrics.seeds.rule && ` The shipped seed is ${m.metrics.seeds.rule}.`}
+            {m.metrics.seeds.rule && ` Seeds: ${m.metrics.seeds.rule}.`}
           </p>
         )}
         {m.metrics?.heldOutSources && (

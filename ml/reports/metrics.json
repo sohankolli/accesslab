@@ -1,5 +1,5 @@
 {
- "generated": "2026-11-05T00:10:26+00:00",
+ "generated": "2026-11-05T00:30:56+00:00",
  "feature_version": "clickables-features-1",
  "data": {
   "pages_crawled": 1407,
@@ -11,45 +11,125 @@
   },
   "sites": 136,
   "sources": 136,
-  "rows": 9654,
-  "positives": 60,
+  "rows": 9367,
+  "positives": 55,
   "frameworks": {
-   "other": 8462,
-   "jquery": 744,
-   "react": 448
+   "other": 8226,
+   "jquery": 706,
+   "react": 435
   },
   "categories": {
-   "tranco": 9654
+   "tranco": 9367
   },
   "delegated_pages_excluded": true,
   "rows_excluded_delegated": 0,
   "positives_excluded_delegated": 0,
-  "note": "Tranco top-1,000 crawl. Every row from pages with document-level (delegated) click listeners was removed, whatever its label.",
+  "note": "Tranco top-1,000 crawl. Every row from pages with document-level (delegated) click listeners was removed, whatever its label, and landmarks and page regions are not candidates.",
   "splits": {
-   "train": {
-    "sites": 95,
-    "rows": 5853,
-    "positives": 48
-   },
-   "calibration": {
-    "sites": 20,
-    "rows": 1193,
-    "positives": 6
+   "development": {
+    "sites": 115,
+    "rows": 6808,
+    "positives": 49
    },
    "test": {
     "sites": 21,
-    "rows": 2608,
+    "rows": 2559,
     "positives": 6
    }
   },
-  "split_seed": 25
+  "folds": [
+   {
+    "sites": 22,
+    "rows": 605,
+    "positives": 32,
+    "fold": 0
+   },
+   {
+    "sites": 24,
+    "rows": 1031,
+    "positives": 5,
+    "fold": 1
+   },
+   {
+    "sites": 23,
+    "rows": 2571,
+    "positives": 4,
+    "fold": 2
+   },
+   {
+    "sites": 23,
+    "rows": 1462,
+    "positives": 4,
+    "fold": 3
+   },
+   {
+    "sites": 23,
+    "rows": 1139,
+    "positives": 4,
+    "fold": 4
+   }
+  ],
+  "split_seed": "frozen"
+ },
+ "cross_validation": {
+  "folds": 5,
+  "grouped_by": "website",
+  "rule": "the candidate with the highest out-of-fold PR-AUC in 5-fold cross-validation grouped by website on the development sites; the test sites are never used to choose",
+  "candidates": [
+   {
+    "model": "SIGN graph network, seed 0",
+    "oof_pr_auc": 0.2072791106608014,
+    "temperature": 1.0805031061172485,
+    "threshold": 0.5875849723815918,
+    "precision": 0.5,
+    "recall": 0.1836734693877551,
+    "flagged": 18
+   },
+   {
+    "model": "SIGN graph network, seed 1",
+    "oof_pr_auc": 0.20718922225344472,
+    "temperature": 0.4418645203113556,
+    "threshold": 0.8761142492294312,
+    "precision": 0.5294117647058824,
+    "recall": 0.1836734693877551,
+    "flagged": 17
+   },
+   {
+    "model": "SIGN graph network, seed 2",
+    "oof_pr_auc": 0.1563587591755247,
+    "temperature": 0.5199230313301086,
+    "threshold": 0.7519819140434265,
+    "precision": 0.5,
+    "recall": 0.14285714285714285,
+    "flagged": 14
+   },
+   {
+    "model": "Gradient boosting, element only",
+    "oof_pr_auc": 0.2443717128452262,
+    "temperature": 2.7718496322631836,
+    "threshold": 0.1106298416852951,
+    "precision": 0.5,
+    "recall": 0.20408163265306123,
+    "flagged": 20
+   },
+   {
+    "model": "Gradient boosting with neighbourhood",
+    "oof_pr_auc": 0.2397648336979823,
+    "temperature": 2.763184070587158,
+    "threshold": 0.1410888433456421,
+    "precision": 0.5238095238095238,
+    "recall": 0.22448979591836735,
+    "flagged": 21
+   }
+  ],
+  "chosen": "Gradient boosting, element only"
  },
  "comparisons": [
   {
    "model": "Rule: pointer cursor and not native",
-   "pr_auc": 0.008612993315630436,
+   "pr_auc": 0.008635019509719864,
    "pr_auc_ci95": [
-    0.001062457436950867,
+    0.0010773109172846115,
     0.25
    ],
    "threshold": 0.5,
@@ -62,78 +142,169 @@
    "precision_ci95": [
     0.0,
     0.25
+   ],
+   "recall_ci95": [
+    0.0,
+    1.0
    ]
   },
   {
-   "model": "Gradient boosting, element only",
-   "pr_auc": 0.5245901639344263,
+   "model": "SIGN graph network, seed 0",
+   "pr_auc": 0.5035455557878081,
    "pr_auc_ci95": [
-    0.014048476907959384,
+    0.0029659488838792085,
     1.0
    ],
-   "threshold": null,
-   "precision": null,
-   "recall": null,
+   "threshold": 0.5875849723815918,
+   "precision": 0.5,
+   "recall": 0.5,
+   "tp": 3,
+   "fp": 3,
+   "fn": 3,
+   "flagged": 6,
+   "precision_ci95": [
+    0.0,
+    0.75
+   ],
+   "recall_ci95": [
+    0.0,
+    1.0
+   ],
+   "ece": 0.010921183401728977,
+   "oof_pr_auc": 0.2072791106608014,
+   "temperature": 1.0805031061172485,
+   "epochs": 4
+  },
+  {
+   "model": "SIGN graph network, seed 1",
+   "pr_auc": 0.5036107442376802,
+   "pr_auc_ci95": [
+    0.0029232798863745887,
+    1.0
+   ],
+   "threshold": 0.8761142492294312,
+   "precision": 0.6,
+   "recall": 0.5,
+   "tp": 3,
+   "fp": 2,
+   "fn": 3,
+   "flagged": 5,
+   "precision_ci95": [
+    0.0,
+    0.75
+   ],
+   "recall_ci95": [
+    0.0,
+    1.0
+   ],
+   "ece": 0.00991469000156933,
+   "oof_pr_auc": 0.20718922225344472,
+   "temperature": 0.4418645203113556,
+   "epochs": 4
+  },
+  {
+   "model": "SIGN graph network, seed 2",
+   "pr_auc": 0.503498212946692,
+   "pr_auc_ci95": [
+    0.0028220819176455465,
+    1.0
+   ],
+   "threshold": 0.7519819140434265,
+   "precision": 0.14285714285714285,
+   "recall": 0.5,
+   "tp": 3,
+   "fp": 18,
+   "fn": 3,
+   "flagged": 21,
+   "precision_ci95": [
+    0.0,
+    0.3678749999999997
+   ],
+   "recall_ci95": [
+    0.0,
+    1.0
+   ],
+   "ece": 0.023266148627677712,
+   "oof_pr_auc": 0.1563587591755247,
+   "temperature": 0.5199230313301086,
+   "epochs": 3
+  },
+  {
+   "model": "Gradient boosting, element only",
+   "pr_auc": 0.5069605568445475,
+   "pr_auc_ci95": [
+    0.004058031306001536,
+    1.0
+   ],
+   "threshold": 0.1106298416852951,
+   "precision": 0.3,
+   "recall": 0.5,
+   "tp": 3,
+   "fp": 7,
+   "fn": 3,
+   "flagged": 10,
+   "precision_ci95": [
+    0.0,
+    1.0
+   ],
+   "recall_ci95": [
+    0.0,
+    1.0
+   ],
+   "ece": 0.007907476850002362,
+   "oof_pr_auc": 0.2443717128452262,
+   "temperature": 2.7718496322631836,
    "params": {
-    "learning_rate": 0.1,
-    "max_leaf_nodes": 15,
-    "max_iter": 300
+    "learning_rate": 0.05,
+    "max_iter": 300,
+    "max_leaf_nodes": 15
    }
   },
   {
    "model": "Gradient boosting with neighbourhood",
-   "pr_auc": 0.5032435231154855,
+   "pr_auc": 0.5100478228957243,
    "pr_auc_ci95": [
-    0.0017891654909620936,
+    0.004922197510981219,
     1.0
    ],
-   "threshold": null,
-   "precision": null,
-   "recall": null,
+   "threshold": 0.1410888433456421,
+   "precision": 0.5,
+   "recall": 0.5,
+   "tp": 3,
+   "fp": 3,
+   "fn": 3,
+   "flagged": 6,
+   "precision_ci95": [
+    0.0,
+    1.0
+   ],
+   "recall_ci95": [
+    0.0,
+    1.0
+   ],
+   "ece": 0.006598065311948129,
+   "oof_pr_auc": 0.2397648336979823,
+   "temperature": 2.763184070587158,
    "params": {
-    "learning_rate": 0.1,
-    "max_leaf_nodes": 31,
-    "max_iter": 300
+    "learning_rate": 0.05,
+    "max_iter": 300,
+    "max_leaf_nodes": 15
    }
-  },
-  {
-   "model": "SIGN graph network",
-   "pr_auc": 0.1760919970556091,
-   "pr_auc_ci95": [
-    0.0030686274733185757,
-    0.7931612318840578
-   ],
-   "threshold": null,
-   "precision": null,
-   "recall": null,
-   "seed": 2,
-   "temperature": 0.4899311363697052,
-   "best_val": 0.003897340669307196,
-   "epochs_run": 9,
-   "best_epoch": 2,
-   "pr_auc_all_seeds": [
-    0.5041732000233716,
-    0.5028205758832605,
-    0.1760919970556091
-   ],
-   "ece": 0.0624451743350278,
-   "ece_uncalibrated": 0.1317281522314947,
-   "params": 40705
   }
  ],
  "ablations": [
   {
    "model": "SIGN without class-name words",
-   "pr_auc_mean": 0.10767641437414761,
+   "pr_auc_mean": 0.127816930697336,
    "pr_auc_all_seeds": [
-    0.10767641437414761
+    0.127816930697336
    ]
   },
   {
    "model": "SIGN without neighbourhood",
-   "pr_auc_mean": 0.46961488950868907,
+   "pr_auc_mean": 0.4608449122203474,
    "pr_auc_all_seeds": [
-    0.46961488950868907
+    0.4608449122203474
    ]
   }
  ],
@@ -167,102 +338,81 @@
    "www.gov.uk",
    "xiaomi.com"
   ],
-  "test_rows": 1598,
-  "test_positives": 6,
-  "sign_pr_auc": 0.37413586925945475,
-  "gbt_neighbourhood_pr_auc": 0.5029296179749683
- },
- "fallback": {
-  "model": "Gradient boosting with neighbourhood, temperature-calibrated",
-  "threshold": null,
-  "precision": null,
-  "recall": null,
-  "ece": 0.0023511185703895834,
-  "pr_auc": 0.5032435231154855,
-  "passes_precision_and_calibration": false
+  "test_rows": 1527,
+  "test_positives": 4,
+  "sign_pr_auc": 0.004662707494056608,
+  "gbt_neighbourhood_pr_auc": 0.2556058900428499
  },
  "shipped": {
-  "model": "SIGN graph network",
-  "pr_auc": 0.1760919970556091,
+  "model": "Gradient boosting, element only",
+  "pr_auc": 0.5069605568445475,
   "pr_auc_ci95": [
-   0.0030686274733185757,
-   0.7931612318840578
+   0.004058031306001536,
+   1.0
   ],
-  "threshold": null,
-  "precision": null,
-  "recall": null,
-  "ece": 0.0624451743350278
+  "threshold": 0.1106298416852951,
+  "precision": 0.3,
+  "recall": 0.5,
+  "tp": 3,
+  "fp": 7,
+  "fn": 3,
+  "flagged": 10,
+  "precision_ci95": [
+   0.0,
+   1.0
+  ],
+  "recall_ci95": [
+   0.0,
+   1.0
+  ],
+  "ece": 0.007907476850002362
  },
  "operating_threshold": {
-  "rule": "the threshold with the best F1 on the calibration websites; the test websites are never used to choose it",
-  "value": 0.000642445171251893,
-  "calibration": {
-   "f1": 0.01206030150753769,
-   "precision": 0.006066734074823054,
-   "recall": 1.0
+  "rule": "the lowest threshold whose precision on the out-of-fold predictions is at least 50% (with at least 5 elements flagged); if none reaches 50%, there is no threshold and no suggestions. The test websites are never used to choose it",
+  "value": 0.1106298416852951,
+  "outOfFold": {
+   "precision": 0.5,
+   "recall": 0.20408163265306123,
+   "flagged": 20
   },
   "test": {
-   "precision": 0.0028929604628736743,
+   "precision": 0.3,
    "precision_ci95": [
     0.0,
-    0.005225187130000123
-   ],
-   "recall": 1.0,
-   "recall_ci95": [
-    1.0,
     1.0
    ],
-   "tp": 6,
-   "fp": 2068,
-   "fn": 0,
-   "flagged": 2074
-  }
- },
- "graph_network_gate": {
-  "precision": {
-   "target": ">= 0.9",
-   "value": null,
-   "pass": false
-  },
-  "beats_best_gbt": {
-   "target": "PR-AUC > Gradient boosting, element only",
-   "value": 0.1760919970556091,
-   "baseline": 0.5245901639344263,
-   "pass": false,
-   "note": "shipped seed 2; mean over seeds 0.394"
-  },
-  "ece": {
-   "target": "<= 0.05",
-   "value": 0.0624451743350278,
-   "pass": false
-  },
-  "size": {
-   "target": "<= 1000000 bytes",
-   "value": 169515,
-   "pass": true
+   "recall": 0.5,
+   "recall_ci95": [
+    0.0,
+    1.0
+   ],
+   "tp": 3,
+   "fp": 7,
+   "fn": 3,
+   "flagged": 10
   }
  },
  "gate": {
   "precision": {
    "target": ">= 0.9",
-   "value": null,
+   "value": 0.3,
    "pass": false
   },
   "beats_best_gbt": {
-   "target": "PR-AUC > Gradient boosting, element only",
-   "value": 0.1760919970556091,
-   "baseline": 0.5245901639344263,
+   "target": "the graph network beats the best gradient-boosting baseline",
+   "value": 0.5036107442376802,
+   "baseline": 0.5100478228957243,
    "pass": false,
-   "note": "shipped seed 2; mean over seeds 0.394"
+   "note": "a gradient-boosting model was chosen by out-of-fold PR-AUC, so no graph network ships"
   },
   "ece": {
    "target": "<= 0.05",
-   "value": 0.0624451743350278,
-   "pass": false
+   "value": 0.007907476850002362,
+   "pass": true
   },
   "size": {
    "target": "<= 1000000 bytes",
-   "value": 169515,
+   "value": 281219,
    "pass": true
   },
   "latency": {
@@ -276,51 +426,51 @@
   "framework": [
    {
     "framework": "jquery",
-    "rows": 483,
+    "rows": 459,
     "positives": 3,
     "sites": 1,
-    "pr_auc": 0.01032557885986072,
-    "precision": 0.006607929515418502,
-    "recall": 1.0,
-    "tp": 3,
-    "fp": 451,
-    "fn": 0,
-    "flagged": 454
+    "pr_auc": 0.03488372093023256,
+    "precision": null,
+    "recall": 0.0,
+    "tp": 0,
+    "fp": 0,
+    "fn": 3,
+    "flagged": 0
    },
    {
     "framework": "other",
-    "rows": 2125,
+    "rows": 2100,
     "positives": 3,
     "sites": 20,
-    "pr_auc": 0.7575757575757576,
-    "precision": 0.001851851851851852,
+    "pr_auc": 1.0,
+    "precision": 0.3,
     "recall": 1.0,
     "tp": 3,
-    "fp": 1617,
+    "fp": 7,
     "fn": 0,
-    "flagged": 1620
+    "flagged": 10
    }
   ],
   "category": [
    {
     "category": "tranco",
-    "rows": 2608,
+    "rows": 2559,
     "positives": 6,
     "sites": 21,
-    "pr_auc": 0.1760919970556091,
-    "precision": 0.0028929604628736743,
-    "recall": 1.0,
-    "tp": 6,
-    "fp": 2068,
-    "fn": 0,
-    "flagged": 2074
+    "pr_auc": 0.5069605568445475,
+    "precision": 0.3,
+    "recall": 0.5,
+    "tp": 3,
+    "fp": 7,
+    "fn": 3,
+    "flagged": 10
    }
   ]
  },
  "onnx": {
-  "bytes": 169515,
-  "sha256": "efbe7562bd527803b3054b3f5d89cc1f745300d0be53748af4dd1a2276fea702",
-  "max_abs_diff_reference_vs_onnxruntime": 1.4901161193847656e-07
+  "bytes": 281219,
+  "sha256": "1836586777e9c0c2f11c00e4c892ec0d52a2acfe25695492636df289f2163f28",
+  "max_abs_diff_reference_vs_onnxruntime": 8.89413058757782e-08
  },
- "seconds": 51
+ "seconds": 181
 }

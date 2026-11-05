@@ -64,26 +64,33 @@ describe('model card', () => {
     const rows = within(table).getAllByRole('row').slice(1);
     expect(rows).toHaveLength(shipped.crossValidation.candidates.length);
     expect(within(table).getByText(`${shipped.crossValidation.chosen} (chosen)`)).toBeTruthy();
-    expect(
-      screen.getByText(/0\.\d{3} for seed 0, 0\.\d{3} for seed 1, 0\.\d{3} for seed 2/),
-    ).toBeTruthy();
+    // Seed results exist only when a graph network was trained.
+    const seeds = screen.queryByText(
+      /0\.\d{3} for seed 0, 0\.\d{3} for seed 1, 0\.\d{3} for seed 2/,
+    );
+    if (shipped.metrics.seeds) expect(seeds).toBeTruthy();
+    else expect(seeds).toBeNull();
   });
 
-  it('says under limitations that the test set has been looked at and a new one is needed', async () => {
+  it('says under limitations what the held-out comparison does not show', async () => {
     await renderCard();
     const trust = screen.getByRole('region', { name: 'When not to trust it' });
-    expect(within(trust).getByText(/no longer fully untouched/)).toBeTruthy();
     expect(
-      within(trust).getByText(/A new held-out set is needed for a clean final estimate/),
+      within(trust).getByText(/does not show how either model does on other kinds of page/),
     ).toBeTruthy();
+    expect(within(trust).getByText(/read the confidence percentages as rough/)).toBeTruthy();
   });
 
-  it('shows the hand-check result, its method, and what it does not fix', async () => {
+  it('shows the hand-check result, its method, and that it does not cover the new pages', async () => {
     await renderCard();
     const data = screen.getByRole('region', { name: 'What it was trained on' });
     expect(within(data).getByText(/188 judged, 0 wrong, 112 unsure/)).toBeTruthy();
     expect(within(data).getByText(/labels\/audit\.mjs/)).toBeTruthy();
-    expect(within(data).getByText(/does not fix the small number of positives/)).toBeTruthy();
+    expect(
+      within(data).getByText(
+        /says nothing about the labels on the delegated React, Vue and Angular/,
+      ),
+    ).toBeTruthy();
   });
 
   it('shows a threshold that was not reached as "not reached", not met, and no suggestions', async () => {

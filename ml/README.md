@@ -98,7 +98,7 @@ The training pipeline includes:
    npm run ml:bench
    The current browser benchmark measured the shipped model at 9 ms median over 10 runs for 2,663 elements, in headless Google Chrome 151 on a 12th Gen Intel Core i7-1255U (12 logical cores).
 
-## Framework-pages run (in progress): held-out set and success rule
+## Framework-pages run (current model): held-out set and success rule
 
 This section was written, and `train/heldout-sites.json` committed, before this run's training started.
 
@@ -108,7 +108,18 @@ This section was written, and `train/heldout-sites.json` committed, before this 
 - **Success rule:** the new model is better only if its PR-AUC on the held-out set is higher than the currently shipped model's PR-AUC on the same set. Both are scored by the same code (their ONNX files run through onnxruntime), and neither is tuned on the held-out set, which is scored once. If the rule does not hold, the shipped model is not changed.
 - The labels on the new pages come from the same automated probing and were not hand-checked; the earlier automated audit covered non-delegated pages only.
 
-## Current Tranco experiment: results and limitations
+Result: **the success rule holds.** Held-out PR-AUC 0.408 (95% site-bootstrap interval 0.169–0.610) for the new model, 0.037 (0.026–0.066) for the previous model. At the new threshold (0.906): 568 suggestions on 31,951 elements (17.8 per 1,000), precision 53% (24–79%), recall 33% (13–53%). Calibration error 0.116. The held-out sites are the same kind of page as most of the new training data, so this shows the new model is better on delegated framework pages, not elsewhere. Full numbers: [`reports/evaluation.md`](reports/evaluation.md). The run:
+
+```
+python train/heldout.py
+python train/train.py --data data/crawl-tranco-train --keep-delegated --candidates gbt-element \
+  --neg-per-pos 10 --test-sites train/heldout-sites.json --compare-onnx ../public/models/clickables-v1.onnx \
+  --out data/framework-run/models --reports data/framework-run/reports --fixtures data/framework-run/fixtures
+```
+
+`--keep-delegated` is needed because the filter has already removed the delegated pages that cannot be used. The section below describes the previous model (non-delegated pages only).
+
+## Previous model (non-delegated pages only): results and limitations
 
 **Read this first.** The model is experimental and switched off by default. Its suggestions are labelled low confidence and never change the score.
 
@@ -152,7 +163,7 @@ On the 2,559 test elements the shipped model makes **10 suggestions, 3 of them c
 
 ### Shipping gates
 
-The shipped model passes three of the five gates:
+The previous model passed three of the five gates (the current one passes two: size and latency):
 
 - Not met: precision ≥ 0.90 at the shipped threshold (30%).
 - Not met: the graph network beats the best gradient-boosting baseline. A gradient-boosting model was chosen, so no graph network ships.

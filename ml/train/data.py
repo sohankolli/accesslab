@@ -148,3 +148,16 @@ def mask(X: np.ndarray, *, words: bool = True, neighbourhood: bool = True) -> np
     if not neighbourhood:
         X[:, NODE_DIM:] = 0
     return X
+
+
+def sample_negatives(y: np.ndarray, per_positive: int, seed: int = 0) -> np.ndarray:
+    """Sorted indices keeping every positive and at most `per_positive` negatives per positive.
+
+    The negatives kept are drawn uniformly at random with a fixed seed. Used on
+    training rows only; validation and held-out rows are never sampled.
+    """
+    pos = np.flatnonzero(y == 1)
+    neg = np.flatnonzero(y != 1)
+    n = min(len(neg), per_positive * len(pos))
+    kept = np.random.default_rng(seed).choice(neg, n, replace=False)
+    return np.sort(np.concatenate([pos, kept]))

@@ -1,3 +1,14 @@
+/* The page whose runs the report shows. */
+.report__page {
+  margin-bottom: var(--space-6);
+}
+.report__page .field {
+  max-width: 32rem;
+}
+.report__page select {
+  width: 100%;
+}
+
 /* Trend: one line, no fill. */
 .trend {
   margin: 0;

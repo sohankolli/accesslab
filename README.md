@@ -33,6 +33,8 @@ More detail: [user guide](docs/guide.md) (every feature, Simulate, Learn, keyboa
 
 ## How to run it
 
+**Live:** https://accesslab-tau.vercel.app (share links and the bookmarklet work from this address on any device; when run locally they point to localhost).
+
 AccessLab runs locally. You need Node.js 22 (the version is in [`.nvmrc`](.nvmrc), so `nvm use` picks it up).
 
 ```bash

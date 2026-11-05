@@ -6,6 +6,10 @@ import './learn.css';
 
 function getExampleHtml(ruleId, bad) {
   const pageExamples = {
+    // The guide's "Click here" has a name, so the rule cannot flag it; an empty link shows the rule.
+    'link-name': '<a href="/report"></a>',
+    'duplicate-id':
+      '<input id="email" aria-label="Work email">\n<input id="email" aria-label="Home email">',
     'html-lang': `<!doctype html>
 <html>
 <head><title>Example page</title></head>

@@ -42,6 +42,11 @@ describe('Learn guide Workbench examples', () => {
       } else if (ruleId === 'landmark-main') {
         expect(editor.html).toContain(guide.bad);
         expect(editor.html).toContain('<body>');
+      } else if (ruleId === 'link-name') {
+        expect(editor.html).toBe('<a href="/report"></a>');
+      } else if (ruleId === 'duplicate-id') {
+        expect(editor.html).toContain('aria-label="Work email"');
+        expect(editor.html.match(/id="email"/g)).toHaveLength(2);
       } else {
         expect(editor.html).toBe(guide.bad);
       }

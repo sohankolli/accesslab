@@ -1,4 +1,7 @@
-import { useEffect, useRef } from 'react';
+/* eslint-disable jsx-a11y/anchor-is-valid */
+/* eslint-disable jsx-a11y/click-events-have-key-events */
+/* eslint-disable jsx-a11y/no-static-element-interactions */
+import { useEffect, useRef, useState } from 'react';
 import { useDispatch } from 'react-redux';
 import { Link } from 'react-router';
 import { sampleLoaded } from '../editor/editorSlice';
@@ -27,6 +30,7 @@ export default function Home() {
   const dispatch = useDispatch();
   const bookmarkletUrl = makeBookmarkletUrl(window.location.origin);
   const bookmarkletLink = useRef(null);
+  const [bookmarkletHint, setBookmarkletHint] = useState('');
 
   useEffect(() => {
     bookmarkletLink.current?.setAttribute('href', bookmarkletUrl);
@@ -96,14 +100,19 @@ export default function Home() {
             ref={bookmarkletLink}
             className="btn btn--primary btn--lg bookmarklet__link"
             draggable="true"
-            href={bookmarkletUrl}
             onClick={(event) => {
               event.preventDefault();
-              window.location.href = bookmarkletUrl;
+              setBookmarkletHint('Drag this link to your bookmarks bar to use it.');
             }}
           >
             Check with AccessLab
           </a>
+
+          {bookmarkletHint && (
+            <p role="status" className="bookmarklet__note">
+              {bookmarkletHint}
+            </p>
+          )}
 
           <ol>
             <li>Drag this link to your browser's bookmarks bar.</li>

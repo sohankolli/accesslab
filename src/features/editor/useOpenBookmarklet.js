@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
-import { useLocation } from 'react-router';
+import { useLocation, useNavigate } from 'react-router';
 import { MAX_PAGE_BYTES, sharedPageOpened } from './editorSlice';
 import { isBookmarkletPageMessage } from './bookmarklet';
 
@@ -10,14 +10,24 @@ import { isBookmarkletPageMessage } from './bookmarklet';
  */
 export function useOpenBookmarklet(onNotice) {
   const dispatch = useDispatch();
-  const { search } = useLocation();
+  const navigate = useNavigate();
+  const { pathname, search, hash } = useLocation();
 
   useEffect(() => {
     if (new URLSearchParams(search).get('from') !== 'bookmarklet') {
       return undefined;
     }
 
+    let cleanedUp = false;
+
+    function cleanBookmarkletUrl() {
+      if (cleanedUp) return;
+      cleanedUp = true;
+      navigate({ pathname, search: '', hash }, { replace: true });
+    }
+
     if (!window.opener) {
+      cleanBookmarkletUrl();
       onNotice({
         tone: 'error',
         body: 'No page was received. Open the page you want to check and click the bookmarklet again.',
@@ -38,6 +48,7 @@ export function useOpenBookmarklet(onNotice) {
       waitingForPage = false;
       clearTimeout(timeout);
       window.removeEventListener('message', receivePage);
+      cleanBookmarkletUrl();
 
       const data = event.data;
       const bytes = new TextEncoder().encode(data.html + data.css).length;
@@ -52,14 +63,24 @@ export function useOpenBookmarklet(onNotice) {
 
       dispatch(sharedPageOpened({ html: data.html, css: data.css }));
 
+      let hostname = 'an unknown site';
+      try {
+        hostname = new URL(data.url).host || hostname;
+      } catch {
+        // Keep the fallback when the sender provides an invalid URL.
+      }
+
+      const title =
+        typeof data.title === 'string' && data.title.trim() ? data.title.trim() : hostname;
       const skipped = Number.isInteger(data.skippedStylesheets) ? data.skippedStylesheets : 0;
 
-      if (skipped > 0) {
-        onNotice({
-          tone: 'info',
-          body: `${skipped} stylesheet(s) from other sites could not be read.`,
-        });
-      }
+      const skippedMessage =
+        skipped > 0 ? ` ${skipped} stylesheet(s) were skipped because they could not be read.` : '';
+
+      onNotice({
+        tone: 'info',
+        body: `Opened ${title} from ${hostname}.${skippedMessage}`,
+      });
     }
 
     window.addEventListener('message', receivePage);
@@ -69,6 +90,7 @@ export function useOpenBookmarklet(onNotice) {
 
       waitingForPage = false;
       window.removeEventListener('message', receivePage);
+      cleanBookmarkletUrl();
 
       onNotice({
         tone: 'error',
@@ -84,5 +106,5 @@ export function useOpenBookmarklet(onNotice) {
       waitingForPage = false;
       window.removeEventListener('message', receivePage);
     };
-  }, [search, dispatch, onNotice]);
+  }, [search, pathname, hash, navigate, dispatch, onNotice]);
 }

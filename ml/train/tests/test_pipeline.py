@@ -117,3 +117,24 @@ def test_f1_threshold_does_not_split_ties_and_prefers_fewer_flags():
     t, f1, _, _ = M.threshold_for_f1(y, p)
     # 0.9 gives F1 0.667; 0.5 (both tied rows) gives P 2/3, R 1, F1 0.8; 0.1 gives F1 0.667.
     assert t == 0.5 and abs(f1 - 0.8) < 1e-9
+
+
+def test_grouped_folds_keep_each_site_in_one_fold_and_spread_positives():
+    sites, y = toy_sites()
+    folds = D.grouped_folds(sites, y, k=5)
+    assert len(folds) == 5
+    seen = np.zeros(len(y), int)
+    for tr, va in folds:
+        assert not set(sites[tr]) & set(sites[va])
+        assert y[va].sum() > 0  # every fold has click-only controls to validate on
+        seen[va] += 1
+    assert (seen == 1).all()  # every row is validated exactly once
+    counts = [y[va].sum() for _, va in folds]
+    assert max(counts) - min(counts) <= 3
+
+
+def test_fill_unmeasured_leaves_no_null():
+    import train as T
+
+    out = T.fill_unmeasured({"a": None, "b": [float("nan"), 1.0], "c": {"d": None, "e": "x"}})
+    assert out == {"a": "not measured", "b": ["not measured", 1.0], "c": {"d": "not measured", "e": "x"}}

@@ -77,11 +77,12 @@ The training command writes its run-specific model artifacts, reports and parity
 
 The training pipeline includes:
 
-- Split: website-level 70/15/15 split, with no site shared between train, calibration and test.
-- Baselines: cursor rule, gradient boosting on element features, and gradient boosting with neighbourhood features.
-- Graph network: SIGN model training with multiple seeds and ablations for class-name cues and neighbourhood features.
+- Split: website-level 70/15/15 split, with no site shared between train, calibration and test. The test sites are kept apart and scored once, at the end. The training and calibration sites together are the development sites.
+- Candidates: SIGN graph network with seeds 0, 1 and 2, gradient boosting on element features, and gradient boosting with neighbourhood features. The cursor rule is reported for comparison only.
+- Model selection rule (fixed before running): 5-fold cross-validation grouped by website on the development sites, so no site is in both the training and the validation part of a fold. Every candidate gives out-of-fold predictions; the shipped model is the candidate with the highest out-of-fold PR-AUC (ties go to the earlier candidate in the list above). The test set is never used to choose. Inside each fold, a few training sites are held back for early stopping (SIGN) and the small grid (gradient boosting), so a validation fold never influences its own predictions.
+- Calibration: temperature scaling fitted on the chosen model's out-of-fold predictions. The chosen model is then retrained on all development sites for shipping (SIGN for the median best epoch across folds; gradient boosting with the grid setting chosen most often).
+- Ablations: SIGN without class-name cues and without neighbourhood features, one seed each.
 - Source holdout: an additional evaluation that holds out entire sources.
-- Calibration and thresholds: temperature scaling and threshold selection using calibration sites, not the test set.
 - Test: PR-AUC, site-bootstrap intervals, precision, recall, ECE, reliability data and error samples.
 - Export and parity: ONNX export and a 50-row fixture for comparing the training model with the browser runtime.
 

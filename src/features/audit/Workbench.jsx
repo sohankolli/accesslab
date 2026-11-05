@@ -35,7 +35,9 @@ const MIN_PREVIEW = 25; // percent: the splitters never squeeze the preview belo
 export default function Workbench() {
   const dispatch = useDispatch();
   const store = useStore();
-  const { html, css, rejected, source, fileName } = useSelector((state) => state.editor);
+  const { html, css, rejected, source, fileName, saveFailed } = useSelector(
+    (state) => state.editor,
+  );
   const result = useSelector((state) => state.audit.result);
   const advisory = useSelector(selectAdvisory);
   const selectedId = useSelector((state) => state.audit.selectedIssueId);
@@ -202,6 +204,11 @@ export default function Workbench() {
           </details>
         </div>
         <SourceNotice notice={notice} />
+        {saveFailed && (
+          <div className="notice" role="alert">
+            <p>Your code could not be saved in this browser, so it will be lost on refresh.</p>
+          </div>
+        )}
         <SourceEditor
           html={html}
           css={css}

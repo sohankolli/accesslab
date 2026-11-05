@@ -1,3 +1,5 @@
+import { MAX_PAGE_BYTES, pageBytes } from '../features/editor/editorSlice';
+
 // localStorage can be full, blocked or unavailable: every access is guarded.
 const KEY = 'accesslab:v1';
 
@@ -63,3 +65,30 @@ export const loadHistory = () => {
 };
 
 export const saveHistory = ({ runs }) => write({ ...read(), history: { runs } });
+
+const SOURCES = ['sample', 'paste', 'file', 'link'];
+
+/**
+ * The editor's code saved by saveEditor, or null when there is none or it is not
+ * usable: the HTML and CSS must be strings, the source one of the known ones, and
+ * the page within MAX_PAGE_BYTES (the same cap as typing). Then the sample is shown.
+ * @returns {{html: string, css: string, source: string, fileName: string|null}|null}
+ */
+export const loadEditor = () => {
+  const saved = read().editor;
+  if (!saved || typeof saved !== 'object') return null;
+  const { html, css, source, fileName = null } = saved;
+  if (typeof html !== 'string' || typeof css !== 'string') return null;
+  if (!SOURCES.includes(source)) return null;
+  if (fileName !== null && typeof fileName !== 'string') return null;
+  if (pageBytes(html, css) > MAX_PAGE_BYTES) return null;
+  return { html, css, source, fileName: source === 'file' ? fileName : null };
+};
+
+/**
+ * Save the editor's code, so a refresh shows the same page.
+ * @param {{html: string, css: string, source: string, fileName: string|null}} editor
+ * @returns {boolean} false when the browser refused (storage full or blocked)
+ */
+export const saveEditor = ({ html, css, source, fileName }) =>
+  write({ ...read(), editor: { html, css, source, fileName } });

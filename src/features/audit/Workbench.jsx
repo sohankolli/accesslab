@@ -197,9 +197,12 @@ export default function Workbench() {
           <details className="src-help">
             <summary>Checking a React, Vue or Angular app?</summary>
             <p>
-              Open the running page, then in the browser&rsquo;s developer tools copy the{' '}
+              AccessLab checks the rendered page, not your source files. The easiest way: run your
+              app, then click the Check with AccessLab bookmarklet from the home page; it sends the
+              page&rsquo;s HTML and CSS here. Or, in the browser&rsquo;s developer tools, copy the{' '}
               <code>&lt;html&gt;</code> element (right-click, Copy, Copy outerHTML) and paste it
-              here. AccessLab checks the rendered page.
+              here, then paste your CSS into the CSS tab, because linked stylesheets do not load in
+              the preview.
             </p>
           </details>
         </div>

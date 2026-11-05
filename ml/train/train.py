@@ -61,8 +61,10 @@ def not_reached(entry: dict, keys) -> dict:
 FOLDS = 5
 SELECTION_RULE = ("the candidate with the highest out-of-fold PR-AUC in 5-fold cross-validation "
                   "grouped by website on the development sites; the test sites are never used to choose")
-THRESHOLD_RULE = ("the threshold with the best F1 on the out-of-fold predictions; "
-                  "the test websites are never used to choose it")
+MIN_PRECISION = 0.50
+THRESHOLD_RULE = ("the lowest threshold whose precision on the out-of-fold predictions is at least 50% "
+                  "(with at least 5 elements flagged); if none reaches 50%, there is no threshold and no "
+                  "suggestions. The test websites are never used to choose it")
 
 # The candidates compared in cross-validation, in this order (it breaks ties).
 CANDIDATES = [
@@ -76,10 +78,11 @@ CANDIDATES = [
 
 def choose_threshold(y, p):
     """The operating threshold on out-of-fold predictions, and what it gives there."""
-    t, f1, precision, recall = M.threshold_for_f1(y, p)
+    t = M.threshold_for_precision(y, p, MIN_PRECISION)
     if t is None:
         return None, {"precision": NOT_REACHED, "recall": NOT_REACHED, "flagged": NOT_REACHED}
-    return t, {"precision": precision, "recall": recall, "flagged": int((p >= t).sum())}
+    precision, recall, counts = M.precision_recall(y, p, t)
+    return t, {"precision": precision, "recall": recall, "flagged": counts["flagged"]}
 
 
 def fill_unmeasured(obj):

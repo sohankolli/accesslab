@@ -59,31 +59,6 @@ def threshold_for_precision(y, p, target: float = 0.90, min_flagged: int = 5):
     return best
 
 
-def threshold_for_f1(y, p):
-    """The threshold with the best F1 on these rows, or None if there is no positive.
-
-    Thresholds are tried only between distinct scores, so ties are not split.
-    On equal F1 the higher threshold wins (fewer suggestions).
-    Returns (threshold, f1, precision, recall).
-    """
-    y = np.asarray(y)
-    if not np.any(y == 1):
-        return None, float("nan"), float("nan"), float("nan")
-    order = np.argsort(-p, kind="stable")
-    ys, ps = y[order], p[order]
-    tp = np.cumsum(ys == 1)
-    flagged = np.arange(1, len(ys) + 1)
-    best = None
-    for k in range(len(ys)):
-        if k + 1 < len(ys) and ps[k + 1] == ps[k]:
-            continue
-        precision, recall = tp[k] / flagged[k], tp[k] / tp[-1]
-        f1 = 2 * precision * recall / (precision + recall) if tp[k] else 0.0
-        if best is None or f1 > best[1]:
-            best = (float(ps[k]), float(f1), float(precision), float(recall))
-    return best
-
-
 def site_bootstrap(y, p, sites, stat, n: int = 300, seed: int = 0):
     """95% interval for stat(y, p), resampling whole sites (rows of a site move together)."""
     rng = np.random.default_rng(seed)

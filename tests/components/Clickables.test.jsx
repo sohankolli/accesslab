@@ -4,6 +4,7 @@ import { Provider } from 'react-redux';
 import { MemoryRouter } from 'react-router';
 import { useRef } from 'react';
 import FindingsPane from '../../src/features/audit/FindingsPane';
+import ModelSwitch from '../../src/features/audit/ModelSwitch';
 import { SettingsProvider } from '../../src/context/SettingsContext';
 import { auditCompleted } from '../../src/features/audit/auditSlice';
 import {
@@ -139,7 +140,25 @@ describe('model suggestions in the findings pane', () => {
     expect(store.getState().clickables.enabled).toBe(false);
   });
 
-  it('says why there are no suggestions when the model has no threshold', () => {
+  it('says the model is not accurate enough yet before and after a check without a threshold', () => {
+    const store = makeStore();
+    store.dispatch(manifestLoaded({ version: '1.0.0', threshold: null, defaultOn: false }));
+    store.dispatch(modelSwitched(true));
+    render(
+      <Provider store={store}>
+        <MemoryRouter>
+          <ModelSwitch />
+        </MemoryRouter>
+      </Provider>,
+    );
+    expect(
+      screen.getByText(
+        /^The model is not accurate enough yet to make suggestions\. Suggestions never/,
+      ),
+    ).toBeTruthy();
+  });
+
+  it('says the model is not accurate enough yet when it has no threshold, and suggests nothing', () => {
     const store = setup();
     act(() => {
       store.dispatch(manifestLoaded({ version: '1.0.0', threshold: null, defaultOn: false }));
@@ -150,7 +169,7 @@ describe('model suggestions in the findings pane', () => {
     });
     expect(
       screen.getByText(
-        /Checked 10 elements in 2 ms\. The model has no threshold, so it makes no suggestions\./,
+        /Checked 10 elements in 2 ms\. The model is not accurate enough yet to make suggestions\./,
       ),
     ).toBeTruthy();
     expect(screen.queryByText('Possibly click-only')).toBeNull();

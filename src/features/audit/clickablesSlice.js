@@ -5,6 +5,9 @@ import { selectSortedIssues } from './auditSlice';
 /** How every model suggestion is labelled while the model is experimental. */
 export const LOW_CONFIDENCE = 'Low confidence: the model is experimental.';
 
+/** Shown instead of suggestions when no threshold reached the precision the pipeline asks for. */
+export const NOT_ACCURATE = 'The model is not accurate enough yet to make suggestions.';
+
 /** Most "Not an issue" records kept in this browser; the oldest go first. */
 export const MAX_DISMISSED = 200;
 

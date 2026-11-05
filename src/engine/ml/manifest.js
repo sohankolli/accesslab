@@ -24,12 +24,13 @@ const usableThreshold = (t) => typeof t === 'number' && t > 0 && t < 1;
 
 /**
  * The probability at which the app makes a suggestion: the manifest's
- * operating threshold (chosen by a fixed rule on calibration websites), or,
- * for older manifests without one, the target-precision threshold.
+ * operating threshold (chosen by a fixed rule in cross-validation), or, for
+ * older manifests without one, the target-precision threshold.
  * @param {object} m  a valid manifest
  * @returns {number|null} null when the manifest has neither, so nothing is suggested
  */
 export function suggestionThreshold(m) {
+  if (m.operatingThreshold?.value === NOT_REACHED) return null;
   if (usableThreshold(m.operatingThreshold?.value)) return m.operatingThreshold.value;
   return usableThreshold(m.threshold) ? m.threshold : null;
 }
@@ -56,7 +57,8 @@ export function validateManifest(m) {
   if (!usableThreshold(m.threshold) && m.threshold !== NOT_REACHED) {
     throw new Error('The model manifest has no usable threshold.');
   }
-  if (m.operatingThreshold != null && !usableThreshold(m.operatingThreshold.value)) {
+  const op = m.operatingThreshold;
+  if (op != null && !usableThreshold(op.value) && op.value !== NOT_REACHED) {
     throw new Error('The model manifest has no usable operating threshold.');
   }
   return m;

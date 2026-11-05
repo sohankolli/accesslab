@@ -85,6 +85,8 @@ describe('model manifest', () => {
     expect(
       suggestionThreshold({ ...manifest(), threshold: NOT_REACHED, operatingThreshold: undefined }),
     ).toBe(null);
+    expect(suggestionThreshold(op(NOT_REACHED))).toBe(null);
+    expect(validateManifest(op(NOT_REACHED)).operatingThreshold.value).toBe(NOT_REACHED);
     expect(() => validateManifest(op(null))).toThrow(/no usable operating threshold/);
     expect(() => validateManifest(op(1.5))).toThrow(/no usable operating threshold/);
   });

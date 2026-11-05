@@ -102,23 +102,6 @@ def test_missing_threshold_values_are_marked_not_reached():
     assert "null" not in T.dump(entry) and "NaN" not in T.dump(entry)
 
 
-def test_f1_threshold_is_chosen_from_the_given_rows_only():
-    y = np.array([1, 1, 0, 1, 0, 0, 0, 0])
-    p = np.array([0.9, 0.8, 0.7, 0.6, 0.5, 0.4, 0.3, 0.2])
-    t, f1, precision, recall = M.threshold_for_f1(y, p)
-    # Cutting at 0.6 flags 4 rows, 3 of them positive: P 0.75, R 1, F1 0.857 (the best).
-    assert t == 0.6 and abs(f1 - 6 / 7) < 1e-9 and precision == 0.75 and recall == 1.0
-    assert M.threshold_for_f1(np.zeros(4), p[:4])[0] is None
-
-
-def test_f1_threshold_does_not_split_ties_and_prefers_fewer_flags():
-    y = np.array([1, 0, 1, 0])
-    p = np.array([0.9, 0.5, 0.5, 0.1])
-    t, f1, _, _ = M.threshold_for_f1(y, p)
-    # 0.9 gives F1 0.667; 0.5 (both tied rows) gives P 2/3, R 1, F1 0.8; 0.1 gives F1 0.667.
-    assert t == 0.5 and abs(f1 - 0.8) < 1e-9
-
-
 def test_grouped_folds_keep_each_site_in_one_fold_and_spread_positives():
     sites, y = toy_sites()
     folds = D.grouped_folds(sites, y, k=5)
@@ -138,3 +121,15 @@ def test_fill_unmeasured_leaves_no_null():
 
     out = T.fill_unmeasured({"a": None, "b": [float("nan"), 1.0], "c": {"d": None, "e": "x"}})
     assert out == {"a": "not measured", "b": ["not measured", 1.0], "c": {"d": "not measured", "e": "x"}}
+
+
+def test_threshold_is_the_lowest_with_half_precision_or_none():
+    import train as T
+
+    y = np.array([1, 1, 0, 1, 0, 0, 1, 0, 0, 0])
+    p = np.linspace(0.9, 0.1, 10)
+    t, at = T.choose_threshold(y, p)
+    # Flagging the top 7 gives 4 of 7 (57%); the top 8 gives 4 of 8 (50%), the lowest reaching 50%.
+    assert t == p[7] and at["precision"] == 0.5 and at["flagged"] == 8
+    t, at = T.choose_threshold(np.array([0, 0, 0, 0, 0, 1]), p[:6])
+    assert t is None and at["precision"] == T.NOT_REACHED

@@ -1,5 +1,5 @@
 import { createSlice } from '@reduxjs/toolkit';
-import { pageKeyOf } from './pages';
+import { pageKeyOf, previousRunOfPage } from './pages';
 
 // Each page keeps its own last 20 runs, so checking one page often never wipes
 // out another page's history. The overall cap bounds what localStorage holds.
@@ -81,3 +81,12 @@ const historySlice = createSlice({
 export const { runAdded, historyCleared, historySaveResult } = historySlice.actions;
 
 export default historySlice.reducer;
+
+/**
+ * The score of the last run of the page now in the workbench, for "since the last
+ * check". Only the same page counts: comparing two unrelated pages means nothing.
+ * @param {{audit: {result: {ranAt: number, page?: {key: string}}|null}, history: {runs: object[]}}} state
+ * @returns {number|null} null when this is the page's first check
+ */
+export const selectPreviousScore = (state) =>
+  previousRunOfPage(state.history.runs, state.audit.result)?.score ?? null;

@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import historyReducer, { runAdded, historyCleared } from '../../src/features/report/historySlice';
+import historyReducer, {
+  runAdded,
+  historyCleared,
+  selectPreviousScore,
+} from '../../src/features/report/historySlice';
 import auditReducer, {
   auditStarted,
   auditCompleted,
@@ -95,20 +99,33 @@ describe('historySlice', () => {
 });
 
 describe('auditSlice', () => {
-  it('has no previousScore after the first audit', () => {
+  it('records a finished audit', () => {
     let state = auditReducer(undefined, auditStarted());
     expect(state.status).toBe('running');
     state = auditReducer(state, auditCompleted(audit(1, 67)));
-    expect(state).toMatchObject({ status: 'done', previousScore: null });
+    expect(state.status).toBe('done');
     expect(state.result.score).toBe(67);
   });
 
-  it('remembers the previous score for the before/after delta', () => {
-    let state = auditReducer(undefined, auditCompleted(audit(1, 67)));
-    state = auditReducer(state, auditCompleted(audit(2, 86)));
-    expect(state.previousScore).toBe(67);
-    state = auditReducer(state, auditCompleted(audit(3, 100)));
-    expect(state.previousScore).toBe(86);
+  it('compares the score only with the last run of the same page', () => {
+    const page = (name) => ({ key: `page:${name}`, name });
+    const check = (root, ranAt, score, name) => {
+      const result = { ...audit(ranAt, score), page: page(name) };
+      return {
+        audit: auditReducer(root.audit, auditCompleted(result)),
+        history: historyReducer(root.history, runAdded(result)),
+      };
+    };
+    let root = { audit: undefined, history: undefined };
+    root = check(root, 1, 67, 'cafe');
+    expect(selectPreviousScore(root)).toBeNull(); // the first check of the café page
+    root = check(root, 2, 40, 'other');
+    expect(selectPreviousScore(root)).toBeNull(); // not compared with the café page
+    root = check(root, 3, 86, 'cafe');
+    expect(selectPreviousScore(root)).toBe(67); // the café's last run, not "other"
+    // Runs saved before pages were recorded never count as the same page.
+    root = { ...root, audit: auditReducer(root.audit, auditCompleted(audit(4, 90))) };
+    expect(selectPreviousScore(root)).toBeNull();
   });
 
   it('stops running and keeps the last result when an audit fails', () => {

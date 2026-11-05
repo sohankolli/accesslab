@@ -7,6 +7,7 @@ import PrintableReport from '../report/PrintableReport';
 import { downloadRunJSON, downloadRunCSV } from '../report/reportExport';
 import ModelSwitch from './ModelSwitch';
 import ClickablesGroup from './ClickablesGroup';
+import { selectPreviousScore } from '../report/historySlice';
 
 /** Text for the live region, read out by screen readers after every audit. */
 function announcement(result) {
@@ -33,7 +34,7 @@ export default function FindingsPane({
   onShowInCode,
 }) {
   const result = useSelector((state) => state.audit.result);
-  const previousScore = useSelector((state) => state.audit.previousScore);
+  const previousScore = useSelector(selectPreviousScore); // same page only
   const status = useSelector((state) => state.audit.status);
   const auditError = useSelector((state) => state.audit.error);
 

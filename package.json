@@ -1,8 +1,11 @@
 {
   "name": "accesslab",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
   "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "predev": "node scripts/copy-ort-wasm.mjs",
     "dev": "vite",

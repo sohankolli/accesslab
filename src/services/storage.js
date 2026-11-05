@@ -68,7 +68,7 @@ export const loadHistory = () => {
 
 export const saveHistory = ({ runs }) => write({ ...read(), history: { runs } });
 
-const SOURCES = ['sample', 'paste', 'file', 'link'];
+const SOURCES = ['sample', 'paste', 'file', 'link', 'learn'];
 
 /**
  * The editor's code saved by saveEditor, or null when there is none or it is not

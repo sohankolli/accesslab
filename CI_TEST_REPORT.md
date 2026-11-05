@@ -8,29 +8,32 @@
 
 ## 1. CI Test Results
 
-| CI Stage | Command | Result |
-|---|---|---|
-| Dependency installation | npm ci | PASS* |
-| ESLint | npm run lint | PASS |
-| Prettier | npm run format:check | FAIL |
-| Automated tests | npm test -- --run | PASS |
-| Production build | npm run build | PASS |
+| CI Stage                | Command              | Result |
+| ----------------------- | -------------------- | ------ |
+| Dependency installation | npm ci               | PASS*  |
+| ESLint                  | npm run lint         | PASS   |
+| Prettier                | npm run format:check | FAIL   |
+| Automated tests         | npm test -- --run    | PASS   |
+| Production build        | npm run build        | PASS   |
 
 *The standard npm command was initially blocked by the NVM malware-definition check (HTTP 401). Dependency installation succeeded using the installed npm CLI directly through Node.js 22.
 
 ## 2. Detailed Results
 
 ### Dependency installation
+
 - 366 packages added.
 - 367 packages audited.
 - 0 vulnerabilities reported.
 
 ### ESLint
+
 - Command: npm run lint
 - Result: Passed.
 - No lint errors reported.
 
 ### Prettier formatting
+
 - Command: npm run format:check
 - Result: Failed.
 - 191 files reported as not matching Prettier formatting rules.
@@ -38,12 +41,14 @@
 - All seven files changed for the bookmarklet feature passed an individual Prettier check.
 
 ### Automated tests
+
 - Command: npm test -- --run
 - Test files passed: 47/47.
 - Tests passed: 445/445.
 - Tests failed: 0.
 
 ### Production build
+
 - Command: npm run build
 - Result: Passed.
 - Vite version: 8.3.4.

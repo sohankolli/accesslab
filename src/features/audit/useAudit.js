@@ -5,8 +5,9 @@ import { runRulesSliced } from '../../engine/scheduler';
 import { rulesFor } from '../../engine/rules';
 import { useSettings } from '../../context/SettingsContext';
 import { auditStarted, auditCompleted, auditFailed } from './auditSlice';
-import { runAdded } from '../report/historySlice';
+import { runAdded, repeatedRun } from '../report/historySlice';
 import { pageOf } from '../report/pages';
+import { codeHash } from '../report/codeHash';
 
 /**
  * Runs the audit of the preview's document. Starting a new audit aborts the old
@@ -46,8 +47,18 @@ export function useAudit({ docRef, html, css }) {
         // Which page this is: its <title>, else the opened file's name (pages.js).
         const { source, fileName } = store.getState().editor;
         const page = pageOf({ title: doc.title, fileName: source === 'file' ? fileName : null });
-        const audit = { ...toAuditResult(results), page };
-        dispatch(auditCompleted(audit, codeRef.current));
+        const checked = codeRef.current;
+        let audit = {
+          ...toAuditResult(results),
+          page,
+          codeHash: codeHash(checked.html, checked.css),
+        };
+        // The same code as the page's last saved run (a refresh, or coming back to
+        // the workbench): show it as that run, so "since the last check" still
+        // compares with the run before it, and runAdded does not save it again.
+        const repeat = repeatedRun(store.getState().history.runs, audit);
+        if (repeat) audit = { ...audit, ranAt: repeat.ranAt };
+        dispatch(auditCompleted(audit, checked));
         dispatch(runAdded(audit));
       } catch (err) {
         if (err?.name === 'AbortError') return; // a newer audit took over: not a failure

@@ -20,7 +20,7 @@ function oversize(html, css) {
   return bytes > MAX_PAGE_BYTES ? bytes : 0;
 }
 
-const initialState = {
+export const initialState = {
   html: SAMPLE_HTML,
   css: SAMPLE_CSS,
   /** Where the code came from: 'sample' | 'paste' | 'file' | 'link'. */
@@ -28,6 +28,8 @@ const initialState = {
   /** The name of the file last opened, when source is 'file'; otherwise null. */
   fileName: null,
   rejected: null, // { lang: 'html'|'css', bytes } when the last edit was over the size cap
+  /** True when the browser refused to save the code (storage full or blocked). */
+  saveFailed: false,
 };
 
 /**
@@ -97,6 +99,10 @@ const editorSlice = createSlice({
     rejectionCleared(state) {
       state.rejected = null;
     },
+    /** editorSaveResult(saved): whether the code was saved in localStorage. */
+    editorSaveResult(state, action) {
+      state.saveFailed = !action.payload;
+    },
     /** Replace the editors' contents with the built-in sample page. */
     sampleLoaded(state) {
       state.html = SAMPLE_HTML;
@@ -145,5 +151,6 @@ export const {
   sampleLoaded,
   sharedPageOpened,
   fixApplied,
+  editorSaveResult,
 } = editorSlice.actions;
 export default editorSlice.reducer;

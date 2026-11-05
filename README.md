@@ -32,9 +32,7 @@ More detail: [user guide](docs/guide.md) (every feature, Simulate, Learn, keyboa
 
 ## How to run it
 
-The deployed app is at <DEPLOY_URL>.
-
-To run it locally you need Node.js 22 (the version is in [`.nvmrc`](.nvmrc), so `nvm use` picks it up).
+AccessLab runs locally. You need Node.js 22 (the version is in [`.nvmrc`](.nvmrc), so `nvm use` picks it up).
 
 ```bash
 npm ci             # install the exact versions in package-lock.json
@@ -44,6 +42,8 @@ npm run lint       # ESLint, including eslint-plugin-jsx-a11y
 npm run build      # production build into dist/
 npm run preview    # serve the production build locally
 ```
+
+To run the demo, build the app and serve the build with `npm run build && npm run preview`, then open the address it prints.
 
 | Script                 | What it does                                    |
 | ---------------------- | ----------------------------------------------- |
